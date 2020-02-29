@@ -6,9 +6,9 @@ router.get('/', controller.data)
 
 // router.get('/insert', controller.insert)
 
-router.get('/get', controller.get)
+router.get('/post', controller.get)
 
-router.post('/get', controller.post)
+router.post('/post', controller.post)
 
 router.get('/show', controller.show)
 

@@ -26,21 +26,26 @@ module.exports.get = async function(req, res) {
   res.render('block')
 }
 
-module.exports.show =async function(req, res) {  
-  var show = await Data.find(req.query)
+module.exports.show = async function(req, res) {  
+  var show = await Data.find({status : true})
   res.json(show)
 }
+
 
 module.exports.post = async function (req, res) {
   console.log(req.body.BlockNumber)
   const web3 = new Web3(new Web3.providers.WebsocketProvider("wss://ws.nexty.io"))
 
-  query = async (insertNumber) => {
-    for (let i = insertNumber; i <= insertNumber; i++) {
+  query = async (insertNumber) => {  
+    for (let i = insertNumber-1000; i <= insertNumber; i++) {
       Data.find({
         blockNumber: i
       }, function (err, docs) {
         if (docs == '') {
+          Data.create({blockNumber: i}, function (err) {
+            if (err) return handleError(err);
+            // saved!
+          });
           web3.eth.getBlock(i, true, function (error, result) {
             if (!error) {
               if (result != null && result.transactions != null) {
@@ -122,6 +127,7 @@ module.exports.post = async function (req, res) {
     }
   }
   query(req.body.BlockNumber)
+  res.send('da luu thanh cong')
 
 }
 

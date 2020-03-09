@@ -1,7 +1,7 @@
 var mongoose = require('mongoose');
 
 let blockSchema = new mongoose.Schema({
-    BlockNumber: String,
+    number: String
 });
 
 var Block = mongoose.model('Block', blockSchema, 'block')

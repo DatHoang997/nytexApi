@@ -6,20 +6,20 @@ var StableTokenABI = require('../JSON/StableToken.json')
 var VolatileTokenABI = require('../JSON/VolatileToken.json')
 
 const { cutString, thousands, weiToNTY, weiToMNTY, weiToNUSD, mntyToWei, nusdToWei, decShift } = require ('../util/help')
-const Help = require('../util/help')
 
 const web3 = new Web3(new Web3.providers.WebsocketProvider("wss://ws.nexty.io"))
 
 let Seigniorage = new web3.eth.Contract(SeigniorageABI, '0x0000000000000000000000000000000000023456');
-let StableToken = new web3.eth.Contract(StableTokenABI, '0x0000000000000000000000000000000000045678');
 let VolatileToken = new web3.eth.Contract(VolatileTokenABI, '0x0000000000000000000000000000000000034567');
+let StableToken = new web3.eth.Contract(StableTokenABI, '0x0000000000000000000000000000000000045678');
+
 
 module.exports.data = async function (req, res) {
 
 }
 
 module.exports.block = async function (req, res) {
-  var cursor = 28000000
+  var cursor = 26000000
   scanBlock = async (_from_block, _to_block) => {
     var insert = (data) => {
       Data.create(data, function (err) {
@@ -49,23 +49,38 @@ module.exports.block = async function (req, res) {
           type: 'uint256',
           name: 'slashingRate',
         }], result['0'].raw.data, result['0'].raw.topics)
-        let elog = {
-          name: 'Event: Propose',
-          param1 : 'Maker: '+eventparam[0],
-          param2 : 'Amount: '+weiToNUSD(eventparam[1])+' NewSD',
-          param3 : 'Stake: '+weiToMNTY(eventparam[2])+' MNTY',
-          param4 : 'LockdownExpiration: '+eventparam[3],
-          param5 : 'SlashingRate: '+eventparam[4]
-        }
-        let data = {
-          status: true,
-          blockNumber: result['0'].blockNumber,
-          event: elog
-        }
-        insert(data)
+        web3.eth.getBlock(result['0'].blockNumber, function (error, result1) {
+          if (!error) {
+            let time = result1.timestamp
+            console.log(time)
+            var date = new Date(time * 1000);
+            var day = date.getDate();
+            var month = date.getMonth();
+            var hours = date.getHours();
+            var minutes = "0" + date.getMinutes();
+            var seconds = "0" + date.getSeconds();
+            var formattedTime =day +'-'+ ("0" + month + 1).slice(-2)+' '+ hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
+
+            console.log('################'+formattedTime);
+            
+            let elog = {
+              name: 'Event: Propose',
+              param1 : 'Maker: '+eventparam[0],
+              param2 : 'Amount: '+weiToNUSD(eventparam[1])+' NewSD',
+              param3 : 'Stake: '+weiToMNTY(eventparam[2])+' MNTY',
+              param4 : 'LockdownExpiration: '+eventparam[3],
+              param5 : 'SlashingRate: '+eventparam[4]
+            }
+            let data = {
+              status: true,
+              blockNumber: result['0'].blockNumber,
+              event: elog
+            }
+          insert(data)
+          }
+        })
       }
     })
-
 
     Seigniorage.getPastEvents('Unlock', {
       fromBlock: _from_block,
@@ -128,7 +143,7 @@ module.exports.block = async function (req, res) {
           indexed: true
         }], result['0'].raw.data, result['0'].raw.topics)
         let elog = {
-          name: 'Event: Slash',
+          name: 'Event: Revoke',
           param1 : 'Address: '+eventparam[0],
         }
         let data = {
@@ -240,18 +255,35 @@ module.exports.block = async function (req, res) {
           type: 'uint256',
           name: 'value',
         }], result['0'].raw.data, result['0'].raw.topics)
-        let elog = {
-          name: 'Event: Transfer',
-          param1 : 'Address: '+eventparam[0],
-          param2 : 'To: '+eventparam[1],
-          param3 : 'Value: '+weiToNUSD(eventparam[2])+' NewSD',
-        }
-        let data = {
-          status: true,
-          blockNumber: result['0'].blockNumber,
-          event: elog
-        }
-        insert(data)
+        web3.eth.getBlock(result['0'].blockNumber, function (error, result1) {
+          if (!error) {
+            let time = result1.timestamp
+            console.log(time)
+            var date = new Date(time * 1000);
+            var day = date.getDate();
+            var month = date.getMonth();
+            var hours = date.getHours();
+            var minutes = "0" + date.getMinutes();
+            var seconds = "0" + date.getSeconds();
+            var formattedTime =day +'-'+ ("0" + month + 1).slice(-2)+' '+ hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
+
+            console.log('################'+formattedTime);
+            
+            let elog = {
+              name: 'Event: Transfer',
+              param1 : 'Address: '+eventparam[0],
+              param2 : 'To: '+eventparam[1],
+              param3 : 'Value: '+weiToNUSD(eventparam[2])+' NewSD',
+            }
+            let data = {
+              status: true,
+              blockNumber: result['0'].blockNumber,
+              event: elog,
+              time: formattedTime
+            }
+            insert(data)
+          }
+        })
       }
     })
 
@@ -319,6 +351,55 @@ module.exports.block = async function (req, res) {
       }
     })
 
+    VolatileToken.getPastEvents('Transfer', {
+      fromBlock: _from_block,
+      toBlock: _to_block
+    },async function (error, result) {
+      if (result['0'] !== undefined) {
+        let eventparam = web3.eth.abi.decodeLog([{
+          type: 'address',
+          name: 'from',
+          indexed: true
+        }, {
+          type: 'address',
+          name: 'to',
+          indexed: true
+        }, {
+          type: 'uint256',
+          name: 'value',
+        }], result['0'].raw.data, result['0'].raw.topics)
+        web3.eth.getBlock(result['0'].blockNumber, function (error, result1) {
+          if (!error) {
+            let time = result1.timestamp
+            console.log(time)
+            var date = new Date(time * 1000);
+            var day = date.getDate();
+            var month = date.getMonth();
+            var hours = date.getHours();
+            var minutes = "0" + date.getMinutes();
+            var seconds = "0" + date.getSeconds();
+            var formattedTime =day +'-'+ ("0" + month + 1).slice(-2)+' '+ hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
+
+            console.log('################'+formattedTime);
+            
+            let elog = {
+              name: 'Event: Transfer',
+              param1 : 'Address: '+eventparam[0],
+              param2 : 'To: '+eventparam[1],
+              param3 : 'Value: '+weiToMNTY(eventparam[2])+' MNTY',
+            }
+             let data = {
+              status: true,
+              blockNumber: result['0'].blockNumber,
+              event: elog,
+              time: formattedTime
+            }
+            insert(data)
+          }
+        })
+      }
+    })
+
     VolatileToken.getPastEvents('OwnershipTransferred', {
       fromBlock: _from_block,
       toBlock: _to_block
@@ -382,50 +463,14 @@ module.exports.block = async function (req, res) {
         insert(data)
       }
     })
-
-    VolatileToken.getPastEvents('Transfer', {
-      fromBlock: _from_block,
-      toBlock: _to_block
-    }, function (error, result) {
-      if (result['0'] !== undefined) {
-        let eventparam = web3.eth.abi.decodeLog([{
-          type: 'address',
-          name: 'from',
-          indexed: true
-        }, {
-          type: 'address',
-          name: 'to',
-          indexed: true
-        }, {
-          type: 'uint256',
-          name: 'value',
-        }], result['0'].raw.data, result['0'].raw.topics)
-        let elog = {
-          name: 'Event: Transfer',
-          param1 : 'Address: '+eventparam[0],
-          param2 : 'To: '+eventparam[1],
-          param3 : 'Value: '+weiToMNTY(eventparam[2])+' MNTY',
-        }
-        let data = {
-          status: true,
-          blockNumber: result['0'].blockNumber,
-          event: elog
-        }
-        insert(data)
-      }
-    })
   }
   // scanBlock(28587300,28597378)
 
-  web3.eth.subscribe('newBlockHeaders', async function (error, new_block) {
+  web3.eth.subscribe('newBlockHeaders', function (error, new_block) {
     if (!error) {
-      Data.findOne().sort({
-        number: -1
-      }).exec(async function (err, db_block) {
+      Data.findOne().sort({number: -1}).exec(async function (err, db_block) {
         if (db_block == null) {
-          db_block = {
-            number: cursor
-          }
+          db_block = {number: cursor}
         }
         Data.deleteMany({
           number: {
@@ -434,7 +479,7 @@ module.exports.block = async function (req, res) {
         }, function (err, res) {
           if (err) console.log(err)
         })
-        if (db_block.number < new_block.number) {
+        if (db_block.number < new_block.number -6) {
           let _from_block = Math.max(db_block.number, cursor)
           let _to_block = Math.min(new_block.number - 6, db_block.number + 100000)
           console.log(_from_block)
@@ -449,6 +494,11 @@ module.exports.block = async function (req, res) {
           await scanBlock(_from_block + 1, _to_block)
         } else {
           await scanBlock(new_block.number - 6, new_block.number - 6)
+          Data.create({
+            number: new_block.number - 6
+          }, function (err) {
+            if (err) return handleError(err);
+          });
         }
       })
     }

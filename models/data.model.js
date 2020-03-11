@@ -11,7 +11,8 @@ let dataSchema = new mongoose.Schema({
         param4: String,
         param5: String
     },
-    blockNumber: Number
+    blockNumber: Number,
+    time: String
 });
 
 var Data = mongoose.model('Data', dataSchema, 'data')

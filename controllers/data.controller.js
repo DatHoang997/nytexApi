@@ -661,13 +661,13 @@ module.exports.block = async function (req, res) {
             number: cursor
           }
         }
-        // Data.deleteMany({
-        //   number: {
-        //     $lte: db_block.number - 1000
-        //   }
-        // }, function (err, res) {
-        //   if (err) console.log(err)
-        // })
+        Data.deleteMany({
+          number: {
+            $lte: db_block.number - 1000
+          }, status: true
+        }, function (err, res) {
+          if (err) console.log(err)
+        })
         if (db_block.number < new_block.number - 6) {
           let _from_block = Math.max(db_block.number, cursor)
           let _to_block = Math.min(new_block.number - 6, db_block.number + 100000)

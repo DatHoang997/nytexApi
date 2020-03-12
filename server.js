@@ -1,6 +1,6 @@
 const express = require('express')
 const app = express()
-const port = 8888
+const port = 8881
 var mongoose = require('mongoose');
 var bodyParser = require('body-parser');
 var dataRoute = require('./routes/data.route')

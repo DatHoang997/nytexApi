@@ -68,12 +68,12 @@ module.exports.block = async function (req, res) {
             if (!error) {
               let time = result1.timestamp
               var date = new Date(time * 1000);
-    var day = date.getDate();
-    var month = date.getMonth();
-    var hours = date.getHours();
-    var minutes = "0" + date.getMinutes();
-    var seconds = "0" + date.getSeconds();
-    var formattedTime = day + '-' + ("0" + month + 1).slice(-2) + ' ' + hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
+              var day = date.getDate();
+              var month = date.getMonth();
+              var hours = date.getHours();
+              var minutes = "0" + date.getMinutes();
+              var seconds = "0" + date.getSeconds();
+              var formattedTime = day + '-' + ("0" + month + 1).slice(-2) + ' ' + hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
               let data = {
                 status: true,
                 number: result['0'].blockNumber,
@@ -106,7 +106,7 @@ module.exports.block = async function (req, res) {
             type: 'address',
             name: 'maker',
             indexed: true
-          }], result['0'].raw.data, result['0'].raw.topics) 
+          }], result['0'].raw.data, result['0'].raw.topics)
           let data = {
             status: true,
             number: result['0'].blockNumber,
@@ -135,7 +135,7 @@ module.exports.block = async function (req, res) {
           }, {
             type: 'uint256',
             name: 'amount',
-          }], result['0'].raw.data, result['0'].raw.topics) 
+          }], result['0'].raw.data, result['0'].raw.topics)
           let data = {
             status: true,
             number: result['0'].blockNumber,
@@ -292,12 +292,12 @@ module.exports.block = async function (req, res) {
             if (!error) {
               let time = result1.timestamp
               var date = new Date(time * 1000);
-    var day = date.getDate();
-    var month = date.getMonth();
-    var hours = date.getHours();
-    var minutes = "0" + date.getMinutes();
-    var seconds = "0" + date.getSeconds();
-    var formattedTime = day + '-' + ("0" + month + 1).slice(-2) + ' ' + hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
+              var day = date.getDate();
+              var month = date.getMonth();
+              var hours = date.getHours();
+              var minutes = "0" + date.getMinutes();
+              var seconds = "0" + date.getSeconds();
+              var formattedTime = day + '-' + ("0" + month + 1).slice(-2) + ' ' + hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
               let data = {
                 status: true,
                 number: result['0'].blockNumber,
@@ -348,16 +348,16 @@ module.exports.block = async function (req, res) {
             if (!error) {
               let time = result1.timestamp
               var date = new Date(time * 1000);
-    var day = date.getDate();
-    var month = date.getMonth();
-    var hours = date.getHours();
-    var minutes = "0" + date.getMinutes();
-    var seconds = "0" + date.getSeconds();
-    var formattedTime = day + '-' + ("0" + month + 1).slice(-2) + ' ' + hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
+              var day = date.getDate();
+              var month = date.getMonth();
+              var hours = date.getHours();
+              var minutes = "0" + date.getMinutes();
+              var seconds = "0" + date.getSeconds();
+              var formattedTime = day + '-' + ("0" + month + 1).slice(-2) + ' ' + hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
               let data = {
                 status: true,
                 number: result['0'].blockNumber,
-                event:{
+                event: {
                   name: 'Event: Transfer',
                   param1: 'Address: ' + eventparam[0],
                   param2: 'To: ' + eventparam[1],
@@ -469,12 +469,12 @@ module.exports.block = async function (req, res) {
             if (!error) {
               let time = result1.timestamp
               var date = new Date(time * 1000);
-    var day = date.getDate();
-    var month = date.getMonth();
-    var hours = date.getHours();
-    var minutes = "0" + date.getMinutes();
-    var seconds = "0" + date.getSeconds();
-    var formattedTime = day + '-' + ("0" + month + 1).slice(-2) + ' ' + hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
+              var day = date.getDate();
+              var month = date.getMonth();
+              var hours = date.getHours();
+              var minutes = "0" + date.getMinutes();
+              var seconds = "0" + date.getSeconds();
+              var formattedTime = day + '-' + ("0" + month + 1).slice(-2) + ' ' + hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
               let data = {
                 status: true,
                 number: result['0'].blockNumber,
@@ -526,12 +526,12 @@ module.exports.block = async function (req, res) {
             if (!error) {
               let time = result1.timestamp
               var date = new Date(time * 1000);
-    var day = date.getDate();
-    var month = date.getMonth();
-    var hours = date.getHours();
-    var minutes = "0" + date.getMinutes();
-    var seconds = "0" + date.getSeconds();
-    var formattedTime = day + '-' + ("0" + month + 1).slice(-2) + ' ' + hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
+              var day = date.getDate();
+              var month = date.getMonth();
+              var hours = date.getHours();
+              var minutes = "0" + date.getMinutes();
+              var seconds = "0" + date.getSeconds();
+              var formattedTime = day + '-' + ("0" + month + 1).slice(-2) + ' ' + hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
               let data = {
                 status: true,
                 number: result['0'].blockNumber,
@@ -628,7 +628,7 @@ module.exports.block = async function (req, res) {
     Promise.all([e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15])
 
       .then(data => {
-        if(data[0]==null&&data[1]==null&&data[2]==null&&data[3]==null&&data[4]==null&&data[5]==null&&data[6]==null&&data[7]==null&&data[8]==null&&data[9]==null&&data[10]==null&&data[11]==null&&data[12]==null&&data[13]==null&&data[14]==null) {
+        if (data[0] == null && data[1] == null && data[2] == null && data[3] == null && data[4] == null && data[5] == null && data[6] == null && data[7] == null && data[8] == null && data[9] == null && data[10] == null && data[11] == null && data[12] == null && data[13] == null && data[14] == null) {
           console.log('aloooo?')
           Data.create({
             number: _to_block
@@ -636,9 +636,9 @@ module.exports.block = async function (req, res) {
             if (err) return handleError(err);
           });
         } else {
-          for (let i = 0; i <= data.length-1; i++) {
+          for (let i = 0; i <= data.length - 1; i++) {
             if (data[i] != null) {
-              console.log('day la gi?',data[i])
+              console.log('day la gi?', data[i])
               Data.create(data[i], function (err) {
                 if (err) return handleError(err);
               });
@@ -664,7 +664,8 @@ module.exports.block = async function (req, res) {
         Data.deleteMany({
           number: {
             $lte: db_block.number - 1000
-          }, status: true
+          },
+          status: true
         }, function (err, res) {
           if (err) console.log(err)
         })

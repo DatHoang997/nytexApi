@@ -626,11 +626,11 @@ module.exports.block = async function (req, res) {
     })
 
     Promise.all([e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15])
-
       .then(data => {
         if (data[0] == null && data[1] == null && data[2] == null && data[3] == null && data[4] == null && data[5] == null && data[6] == null && data[7] == null && data[8] == null && data[9] == null && data[10] == null && data[11] == null && data[12] == null && data[13] == null && data[14] == null) {
           console.log('aloooo?')
           Data.create({
+            status: false,
             number: _to_block
           }, function (err) {
             if (err) return handleError(err);
@@ -638,7 +638,7 @@ module.exports.block = async function (req, res) {
         } else {
           for (let i = 0; i <= data.length - 1; i++) {
             if (data[i] != null) {
-              console.log('day la gi?', data[i])
+              // console.log('day la gi?', data[i])
               Data.create(data[i], function (err) {
                 if (err) return handleError(err);
               });
@@ -665,7 +665,7 @@ module.exports.block = async function (req, res) {
           number: {
             $lte: db_block.number - 1000
           },
-          status: true
+          status: false
         }, function (err, res) {
           if (err) console.log(err)
         })

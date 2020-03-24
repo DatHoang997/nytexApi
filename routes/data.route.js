@@ -2,21 +2,10 @@ const express = require('express')
 const router = express.Router()
 const controller = require('../controllers/data.controller')
 
-// router.get('/', controller.data)
-
-// router.get('/insert', controller.insert)
-
-router.get('/post', controller.get)
-
-router.post('/post', controller.post)
-
-
-
+// insert data
 router.get('/', controller.block)
 
-router.post('/block', controller.blockpost)
-
-//get all
+// get all
 router.get('/show', controller.show)
 
 // get data
@@ -29,6 +18,11 @@ router.get('/absorption', controller.absorption)
 router.get('/transfer', controller.transfer)
 
 router.get('/slash', controller.slash)
+
+router.get('/approval', controller.approval)
+
+// delete DB
+router.get('/clear', controller.clear)
 
 
 

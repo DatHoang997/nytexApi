@@ -3,8 +3,8 @@ var mongoose = require('mongoose');
 let dataSchema = new mongoose.Schema({
     status: Boolean,
     number: Number,
+    name: String,
     event: {
-        name: String,
         param1: String,
         param2: String,
         param3: String,

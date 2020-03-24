@@ -22,11 +22,6 @@ let Seigniorage = new web3.eth.Contract(SeigniorageABI, '0x000000000000000000000
 let VolatileToken = new web3.eth.Contract(VolatileTokenABI, '0x0000000000000000000000000000000000034567');
 let StableToken = new web3.eth.Contract(StableTokenABI, '0x0000000000000000000000000000000000045678');
 
-
-module.exports.data = async function (req, res) {
-
-}
-
 module.exports.block = async function (req, res) {
   var cursor = 26500000
 
@@ -751,16 +746,20 @@ module.exports.slash = async function (req, res) {
   res.json(show)
 }
 
-
-module.exports.post = async function (req, res) {
-  console.log(req.body)
-  let aaa = {
-    blockNumber: req.body.blockNumber
-  }
-  Block.create(req.body, function (err) {
-    if (err) return handleError(err);
-    // saved!
-  });
-  res.send('da luu thanh cong')
-
+module.exports.approval = async function (req, res) {
+  var show = await Data.find({
+    status: true,
+    name: "Event: Approval"
+  }).sort({
+    blockNumber: -1
+  })
+  res.json(show)
 }
+
+module.exports.clear = async function (req, res) {
+  Data.deleteMany({}, function (err, res) {
+    if (err) console.log(err)
+  })
+  res.send('da xoa DB')
+}
+

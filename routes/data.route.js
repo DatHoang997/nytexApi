@@ -2,7 +2,7 @@ const express = require('express')
 const router = express.Router()
 const controller = require('../controllers/data.controller')
 
-router.get('/', controller.data)
+// router.get('/', controller.data)
 
 // router.get('/insert', controller.insert)
 
@@ -12,7 +12,7 @@ router.post('/post', controller.post)
 
 router.get('/show', controller.show)
 
-router.get('/block', controller.block)
+router.get('/', controller.block)
 
 router.post('/block', controller.blockpost)
 

@@ -307,6 +307,7 @@ module.exports.block = async function (req, res) {
                   param2: 'To: ' + eventparam[1],
                   param3: 'Value: ' + weiToNUSD(eventparam[2]) + ' NewSD',
                 },
+                time: formattedTime
               }
               resolve(data)
             }

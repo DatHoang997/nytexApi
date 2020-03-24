@@ -10,16 +10,26 @@ router.get('/post', controller.get)
 
 router.post('/post', controller.post)
 
-router.get('/show', controller.show)
+
 
 router.get('/', controller.block)
 
 router.post('/block', controller.blockpost)
 
-// /insert?block=13
-// {ghfhgjmh}
+//get all
+router.get('/show', controller.show)
 
-// /get/block=13
-// {}
+// get data
+router.get('/preemptive', controller.preemptive)
+
+router.get('/propose', controller.propose)
+
+router.get('/absorption', controller.absorption)
+
+router.get('/transfer', controller.transfer)
+
+router.get('/slash', controller.slash)
+
+
 
 module.exports = router

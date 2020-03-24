@@ -77,8 +77,8 @@ module.exports.block = async function (req, res) {
               let data = {
                 status: true,
                 number: result['0'].blockNumber,
+                name: 'Event: Propose',
                 event: {
-                  name: 'Event: Propose',
                   param1: 'Maker: ' + eventparam[0],
                   param2: 'Amount: ' + weiToNUSD(eventparam[1]) + ' NewSD',
                   param3: 'Stake: ' + weiToMNTY(eventparam[2]) + ' MNTY',
@@ -110,8 +110,8 @@ module.exports.block = async function (req, res) {
           let data = {
             status: true,
             number: result['0'].blockNumber,
+            name: 'Event: Unlock',
             event: {
-              name: 'Event: Unlock',
               param1: 'Address : ' + eventparam[0],
             },
           }
@@ -139,8 +139,8 @@ module.exports.block = async function (req, res) {
           let data = {
             status: true,
             number: result['0'].blockNumber,
+            name: 'Event: Slash',
             event: {
-              name: 'Event: Slash',
               param1: 'Address: ' + eventparam[0],
               param2: 'Amount: ' + weiToMNTY(eventparam[1]) + ' MNTY',
             },
@@ -166,8 +166,8 @@ module.exports.block = async function (req, res) {
           let data = {
             status: true,
             number: result['0'].blockNumber,
+            name: 'Event: Revoke',
             event: {
-              name: 'Event: Revoke',
               param1: 'Address: ' + eventparam[0],
             },
           }
@@ -201,8 +201,8 @@ module.exports.block = async function (req, res) {
           let data = {
             status: true,
             number: result['0'].blockNumber,
+            name: 'Event: Preemptive',
             event: {
-              name: 'Event: Preemptive',
               param1: 'Maker: ' + eventparam[0],
               param2: 'Stake: ' + weiToMNTY(eventparam[1]) + ' MNTY',
               param3: 'LockdownExpiration: ' + eventparam[2],
@@ -235,8 +235,8 @@ module.exports.block = async function (req, res) {
           let data = {
             status: true,
             number: result['0'].blockNumber,
+            name: 'Event: Absorption',
             event: {
-              name: 'Event: Absorption',
               param1: 'Amount: ' + weiToNTY(eventparam[0]) + ' NTY',
               param2: 'Supply: ' + eventparam[1],
               param3: 'Emptive: ' + eventparam[2],
@@ -259,9 +259,7 @@ module.exports.block = async function (req, res) {
           let data = {
             status: true,
             number: result['0'].blockNumber,
-            event: {
-              name: 'Event: Stop()',
-            },
+            name: 'Event: Stop()',
           }
           resolve(data)
         } else {
@@ -301,8 +299,8 @@ module.exports.block = async function (req, res) {
               let data = {
                 status: true,
                 number: result['0'].blockNumber,
+                name: 'Event: Transfer',
                 event: {
-                  name: 'Event: Transfer',
                   param1: 'Address: ' + eventparam[0],
                   param2: 'To: ' + eventparam[1],
                   param3: 'Value: ' + weiToNUSD(eventparam[2]) + ' NewSD',
@@ -358,8 +356,8 @@ module.exports.block = async function (req, res) {
               let data = {
                 status: true,
                 number: result['0'].blockNumber,
+                name: 'Event: Transfer',
                 event: {
-                  name: 'Event: Transfer',
                   param1: 'Address: ' + eventparam[0],
                   param2: 'To: ' + eventparam[1],
                   param3: 'Value: ' + weiToMNTY(eventparam[2]) + ' MNTY',
@@ -396,8 +394,8 @@ module.exports.block = async function (req, res) {
           let data = {
             status: true,
             number: result['0'].blockNumber,
+            name: 'Event: OwnershipTransferred',
             event: {
-              name: 'Event: OwnershipTransferred',
               param1: 'previousOwner: ' + eventparam[0],
               param2: 'newOwner: ' + eventparam[1]
             },
@@ -434,8 +432,8 @@ module.exports.block = async function (req, res) {
           let data = {
             status: true,
             number: result['0'].blockNumber,
+            name: 'Event: Approval',
             event: {
-              name: 'Event: Approval',
               param1: 'Owner: ' + eventparam[0],
               param2: 'Spender: ' + eventparam[1],
               param2: 'Value: ' + weiToNUSD(eventparam[2]) + ' NewSD'
@@ -479,8 +477,8 @@ module.exports.block = async function (req, res) {
               let data = {
                 status: true,
                 number: result['0'].blockNumber,
+                name: 'Event: Transfer',
                 event: {
-                  name: 'Event: Transfer',
                   param1: 'Address: ' + eventparam[0],
                   param2: 'To: ' + eventparam[1],
                   param3: 'Value: ' + weiToMNTY(eventparam[2]) + ' MNTY',
@@ -536,8 +534,8 @@ module.exports.block = async function (req, res) {
               let data = {
                 status: true,
                 number: result['0'].blockNumber,
+                name: 'Event: Transfer',
                 event: {
-                  name: 'Event: Transfer',
                   param1: 'Address: ' + eventparam[0],
                   param2: 'To: ' + eventparam[1],
                   param3: 'Value: ' + weiToMNTY(eventparam[2]) + ' MNTY',
@@ -574,8 +572,8 @@ module.exports.block = async function (req, res) {
           let data = {
             status: true,
             number: result['0'].blockNumber,
+            name: 'Event: OwnershipTransferred',
             event: {
-              name: 'Event: OwnershipTransferred',
               param1: 'previousOwner: ' + eventparam[0],
               param2: 'newOwner: ' + eventparam[1]
             },
@@ -612,8 +610,8 @@ module.exports.block = async function (req, res) {
           let data = {
             status: true,
             number: result['0'].blockNumber,
+            name: 'Event: Approval',
             event: {
-              name: 'Event: Approval',
               param1: 'Owner: ' + eventparam[0],
               param2: 'Spender: ' + eventparam[1],
               param2: 'Value: ' + weiToMNTY(eventparam[2]) + ' MNTY'
@@ -697,7 +695,56 @@ module.exports.get = async function (req, res) {
 
 module.exports.show = async function (req, res) {
   var show = await Data.find({
-    status: true
+    status: true,
+  }).sort({
+    blockNumber: -1
+  })
+  res.json(show)
+}
+module.exports.preemptive = async function (req, res) {
+  var show = await Data.find({
+    status: true,
+    Event: "Preemptive"
+  }).sort({
+    blockNumber: -1
+  })
+  res.json(show)
+}
+
+module.exports.propose = async function (req, res) {
+  var show = await Data.find({
+    status: true,
+    name: "Event: Propose"
+  }).sort({
+    blockNumber: -1
+  })
+  res.json(show)
+}
+
+module.exports.transfer = async function (req, res) {
+  var show = await Data.find({
+    status: true,
+    name: "Event: Transfer"
+  }).sort({
+    blockNumber: -1
+  })
+  res.json(show)
+}
+
+module.exports.absorption = async function (req, res) {
+  var show = await Data.find({
+    status: true,
+    name: "Event: Absorption"
+  }).sort({
+    blockNumber: -1
+  })
+  res.json(show)
+}
+
+module.exports.slash = async function (req, res) {
+  var show = await Data.find({
+    status: true,
+    name: "Event: Slash"
   }).sort({
     blockNumber: -1
   })

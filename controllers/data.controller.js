@@ -1,20 +1,10 @@
 var Data = require('../models/data.model')
-var Block = require('../models/block.model')
 var Web3 = require('web3');
 var SeigniorageABI = require('../JSON/Seigniorage.json')
 var StableTokenABI = require('../JSON/StableToken.json')
 var VolatileTokenABI = require('../JSON/VolatileToken.json')
 
-const {
-  cutString,
-  thousands,
-  weiToNTY,
-  weiToMNTY,
-  weiToNUSD,
-  mntyToWei,
-  nusdToWei,
-  decShift
-} = require('../util/help')
+const { cutString, thousands,weiToNTY, weiToMNTY, weiToNUSD, mntyToWei, nusdToWei, decShift } = require('../util/help')
 
 const web3 = new Web3(new Web3.providers.WebsocketProvider("wss://ws.nexty.io"))
 
@@ -679,15 +669,6 @@ module.exports.block = async function (req, res) {
   })
 }
 
-
-module.exports.blockpost = async function (req, res) {
-
-}
-
-module.exports.get = async function (req, res) {
-  res.render('block')
-}
-
 module.exports.show = async function (req, res) {
   var show = await Data.find({
     status: true,
@@ -762,4 +743,3 @@ module.exports.clear = async function (req, res) {
   })
   res.send('da xoa DB')
 }
-

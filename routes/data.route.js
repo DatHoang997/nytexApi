@@ -5,6 +5,8 @@ const controller = require('../controllers/data.controller')
 // insert data
 router.get('/', controller.block)
 
+router.get('/trade', controller.trade)
+
 // get all
 router.get('/show', controller.show)
 
@@ -21,7 +23,9 @@ router.get('/slash', controller.slash)
 
 router.get('/approval', controller.approval)
 
-// delete DB
+router.get('/gettrade', controller.gettrade)
+
+// delete DB data
 router.get('/clear', controller.clear)
 
 

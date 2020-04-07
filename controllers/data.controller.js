@@ -1,10 +1,20 @@
 var Data = require('../models/data.model')
+var Trade = require('../models/trade.model')
 var Web3 = require('web3');
 var SeigniorageABI = require('../JSON/Seigniorage.json')
 var StableTokenABI = require('../JSON/StableToken.json')
 var VolatileTokenABI = require('../JSON/VolatileToken.json')
 
-const { cutString, thousands,weiToNTY, weiToMNTY, weiToNUSD, mntyToWei, nusdToWei, decShift } = require('../util/help')
+const {
+  cutString,
+  thousands,
+  weiToNTY,
+  weiToMNTY,
+  weiToNUSD,
+  mntyToWei,
+  nusdToWei,
+  decShift
+} = require('../util/help')
 
 const web3 = new Web3(new Web3.providers.WebsocketProvider("wss://ws.nexty.io"))
 
@@ -12,19 +22,48 @@ let Seigniorage = new web3.eth.Contract(SeigniorageABI, '0x000000000000000000000
 let VolatileToken = new web3.eth.Contract(VolatileTokenABI, '0x0000000000000000000000000000000000034567');
 let StableToken = new web3.eth.Contract(StableTokenABI, '0x0000000000000000000000000000000000045678');
 
+module.exports.trade = async function (req, res) {
+  web3.eth.subscribe('newBlockHeaders', function (error, new_block) {
+    web3.eth.getBlock(28588311, true, function (error, result) {
+      if (!error) {
+        console.log(result)
+        let time = result.timestamp
+        var date = new Date(time * 1000);
+        var day = date.getDate();
+        var month = date.getMonth();
+        var hours = date.getHours();
+        var minutes = "0" + date.getMinutes();
+        var seconds = "0" + date.getSeconds();
+        var formattedTime = day + '-' + ("0" + month + 1).slice(-2) + ' ' + hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
+        if (result != null && result.transactions != null) {
+          result.transactions.forEach(function (e) {
+            let id = e.input.slice(2, 10);
+            let para = '0x' + e.input.slice(11);
+            if (id === "7ca3c7c7") {
+              var decode = web3.eth.abi.decodeParameters(['bytes32', 'uint256', 'uint256', 'bytes32'], para);
+              Trade.create({
+                status: true,
+                address: e.from,
+                to: e.to,
+                haveAmount: weiToMNTY(decode["1"]) + ' MNTY',
+                wantAnount: weiToNUSD(decode["2"]) + ' NewSD',
+                blockNumber: new_block.number,
+                time: formattedTime
+              }, function (err) {
+                if (err) return handleError(err);
+              });
+            }
+          })
+        }
+      }
+    })
+  })
+}
+
+
 module.exports.block = async function (req, res) {
   var cursor = 26500000
 
-  getTime = (time) => {
-    var date = new Date(time * 1000);
-    var day = date.getDate();
-    var month = date.getMonth();
-    var hours = date.getHours();
-    var minutes = "0" + date.getMinutes();
-    var seconds = "0" + date.getSeconds();
-    var formattedTime = day + '-' + ("0" + month + 1).slice(-2) + ' ' + hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
-    return formattedTime
-  }
   scanBlock = async (_from_block, _to_block) => {
     var e1 = new Promise((resolve, reject) => {
       Seigniorage.getPastEvents('Propose', {
@@ -609,7 +648,7 @@ module.exports.block = async function (req, res) {
       })
     })
 
-    Promise.all([e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15])
+    Promise.all([e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15])
       .then(data => {
         if (data[0] == null && data[1] == null && data[2] == null && data[3] == null && data[4] == null && data[5] == null && data[6] == null && data[7] == null && data[8] == null && data[9] == null && data[10] == null && data[11] == null && data[12] == null && data[13] == null && data[14] == null) {
           console.log('aloooo?')
@@ -669,6 +708,8 @@ module.exports.block = async function (req, res) {
   })
 }
 
+
+
 module.exports.show = async function (req, res) {
   var show = await Data.find({
     status: true,
@@ -677,6 +718,7 @@ module.exports.show = async function (req, res) {
   })
   res.json(show)
 }
+
 module.exports.preemptive = async function (req, res) {
   var show = await Data.find({
     status: true,
@@ -742,4 +784,11 @@ module.exports.clear = async function (req, res) {
     if (err) console.log(err)
   })
   res.send('da xoa DB')
+}
+
+module.exports.gettrade = async function (req, res) {
+  var show = await Trade.find({}).limit(40).sort({
+    blockNumber: -1
+  })
+  res.json(show)
 }

@@ -47,7 +47,7 @@ module.exports.trade = async function (req, res) {
                 to: e.to,
                 haveAmount: weiToMNTY(decode["1"]) + ' MNTY',
                 wantAnount: weiToNUSD(decode["2"]) + ' NewSD',
-                blockNumber: new_block.number,
+                number: new_block.number,
                 time: formattedTime
               }, function (err) {
                 if (err) return handleError(err);

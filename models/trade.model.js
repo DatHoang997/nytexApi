@@ -2,6 +2,7 @@ var mongoose = require('mongoose');
 
 let tradeSchema = new mongoose.Schema({
     status: false,
+    index: String,
     address: String,
     to: String,
     haveAmount: String,

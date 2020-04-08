@@ -46,7 +46,7 @@ module.exports.trade = async function (req, res) {
               let id = e.input.slice(2, 10);
               let para = '0x' + e.input.slice(10);
 
-              if (id === "7ca3c7c7") { //trade(bytes32,uint256,uint256,bytes32)
+              if (id === "7ca3c7c7") { //trade( index bytes32,uint256,uint256,bytes32)
                 var decode = web3.eth.abi.decodeParameters(['bytes32', 'uint256', 'uint256', 'bytes32'], para);
                 if (e.to == 0x0000000000000000000000000000000000034567) {
                   Trade.create({
@@ -79,7 +79,7 @@ module.exports.trade = async function (req, res) {
               } else if (id == "f318722b") { //calcOrderID(address,bytes32)
                 var decode = web3.eth.abi.decodeParameters(['address', 'bytes32'], para);
 
-              } else if (id == "43271d79") { //cancel(bool,bytes32)
+              } else if (id == "43271d79") { //cancel(bool, ID bytes32)
                 var decode = web3.eth.abi.decodeParameters(['bool', 'bytes32'], para);
 
               }

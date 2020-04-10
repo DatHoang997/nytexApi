@@ -23,7 +23,7 @@ let VolatileToken = new web3.eth.Contract(VolatileTokenABI, '0x00000000000000000
 let StableToken = new web3.eth.Contract(StableTokenABI, '0x0000000000000000000000000000000000045678');
 
 module.exports.trade = async function (req, res) {
-  var cursor = 31955000
+  var cursor = 28588011
   scanBlock = async (_from_block, _to_block) => {
     for (let i = _from_block; i < _to_block; i++) {
       Trade.create({
@@ -851,7 +851,7 @@ module.exports.clear = async function (req, res) {
 }
 
 module.exports.gettrade = async function (req, res) {
-  var show = await Trade.find({}).limit(40).sort({
+  var show = await Trade.find({st}).limit(40).sort({
     blockNumber: -1
   })
   res.json(show)

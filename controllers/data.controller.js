@@ -16,7 +16,7 @@ const {
   nusdToWei,
   decShift
 } = require('../util/help')
-var cursor = 32171952
+
 
 const web3 = new Web3(new Web3.providers.WebsocketProvider("wss://ws.nexty.io"))
 
@@ -25,6 +25,7 @@ let VolatileToken = new web3.eth.Contract(VolatileTokenABI, '0x00000000000000000
 let StableToken = new web3.eth.Contract(StableTokenABI, '0x0000000000000000000000000000000000045678');
 
 module.exports.trade = async function (req, res) {
+  var cursor = 32171952
   scanBlock = async (_from_block, _to_block) => {
     for (let i = _from_block; i < _to_block; i++) {
       Trade.find({
@@ -217,8 +218,7 @@ module.exports.trade = async function (req, res) {
 }
 
 module.exports.block = async function (req, res) {
-
-
+  var cursor = 32171952
   scanBlock = async (_from_block, _to_block) => {
     var e1 = new Promise((resolve, reject) => {
       Seigniorage.getPastEvents('Propose', {

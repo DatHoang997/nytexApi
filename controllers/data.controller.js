@@ -942,7 +942,7 @@ module.exports.clear = async function (req, res) {
 }
 
 module.exports.gettoptrade = async function (req, res) {
-  var show = await Trade.find({}).limit(40).sort({
+  var show = await Trade.find({status:'order'}).limit(40).sort({
     blockNumber: -1
   })
   res.json(show)

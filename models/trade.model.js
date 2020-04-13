@@ -1,13 +1,15 @@
 var mongoose = require('mongoose');
 
 let tradeSchema = new mongoose.Schema({
-    status: false,
-    index: String,
+    status: String,
     address: String,
     to: String,
     haveAmount: String,
-    wantAnount: String,
+    wantAmount: String,
+    haveAmountNow: String,
+    wantAmountNow: String,
     number: Number,
+    orderID : String,
     time: String
 });
 

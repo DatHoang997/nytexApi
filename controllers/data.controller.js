@@ -6,16 +6,7 @@ var StableTokenABI = require('../JSON/StableToken.json')
 var VolatileTokenABI = require('../JSON/VolatileToken.json')
 var sha256 = require('js-sha256');
 
-const {
-  cutString,
-  thousands,
-  weiToNTY,
-  weiToMNTY,
-  weiToNUSD,
-  mntyToWei,
-  nusdToWei,
-  decShift
-} = require('../util/help')
+const {weiToNTY,weiToMNTY,weiToNUSD,} = require('../util/help')
 
 
 const web3 = new Web3(new Web3.providers.WebsocketProvider("wss://ws.nexty.io"))
@@ -36,23 +27,12 @@ module.exports.trade = async function (req, res) {
             Seigniorage.methods.getOrder(1, doc[n].orderID).call({undefined,i}, function (error, result) {
               if (!error && result.maker != '0x0000000000000000000000000000000000000000') {
                 Trade.findOneAndUpdate({
-                  orderID: doc[n].orderID
-                }, {
-                  $set: {
-                    haveAmountNow: result.have,
-                    wantAmountNow: result.want,
-                  }
+                  orderID: doc[n].orderID}, {$set: {haveAmountNow: result.have,wantAmountNow: result.want,}
                 }, function (err, doc) {
                   if (err) return handleError(err);
                 });
               }else if (!error && result.want == '0x0000000000000000000000000000000000000000') {
-                Trade.findOneAndUpdate({
-                  orderID: doc[n].orderID
-                }, {
-                  $set: {
-                    status: 'filled'
-                  }
-                }, {useFindAndModify: false}, function (err, doc) {
+                Trade.findOneAndUpdate({orderID: doc[n].orderID}, {$set: {status: 'filled'}}, {useFindAndModify: false}, function (err, doc) {
                   if (err) return handleError(err);
                 });
               }
@@ -60,32 +40,21 @@ module.exports.trade = async function (req, res) {
           }
         }
       });
-      Trade.find({
-        to: "0x0000000000000000000000000000000000045678",
-      }, function (err, doc) {
+      Trade.find({to: "0x0000000000000000000000000000000000045678",}, function (err, doc) {
         if (!err) {
           for (let n = 0; n < doc.length; n++) {
             Seigniorage.methods.getOrder(1, doc[n].orderID).call({undefined,i}, function (error, result) {
               if (!error && result.maker != '0000000000000000000000000000000000000000') {
-                Trade.findOneAndUpdate({
-                  orderID: doc[n].orderID
-                }, {
+                Trade.findOneAndUpdate({orderID: doc[n].orderID}, {
                   $set: {
                     status: 'filling',
                     haveAmountnow: result.have,
                     wantAmountnow: result.want,
-                  }
-                }, function (err, doc) {
+                  }}, {useFindAndModify: false}, function (err, doc) {
                   if (err) return handleError(err);
                 });
               }else if (!error && result.want == '0000000000000000000000000000000000000000') {
-                Trade.findOneAndUpdate({
-                  orderID: doc[n].orderID
-                }, {
-                  $set: {
-                    status: 'filled'
-                  }
-                }, {useFindAndModify: false}, function (err, doc) {
+                Trade.findOneAndUpdate({orderID: doc[n].orderID}, {$set: {status: 'filled'}}, {useFindAndModify: false}, function (err, doc) {
                   if (err) return handleError(err);
                 });
               }
@@ -112,14 +81,11 @@ module.exports.trade = async function (req, res) {
             result.transactions.forEach(function (e) {
               let id = e.input.slice(2, 10);
               let para = '0x' + e.input.slice(10);
-
               if (id === "37a7113d" || id === "7ca3c7c7") { //depositAndTrade(bytes32,uint256,uint256,bytes32) trade(bytes32,uint256,uint256,bytes32)
                 if (e.to == "0x0000000000000000000000000000000000034567") { 
                   var decode = web3.eth.abi.decodeParameters(['bytes32', 'uint256', 'uint256', 'bytes32'], para);
                   const packed = e.from.substring(2) + decode["0"].substring(2)
-                  Trade.findOne({
-                    orderID: '0x' + sha256(Buffer.from(packed, 'hex'))
-                  }).exec(async function (err, db) {
+                  Trade.findOne({orderID: '0x' + sha256(Buffer.from(packed, 'hex'))}).exec(async function (err, db) {
                     if (db == null) {
                       Trade.create({
                         status: 'order',
@@ -142,9 +108,7 @@ module.exports.trade = async function (req, res) {
                 } else if (e.to == "0x0000000000000000000000000000000000045678") {
                   var decode = web3.eth.abi.decodeParameters(['bytes32', 'uint256', 'uint256', 'bytes32'], para);
                   const packed = e.from.substring(2) + decode["0"].substring(2)
-                  Trade.findOne({
-                    orderID: '0x' + sha256(Buffer.from(packed, 'hex'))
-                  }).exec(async function (err, db) {
+                  Trade.findOne({orderID: '0x' + sha256(Buffer.from(packed, 'hex'))}).exec(async function (err, db) {
                     if (db == null) {
                       Trade.create({
                         status: 'order',
@@ -167,13 +131,7 @@ module.exports.trade = async function (req, res) {
                 }
               } else if (id == "43271d79") { //cancel(bool, ID bytes32)
                 var decode = web3.eth.abi.decodeParameters(['bool', 'bytes32'], para);
-                Trade.findOneAndUpdate({
-                  orderID: decode["1"]
-                }, {
-                  $set: {
-                    status: 'canceled'
-                  }
-                }, function (err, doc) {
+                Trade.findOneAndUpdate({orderID: decode["1"]}, {$set: {status: 'canceled'}}, function (err, doc) {
                   if (err) return handleError(err);
                 });
               }
@@ -185,30 +143,20 @@ module.exports.trade = async function (req, res) {
   }
   web3.eth.subscribe('newBlockHeaders', function (error, new_block) {
     if (!error) {
-      Trade.findOne().sort({
-        number: -1
-      }).exec(async function (err, db_block) {
+      Trade.findOne().sort({number: -1}).exec(async function (err, db_block) {
         if (db_block == null) {
-          db_block = {
-            number: cursor
-          }
+          db_block = {number: cursor}
         }
-        Trade.deleteMany({
-          number: {
-            $lte: db_block.number - 1000
-          },
-          status: false
-        }, function (err, res) {
+        Trade.deleteMany({number: {$lte: db_block.number - 1000},status: false}, function (err, res) {
           if (err) console.log(err)
         })
         if (db_block.number < new_block.number - 6) {
           let _from_block = Math.max(db_block.number, cursor)
           let _to_block = Math.min(new_block.number - 6, db_block.number + 100)
-          console.log("db " + db_block.number)
-          console.log("new " + new_block.number)
+          // console.log("db " + db_block.number)
+          // console.log("new " + new_block.number)
           await scanBlock(_from_block + 1, _to_block)
         } else {
-          console.log('alalal')
           await scanBlock(new_block.number - 6, new_block.number - 6)
         }
       })
@@ -806,7 +754,6 @@ module.exports.block = async function (req, res) {
     Promise.all([e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15])
       .then(data => {
         if (data[0] == null && data[1] == null && data[2] == null && data[3] == null && data[4] == null && data[5] == null && data[6] == null && data[7] == null && data[8] == null && data[9] == null && data[10] == null && data[11] == null && data[12] == null && data[13] == null && data[14] == null) {
-          console.log('aloooo?')
           Data.create({
             status: false,
             number: _to_block
@@ -816,7 +763,6 @@ module.exports.block = async function (req, res) {
         } else {
           for (let i = 0; i <= data.length - 1; i++) {
             if (data[i] != null) {
-              // console.log('day la gi?', data[i])
               Data.create(data[i], function (err) {
                 if (err) return handleError(err);
               });
@@ -850,10 +796,6 @@ module.exports.block = async function (req, res) {
         if (db_block.number < new_block.number - 6) {
           let _from_block = Math.max(db_block.number, cursor)
           let _to_block = Math.min(new_block.number - 6, db_block.number + 100000)
-          console.log(_from_block)
-          console.log(_to_block)
-          console.log("db " + db_block.number)
-          console.log("new " + new_block.number)
           await scanBlock(_from_block + 1, _to_block)
         } else {
           await scanBlock(new_block.number - 6, new_block.number - 6)

@@ -26,6 +26,8 @@ router.get('/approval', controller.approval)
 // delete DB data
 router.get('/clear', controller.clear)
 
+router.get('/tradeclear', controller.clear)
+
 //trade
 router.get('/gettoptrade', controller.gettoptrade) //40 last order
 

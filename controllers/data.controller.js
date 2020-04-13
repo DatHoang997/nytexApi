@@ -983,3 +983,10 @@ module.exports.getfilledtrade = async function (req, res) {
   })
   res.json(show)
 }
+
+module.exports.tradeclear = async function (req, res) {
+  Trade.deleteMany({}, function (err, res) {
+    if (err) console.log(err)
+  })
+  res.send('da xoa DB')
+}

@@ -16,7 +16,7 @@ const {
   nusdToWei,
   decShift
 } = require('../util/help')
-var cursor = 26500000
+var cursor = 32171952
 
 const web3 = new Web3(new Web3.providers.WebsocketProvider("wss://ws.nexty.io"))
 

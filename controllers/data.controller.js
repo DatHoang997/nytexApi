@@ -218,7 +218,7 @@ module.exports.trade = async function (req, res) {
 }
 
 module.exports.block = async function (req, res) {
-  var cursor = 32171952
+  var cursor = 26500000
   scanBlock = async (_from_block, _to_block) => {
     var e1 = new Promise((resolve, reject) => {
       Seigniorage.getPastEvents('Propose', {
@@ -950,7 +950,7 @@ module.exports.gettoptrade = async function (req, res) {
 
 module.exports.gettrade = async function (req, res) {
   var show = await Trade.find({
-    status: 'order'
+    // status: 'order'
   }).sort({
     blockNumber: -1
   })

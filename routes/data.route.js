@@ -23,11 +23,19 @@ router.get('/slash', controller.slash)
 
 router.get('/approval', controller.approval)
 
-router.get('/gettrade', controller.gettrade)
-
 // delete DB data
 router.get('/clear', controller.clear)
 
+//trade
+router.get('/gettoptrade', controller.gettoptrade) //40 last order
+
+router.get('/gettrade', controller.gettrade) // all order
+
+router.get('/getcanceledtrade', controller.getcanceledtrade) // canceled order
+
+router.get('/getfillingtrade', controller.getfillingtrade) //filling order
+
+router.get('/getfilledtrade', controller.getfilledtrade) // filled order
 
 
 module.exports = router

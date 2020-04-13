@@ -16,6 +16,7 @@ const {
   nusdToWei,
   decShift
 } = require('../util/help')
+var cursor = 26500000
 
 const web3 = new Web3(new Web3.providers.WebsocketProvider("wss://ws.nexty.io"))
 
@@ -24,13 +25,11 @@ let VolatileToken = new web3.eth.Contract(VolatileTokenABI, '0x00000000000000000
 let StableToken = new web3.eth.Contract(StableTokenABI, '0x0000000000000000000000000000000000045678');
 
 module.exports.trade = async function (req, res) {
-  var cursor = 31955000
   scanBlock = async (_from_block, _to_block) => {
     for (let i = _from_block; i < _to_block; i++) {
       Trade.find({
         to: "0x0000000000000000000000000000000000034567",
       }, function (err, doc) {
-        
         if (!err) {
           for (let n = 0; n < doc.length; n++) {
             Seigniorage.methods.getOrder(1, doc[n].orderID).call({undefined,i}, function (error, result) {
@@ -100,7 +99,6 @@ module.exports.trade = async function (req, res) {
       });
       web3.eth.getBlock(i, true, function (error, result) {
         if (!error) {
-          console.log(result)
           let time = result.timestamp
           var date = new Date(time * 1000);
           var day = date.getDate();
@@ -168,7 +166,6 @@ module.exports.trade = async function (req, res) {
                 }
               } else if (id == "43271d79") { //cancel(bool, ID bytes32)
                 var decode = web3.eth.abi.decodeParameters(['bool', 'bytes32'], para);
-                console.log(decode["1"])
                 Trade.findOneAndUpdate({
                   orderID: decode["1"]
                 }, {
@@ -205,7 +202,7 @@ module.exports.trade = async function (req, res) {
         })
         if (db_block.number < new_block.number - 6) {
           let _from_block = Math.max(db_block.number, cursor)
-          let _to_block = Math.min(new_block.number - 6, db_block.number + 10)
+          let _to_block = Math.min(new_block.number - 6, db_block.number + 100)
           console.log("db " + db_block.number)
           console.log("new " + new_block.number)
           await scanBlock(_from_block + 1, _to_block)
@@ -220,7 +217,7 @@ module.exports.trade = async function (req, res) {
 }
 
 module.exports.block = async function (req, res) {
-  var cursor = 26500000
+
 
   scanBlock = async (_from_block, _to_block) => {
     var e1 = new Promise((resolve, reject) => {
@@ -944,14 +941,23 @@ module.exports.clear = async function (req, res) {
   res.send('da xoa DB')
 }
 
-module.exports.gettrade = async function (req, res) {
+module.exports.gettoptrade = async function (req, res) {
   var show = await Trade.find({}).limit(40).sort({
     blockNumber: -1
   })
   res.json(show)
 }
 
-module.exports.gettcanceled = async function (req, res) {
+module.exports.gettrade = async function (req, res) {
+  var show = await Trade.find({
+    status: 'order'
+  }).sort({
+    blockNumber: -1
+  })
+  res.json(show)
+}
+
+module.exports.getcanceledtrade = async function (req, res) {
   var show = await Trade.find({
     status: 'canceled'
   }).sort({
@@ -960,7 +966,7 @@ module.exports.gettcanceled = async function (req, res) {
   res.json(show)
 }
 
-module.exports.gettrade = async function (req, res) {
+module.exports.getfillingtrade = async function (req, res) {
   var show = await Trade.find({
     status: 'filling'
   }).sort({
@@ -969,7 +975,7 @@ module.exports.gettrade = async function (req, res) {
   res.json(show)
 }
 
-module.exports.gettrade = async function (req, res) {
+module.exports.getfilledtrade = async function (req, res) {
   var show = await Trade.find({
     status: 'filled'
   }).sort({

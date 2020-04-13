@@ -950,7 +950,7 @@ module.exports.gettoptrade = async function (req, res) {
 
 module.exports.gettrade = async function (req, res) {
   var show = await Trade.find({
-    // status: 'order'
+    status: 'order'
   }).sort({
     blockNumber: -1
   })

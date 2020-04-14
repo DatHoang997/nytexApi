@@ -153,7 +153,7 @@ module.exports.trade = async function (req, res) {
         })
         if (db_block.number < new_block.number - 6) {
           let _from_block = Math.max(db_block.number, cursor)
-          let _to_block = Math.min(new_block.number - 6, db_block.number + 1000)
+          let _to_block = Math.min(new_block.number - 6, db_block.number + 200)
           console.log("db " + db_block.number)
           console.log("new " + new_block.number)
           await scanBlock(_from_block + 1, _to_block)

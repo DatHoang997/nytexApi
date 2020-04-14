@@ -16,7 +16,7 @@ let VolatileToken = new web3.eth.Contract(VolatileTokenABI, '0x00000000000000000
 let StableToken = new web3.eth.Contract(StableTokenABI, '0x0000000000000000000000000000000000045678');
 
 module.exports.trade = async function (req, res) {
-  var cursor = 32171952
+  var cursor = 26500000
   scanBlock = async (_from_block, _to_block) => {
     for (let i = _from_block; i < _to_block; i++) {
       Trade.find({
@@ -153,8 +153,8 @@ module.exports.trade = async function (req, res) {
         if (db_block.number < new_block.number - 6) {
           let _from_block = Math.max(db_block.number, cursor)
           let _to_block = Math.min(new_block.number - 6, db_block.number + 100)
-          // console.log("db " + db_block.number)
-          // console.log("new " + new_block.number)
+          console.log("db " + db_block.number)
+          console.log("new " + new_block.number)
           await scanBlock(_from_block + 1, _to_block)
         } else {
           await scanBlock(new_block.number - 6, new_block.number - 6)

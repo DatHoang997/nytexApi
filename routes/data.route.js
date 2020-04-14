@@ -29,15 +29,13 @@ router.get('/clear', controller.clear)
 router.get('/tradeclear', controller.tradeclear)
 
 //trade
-router.get('/gettoptrade', controller.gettoptrade) //40 last order
+router.get('/gettoptrade', controller.gettoptrade) 
 
-router.get('/gettrade', controller.gettrade) // all order
+router.get('/get-open-history', controller.getopenhistory) 
 
-router.get('/getcanceledtrade', controller.getcanceledtrade) // canceled order
+router.get('/get-trade-history', controller.gettradehistory) 
 
-router.get('/getfillingtrade', controller.getfillingtrade) //filling order
-
-router.get('/getfilledtrade', controller.getfilledtrade) // filled order
+router.get('/get-open-order', controller.getopenorder) 
 
 
 module.exports = router

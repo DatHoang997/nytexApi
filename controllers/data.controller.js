@@ -62,7 +62,7 @@ module.exports.trade = async function (req, res) {
       Trade.create({status: 'false', number: i}, function (err) {
         if (err) return handleError(err);
       });
-      web3.eth.getBlock(i, true, function (error, result) { //31945638
+      web3.eth.getBlock(i, true, function (error, result) { //31945638 
         if (!error) {
           // console.log(result)
           let time = result.timestamp
@@ -930,41 +930,34 @@ module.exports.gettoptrade = async function (req, res) {
   res.json(show)
 }
 
-module.exports.gettrade = async function (req, res) {
+module.exports.getopenorder = async function (req, res) {
   var show = await Trade.find({
-    status: 'order'
+    $or: [ { status: 'order' }, { status: 'filling' } ]
   }).sort({
     blockNumber: -1
   })
   res.json(show)
 }
 
-module.exports.getcanceledtrade = async function (req, res) {
+module.exports.getopenhistory = async function (req, res) {
   var show = await Trade.find({
-    status: 'canceled'
+    $or: [ { status: 'canceled' }, { status: 'filled' }, { status: 'order' } ]
   }).sort({
     blockNumber: -1
   })
   res.json(show)
 }
 
-module.exports.getfillingtrade = async function (req, res) {
+module.exports.gettradehistory = async function (req, res) {
   var show = await Trade.find({
-    status: 'filling'
+    $or: [ { status: 'filling' }, { status: 'filled' } ]
   }).sort({
     blockNumber: -1
   })
   res.json(show)
 }
 
-module.exports.getfilledtrade = async function (req, res) {
-  var show = await Trade.find({
-    status: 'filled'
-  }).sort({
-    blockNumber: -1
-  })
-  res.json(show)
-}
+
 
 module.exports.tradeclear = async function (req, res) {
   Trade.deleteMany({}, function (err, res) {

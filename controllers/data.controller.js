@@ -20,16 +20,16 @@ module.exports.trade = async function (req, res) {
   web3.eth.subscribe('newBlockHeaders', function (error, new_block) {
     let i = new_block.number
    console.log(i)
-        Trade.find({to: "0x0000000000000000000000000000000000034567",}, function (err, doc) {
+        Trade.find({to: "0x0000000000000000000000000000000000034567", status: "order"}, function (err, doc) {
           if (!err) {
             for (let n = 0; n < doc.length; n++) {
-              Seigniorage.methods.getOrder(1, doc[n].orderID).call({undefined,i}, function (error, result) {
+              Seigniorage.methods.getOrder(1, doc[n].orderID).call(undefined,i+1, function (error, result) {
                 if (!error && result.maker != '0x0000000000000000000000000000000000000000' && result.want<doc.wantAmount) {
                   Trade.findOneAndUpdate({
                     orderID: doc[n].orderID}, {$set: {haveAmountNow: result.have,wantAmountNow: result.want,}}, function (err, doc) {
                     if (err) return handleError(err);
                   });
-                }else if (!error && result.want == '0x0000000000000000000000000000000000000000') {
+                }else if (!error && result.maker == '0x0000000000000000000000000000000000000000') {
                   Trade.findOneAndUpdate({orderID: doc[n].orderID}, {$set: {status: 'filled'}}, {useFindAndModify: false}, function (err, doc) {
                     if (err) return handleError(err);
                   });
@@ -38,11 +38,11 @@ module.exports.trade = async function (req, res) {
             }
           }
         });
-        Trade.find({to: "0x0000000000000000000000000000000000045678",}, function (err, doc) {
+        Trade.find({to: "0x0000000000000000000000000000000000045678", status: "order"}, function (err, doc) {
           if (!err) {
             for (let n = 0; n < doc.length; n++) {
-              Seigniorage.methods.getOrder(1, doc[n].orderID).call({undefined,i}, function (error, result) {
-                if (!error && result.maker != '0000000000000000000000000000000000000000' && result.want<doc.wantAmount) {
+              Seigniorage.methods.getOrder(1, doc[n].orderID).call(undefined,i+1, function (error, result) {
+                if (!error && result.maker != '0x0000000000000000000000000000000000000000' && result.want<doc.wantAmount) {
                   Trade.findOneAndUpdate({orderID: doc[n].orderID}, {
                     $set: {
                       status: 'filling',
@@ -51,7 +51,7 @@ module.exports.trade = async function (req, res) {
                     }}, {useFindAndModify: false}, function (err, doc) {
                     if (err) return handleError(err);
                   });
-                }else if (!error && result.want   == '0000000000000000000000000000000000000000') {
+                }else if (!error && result.maker  == '0x0000000000000000000000000000000000000000') {
                   Trade.findOneAndUpdate({orderID: doc[n].orderID}, {$set: {status: 'filled'}}, {useFindAndModify: false}, function (err, doc) {
                     if (err) return handleError(err);
                   });
@@ -103,7 +103,7 @@ module.exports.trade = async function (req, res) {
                   } else if (e.to == "0x0000000000000000000000000000000000045678") {
                     var decode = web3.eth.abi.decodeParameters(['bytes32', 'uint256', 'uint256', 'bytes32'], para);
                     const packed = e.from.substring(2) + decode["0"].substring(2)
-                    console.log('0x' + sha256(Buffer.from(packed, 'hex')))
+                    console.log('order'+'0x' + sha256(Buffer.from(packed, 'hex')))
                     Trade.findOne({orderID: '0x' + sha256(Buffer.from(packed, 'hex'))}).exec(async function (err, db) {
                       if (db == null) {
                         Trade.create({
@@ -149,8 +149,6 @@ module.exports.trade = async function (req, res) {
                   } else if (e.to == "0x0000000000000000000000000000000000045678") {
                     var decode = web3.eth.abi.decodeParameters(['bytes32', 'uint256', 'uint256', 'bytes32'], para);
                     const packed = e.from.substring(2) + decode["0"].substring(2)
-                    console.log('aaa'+packed)
-
                     Trade.findOne({orderID: '0x' + sha256(Buffer.from(packed, 'hex'))}).exec(async function (err, db) {
                       if (db == null) {
                         Trade.create({
@@ -172,10 +170,10 @@ module.exports.trade = async function (req, res) {
                   }
                 } else if (id == "43271d79") { //cancel(bool, ID bytes32)
                   var decode = web3.eth.abi.decodeParameters(['bool', 'bytes32'], para);
-                  console.log(decode["1"])
-                  Trade.findOneAndUpdate({orderID: decode["1"]}, {$set: {status: 'canceled'}}, function (err, doc) {
+                  Trade.findOneAndUpdate({orderID: decode["1"]}, {$set: {status: 'canceled'}}, {useFindAndModify: false}, function (err, doc) {
                     if (err) return handleError(err);
-                  });
+                    console.log('cancel',decode["1"] )
+                  });;
                 }
               })
             }

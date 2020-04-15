@@ -5,7 +5,7 @@ var SeigniorageABI = require('../JSON/Seigniorage.json')
 var StableTokenABI = require('../JSON/StableToken.json')
 var VolatileTokenABI = require('../JSON/VolatileToken.json')
 var sha256 = require('js-sha256');
-var current_new_block
+
 const {weiToNTY,weiToMNTY,weiToNUSD,} = require('../util/help')
 
 
@@ -16,7 +16,7 @@ let VolatileToken = new web3.eth.Contract(VolatileTokenABI, '0x00000000000000000
 let StableToken = new web3.eth.Contract(StableTokenABI, '0x0000000000000000000000000000000000045678');
 
 module.exports.trade = async function (req, res) {
-  // var cursor = 32214935
+  var cursor = 3217210
   scanBlock = async (_from_block, _to_block) => {
     for (let i = _from_block; i < _to_block; i++) {
       Trade.find({to: "0x0000000000000000000000000000000000034567",}, function (err, doc) {
@@ -25,12 +25,7 @@ module.exports.trade = async function (req, res) {
             Seigniorage.methods.getOrder(1, doc[n].orderID).call({undefined,i}, function (error, result) {
               if (!error && result.maker != '0x0000000000000000000000000000000000000000' && result.want<doc.wantAmount) {
                 Trade.findOneAndUpdate({
-                  orderID: doc[n].orderID}, {
-                    $set: {
-                    status: 'filling',
-                    haveAmountnow: result.have,
-                    wantAmountnow: result.want,
-                  }}, {useFindAndModify: false}, function (err, doc) {
+                  orderID: doc[n].orderID}, {$set: {haveAmountNow: result.have,wantAmountNow: result.want,}}, function (err, doc) {
                   if (err) return handleError(err);
                 });
               }else if (!error && result.want == '0x0000000000000000000000000000000000000000') {
@@ -42,7 +37,6 @@ module.exports.trade = async function (req, res) {
           }
         }
       });
-
       Trade.find({to: "0x0000000000000000000000000000000000045678",}, function (err, doc) {
         if (!err) {
           for (let n = 0; n < doc.length; n++) {
@@ -65,8 +59,10 @@ module.exports.trade = async function (req, res) {
           }
         }
       });
-
-      web3.eth.getBlock(i, true, function (error, result) {
+      Trade.create({status: 'false', number: i}, function (err) {
+        if (err) return handleError(err);
+      });
+      web3.eth.getBlock(i, true, function (error, result) { //31945638 
         if (!error) {
           // console.log(result)
           let time = result.timestamp
@@ -171,7 +167,7 @@ module.exports.trade = async function (req, res) {
                         if (err) return handleError(err);
                       });
                     }
-                  })  
+                  })
                 }
               } else if (id == "43271d79") { //cancel(bool, ID bytes32)
                 var decode = web3.eth.abi.decodeParameters(['bool', 'bytes32'], para);
@@ -184,61 +180,30 @@ module.exports.trade = async function (req, res) {
           }
         }
       });
-
-      // Trade.create({status: 'false', number: i}, function (err) {
-      //   if (err) return handleError(err);
-      // });
     }
   }
-
   web3.eth.subscribe('newBlockHeaders', function (error, new_block) {
     if (!error) {
-      // current_new_block = new_block.number
-      // Trade.findOne().sort({number: -1}).exec(async function (err, db_block) {
-      //   if (db_block == null) {
-      //     db_block = {number: cursor}
-      //   }
-      //   Trade.deleteMany({number: {$lte: db_block.number - 1000},status: 'false'}, function (err, res) {
-      //     if (err) console.log(err)
-      //   })
-      //   console.log("New block", current_new_block,db_block.number, scanning_old_blocks)
-      //   if (db_block.number < new_block.number - 7) {
-      //     console.log('a')
-      //     if (!scanning_old_blocks) scanOldBlock()
-      //     scanning_old_blocks = true
-      //   } else {
-      //     scanning_old_blocks = false
-          scanBlock(new_block.number - 6, new_block.number - 6)
-      //     console.log('aloaoaoao')
-      //   }
-      // })
+      Trade.findOne().sort({number: -1}).exec(async function (err, db_block) {
+        if (db_block == null) {
+          db_block = {number: cursor}
+        }
+        Trade.deleteMany({number: {$lte: db_block.number - 1000},status: 'false'}, function (err, res) {
+          if (err) console.log(err)
+        })
+        if (db_block.number < new_block.number - 6) {
+          let _from_block = Math.max(db_block.number, cursor)
+          let _to_block = Math.min(new_block.number - 6, db_block.number + 200)
+          console.log("db " + db_block.number)
+          console.log("new " + new_block.number)
+          await scanBlock(_from_block + 1, _to_block)
+        } else {
+          await scanBlock(new_block.number - 6, new_block.number - 6)
+        }
+      })
     }
   })
-
-  // async function scanOldBlock() {
-  //   console.log('b')
-  //   Trade.findOne().sort({number: -1}).exec(async function (err, db_block) {
-  //     if (db_block == null) {
-  //       db_block = {number: cursor}
-  //     }
-  //     Trade.deleteMany({number: {$lte: db_block.number - 1000},status: 'false'}, function (err, res) {
-  //       if (err) console.log(err)
-  //     })
-  //     if (db_block.number < current_new_block - 7) {
-  //       let _from_block = Math.max(db_block.number, cursor)
-  //       let _to_block = Math.min(current_new_block - 6, db_block.number + 50)
-  //       console.log("db " + db_block.number)
-  //       console.log("new " + current_new_block)
-  //       console.log("from " + _from_block)
-  //       console.log("to " + _to_block)
-  //       await scanBlock(_from_block + 1, _to_block)
-  //       scanOldBlock()
-  //     }
-  //   })
-  // }
 }
-
-
 
 module.exports.block = async function (req, res) {
   var cursor = 26500000
@@ -991,6 +956,8 @@ module.exports.gettradehistory = async function (req, res) {
   })
   res.json(show)
 }
+
+
 
 module.exports.tradeclear = async function (req, res) {
   Trade.deleteMany({}, function (err, res) {

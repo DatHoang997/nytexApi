@@ -20,46 +20,6 @@ module.exports.trade = async function (req, res) {
   web3.eth.subscribe('newBlockHeaders', function (error, new_block) {
     let i = new_block.number
    console.log(i)
-        Trade.find({to: "0x0000000000000000000000000000000000034567", status: "order"}, function (err, doc) {
-          if (!err) {
-            for (let n = 0; n < doc.length; n++) {
-              Seigniorage.methods.getOrder(1, doc[n].orderID).call(undefined,i+1, function (error, result) {
-                if (!error && result.maker != '0x0000000000000000000000000000000000000000' && result.want<doc.wantAmount) {
-                  Trade.findOneAndUpdate({
-                    orderID: doc[n].orderID}, {$set: {haveAmountNow: result.have,wantAmountNow: result.want,}}, function (err, doc) {
-                    if (err) return handleError(err);
-                  });
-                }else if (!error && result.maker == '0x0000000000000000000000000000000000000000') {
-                  Trade.findOneAndUpdate({orderID: doc[n].orderID}, {$set: {status: 'filled'}}, {useFindAndModify: false}, function (err, doc) {
-                    if (err) return handleError(err);
-                  });
-                }
-              });
-            }
-          }
-        });
-        Trade.find({to: "0x0000000000000000000000000000000000045678", status: "order"}, function (err, doc) {
-          if (!err) {
-            for (let n = 0; n < doc.length; n++) {
-              Seigniorage.methods.getOrder(1, doc[n].orderID).call(undefined,i+1, function (error, result) {
-                if (!error && result.maker != '0x0000000000000000000000000000000000000000' && result.want<doc.wantAmount) {
-                  Trade.findOneAndUpdate({orderID: doc[n].orderID}, {
-                    $set: {
-                      status: 'filling',
-                      haveAmountnow: result.have,
-                      wantAmountnow: result.want,
-                    }}, {useFindAndModify: false}, function (err, doc) {
-                    if (err) return handleError(err);
-                  });
-                }else if (!error && result.maker  == '0x0000000000000000000000000000000000000000') {
-                  Trade.findOneAndUpdate({orderID: doc[n].orderID}, {$set: {status: 'filled'}}, {useFindAndModify: false}, function (err, doc) {
-                    if (err) return handleError(err);
-                  });
-                }
-              });
-            }
-          }
-        });
         Trade.create({status: 'false', number: i}, function (err) {
           if (err) return handleError(err);
         });
@@ -176,6 +136,46 @@ module.exports.trade = async function (req, res) {
                   });;
                 }
               })
+            }
+          }
+        });
+        Trade.find({to: "0x0000000000000000000000000000000000034567", status: "order"}, function (err, doc) {
+          if (!err) {
+            for (let n = 0; n < doc.length; n++) {
+              Seigniorage.methods.getOrder(1, doc[n].orderID).call(undefined,i-1, function (error, result) {
+                if (!error && result.maker != '0x0000000000000000000000000000000000000000' && result.want<doc.wantAmount) {
+                  Trade.findOneAndUpdate({
+                    orderID: doc[n].orderID}, {$set: {haveAmountNow: result.have,wantAmountNow: result.want,}}, function (err, doc) {
+                    if (err) return handleError(err);
+                  });
+                }else if (!error && result.maker == '0x0000000000000000000000000000000000000000') {
+                  Trade.findOneAndUpdate({orderID: doc[n].orderID}, {$set: {status: 'filled'}}, {useFindAndModify: false}, function (err, doc) {
+                    if (err) return handleError(err);
+                  });
+                }
+              });
+            }
+          }
+        });
+        Trade.find({to: "0x0000000000000000000000000000000000045678", status: "order"}, function (err, doc) {
+          if (!err) {
+            for (let n = 0; n < doc.length; n++) {
+              Seigniorage.methods.getOrder(1, doc[n].orderID).call(undefined,i-1, function (error, result) {
+                if (!error && result.maker != '0x0000000000000000000000000000000000000000' && result.want<doc.wantAmount) {
+                  Trade.findOneAndUpdate({orderID: doc[n].orderID}, {
+                    $set: {
+                      status: 'filling',
+                      haveAmountnow: result.have,
+                      wantAmountnow: result.want,
+                    }}, {useFindAndModify: false}, function (err, doc) {
+                    if (err) return handleError(err);
+                  });
+                }else if (!error && result.maker  == '0x0000000000000000000000000000000000000000') {
+                  Trade.findOneAndUpdate({orderID: doc[n].orderID}, {$set: {status: 'filled'}}, {useFindAndModify: false}, function (err, doc) {
+                    if (err) return handleError(err);
+                  });
+                }
+              });
             }
           }
         });

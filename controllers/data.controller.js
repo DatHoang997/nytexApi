@@ -16,7 +16,7 @@ let VolatileToken = new web3.eth.Contract(VolatileTokenABI, '0x00000000000000000
 let StableToken = new web3.eth.Contract(StableTokenABI, '0x0000000000000000000000000000000000045678');
 
 module.exports.trade = async function (req, res) {
-  var cursor = 3217210
+  var cursor = 32214930
   scanBlock = async (_from_block, _to_block) => {
     for (let i = _from_block; i < _to_block; i++) {
       Trade.find({to: "0x0000000000000000000000000000000000034567",}, function (err, doc) {

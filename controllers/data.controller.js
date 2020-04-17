@@ -21,7 +21,7 @@ module.exports.trade = async function (req, res) {
   let array = []
   async function scanBlock(i) {
       Trade.find({
-        $or: [ { to: "0x0000000000000000000000000000000000034567" }, {to: "0x0000000000000000000000000000000000045678" }, $or [{ status: 'order' }, { status: 'filling' }] ]
+        $or: [ { to: "0x0000000000000000000000000000000000034567" }, {to: "0x0000000000000000000000000000000000045678" }], $or: [{ status: 'order' }, { status: 'filling' }] 
         }, function (err, doc) {
         if (!err) {
           for (let n = 0; n < doc.length; n++) {

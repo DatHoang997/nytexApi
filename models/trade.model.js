@@ -6,8 +6,8 @@ let tradeSchema = new mongoose.Schema({
     to: String,
     haveAmount: String,
     wantAmount: String,
-    haveAmountnow: String,
-    wantAmountnow: String,
+    haveAmountNow: String,
+    wantAmountNow: String,
     number: Number,
     orderID : String,
     time: String

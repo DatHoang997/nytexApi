@@ -1,3 +1,4 @@
+const url = require('url');
 let Data = require('../models/data.model')
 let Trade = require('../models/trade.model')
 let Web3 = require('web3');

@@ -10,7 +10,7 @@ let tradeSchema = new mongoose.Schema({
     wantAmountNow: String,
     number: Number,
     orderID : String,
-    time: String
+    time: Number
 });
 
 var Trade = mongoose.model('Trade', tradeSchema, 'trade')

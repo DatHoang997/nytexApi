@@ -1,11 +1,12 @@
-var Data = require('../models/data.model')
-var Trade = require('../models/trade.model')
-var Web3 = require('web3');
-var SeigniorageABI = require('../JSON/Seigniorage.json')
-var StableTokenABI = require('../JSON/StableToken.json')
-var VolatileTokenABI = require('../JSON/VolatileToken.json')
-var sha256 = require('js-sha256');
-var current_new_block
+const url = require('url');
+let Data = require('../models/data.model')
+let Trade = require('../models/trade.model')
+let Web3 = require('web3');
+let SeigniorageABI = require('../JSON/Seigniorage.json')
+let StableTokenABI = require('../JSON/StableToken.json')
+let VolatileTokenABI = require('../JSON/VolatileToken.json')
+let sha256 = require('js-sha256');
+let current_new_block
 const {weiToNTY,weiToMNTY,weiToNUSD,} = require('../util/help')
 
 
@@ -16,7 +17,7 @@ let VolatileToken = new web3.eth.Contract(VolatileTokenABI, '0x00000000000000000
 let StableToken = new web3.eth.Contract(StableTokenABI, '0x0000000000000000000000000000000000045678');
 
 module.exports.trade = async function (req, res) {
-  var cursor = 32211000
+  let cursor = 32211000
   let scanning_old_blocks = false
   let array = []
   async function scanBlock(i) {
@@ -49,21 +50,21 @@ module.exports.trade = async function (req, res) {
       web3.eth.getBlock(i, true, function (error, result) {
         if (!error) {
           // console.log(result)
-          let time = result.timestamp
-          var date = new Date(time * 1000);
-          var day = date.getDate();
-          var month = date.getMonth()+1;
-          var hours = date.getHours();
-          var minutes = "0" + date.getMinutes();
-          var seconds = "0" + date.getSeconds();
-          var formattedTime = day + '-' + ("0" + month).slice(-2) + ' ' + hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
+          // let time = result.timestamp
+          // let date = new Date(time * 1000);
+          // let day = date.getDate();
+          // let month = date.getMonth()+1;
+          // let hours = date.getHours();
+          // let minutes = "0" + date.getMinutes();
+          // let seconds = "0" + date.getSeconds();
+          // let formattedTime = day + '-' + ("0" + month).slice(-2) + ' ' + hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
           if (result.transactions != null) {
             result.transactions.forEach(function (e) {
               let id = e.input.slice(2, 10);
               let para = '0x' + e.input.slice(10);
               if (id === "7ca3c7c7") { //depositAndTrade(bytes32,uint256,uint256,bytes32) trade(bytes32,uint256,uint256,bytes32) id === "37a7113d" || 
                 if (e.to == "0x0000000000000000000000000000000000034567") { 
-                  var decode = web3.eth.abi.decodeParameters(['bytes32', 'uint256', 'uint256', 'bytes32'], para);
+                  let decode = web3.eth.abi.decodeParameters(['bytes32', 'uint256', 'uint256', 'bytes32'], para);
                   const packed = e.from.substring(2) + decode["0"].substring(2)
                   Trade.findOne({orderID: '0x' + sha256(Buffer.from(packed, 'hex'))}).exec(async function (err, db) {
                     if (db == null) {
@@ -77,14 +78,14 @@ module.exports.trade = async function (req, res) {
                         wantAmountNow: weiToNUSD(decode["2"]) + ' NewSD',
                         orderID: '0x' + sha256(Buffer.from(packed, 'hex')),
                         number: result.number,
-                        time: formattedTime,
+                        time: result.timestamp
                       }, function (err) {
                         if (err) return handleError(err);
                       });
                     }
                   })
                 } else if (e.to == "0x0000000000000000000000000000000000045678") {
-                  var decode = web3.eth.abi.decodeParameters(['bytes32', 'uint256', 'uint256', 'bytes32'], para);
+                  let decode = web3.eth.abi.decodeParameters(['bytes32', 'uint256', 'uint256', 'bytes32'], para);
                   const packed = e.from.substring(2) + decode["0"].substring(2)
                   console.log('0x' + sha256(Buffer.from(packed, 'hex')))
                   Trade.findOne({orderID: '0x' + sha256(Buffer.from(packed, 'hex'))}).exec(async function (err, db) {
@@ -99,7 +100,7 @@ module.exports.trade = async function (req, res) {
                         wantAmountNow: weiToMNTY(decode["2"]) + ' MNTY',
                         orderID: '0x' + sha256(Buffer.from(packed, 'hex')),
                         number: result.number,
-                        time: formattedTime,
+                        time: result.timestamp
                       }, function (err) {
                         if (err) return handleError(err);
                       });
@@ -109,7 +110,7 @@ module.exports.trade = async function (req, res) {
               }
               else if (id === "37a7113d") { //depositAndTrade(bytes32,uint256,uint256,bytes32) trade(bytes32,uint256,uint256,bytes32) id === "37a7113d" || 
                 if (e.to == "0x0000000000000000000000000000000000034567") { 
-                  var decode = web3.eth.abi.decodeParameters(['bytes32', 'uint256', 'uint256', 'bytes32'], para);
+                  let decode = web3.eth.abi.decodeParameters(['bytes32', 'uint256', 'uint256', 'bytes32'], para);
                   const packed = e.from.substring(2) + decode["0"].substring(2)
                   Trade.findOne({orderID: '0x' + sha256(Buffer.from(packed, 'hex'))}).exec(async function (err, db) {
                     if (db == null) {
@@ -123,14 +124,14 @@ module.exports.trade = async function (req, res) {
                         wantAmountNow: weiToNUSD(decode["2"]) + ' NewSD',
                         orderID: '0x' + sha256(Buffer.from(packed, 'hex')),
                         number: result.number,
-                        time: formattedTime,
+                        time: result.timestamp
                       }, function (err) {
                         if (err) return handleError(err);
                       });
                     }
                   })
                 } else if (e.to == "0x0000000000000000000000000000000000045678") {
-                  var decode = web3.eth.abi.decodeParameters(['bytes32', 'uint256', 'uint256', 'bytes32'], para);
+                  let decode = web3.eth.abi.decodeParameters(['bytes32', 'uint256', 'uint256', 'bytes32'], para);
                   const packed = e.from.substring(2) + decode["0"].substring(2)
                   console.log('aaa'+packed)
 
@@ -146,7 +147,7 @@ module.exports.trade = async function (req, res) {
                         wantAmountNow: weiToMNTY(decode["2"]) + ' MNTY',
                         orderID: '0x' + sha256(Buffer.from(packed, 'hex')),
                         number: result.number,
-                        time: formattedTime,
+                        time: result.timestamp
                       }, function (err) {
                         if (err) return handleError(err);
                       });
@@ -154,7 +155,7 @@ module.exports.trade = async function (req, res) {
                   })  
                 }
               } else if (id == "43271d79") { //cancel(bool, ID bytes32)
-                var decode = web3.eth.abi.decodeParameters(['bool', 'bytes32'], para);
+                let decode = web3.eth.abi.decodeParameters(['bool', 'bytes32'], para);
                 console.log(decode["1"])
                 Trade.findOneAndUpdate({orderID: decode["1"]}, {$set: {status: 'canceled'}}, function (err, doc) {
                   if (err) return handleError(err);
@@ -230,9 +231,9 @@ module.exports.trade = async function (req, res) {
 
 
 module.exports.block = async function (req, res) {
-  var cursor = 26500000
+  let cursor = 26500000
   scanBlock = async (_from_block, _to_block) => {
-    var e1 = new Promise((resolve, reject) => {
+    let e1 = new Promise((resolve, reject) => {
       Seigniorage.getPastEvents('Propose', {
         fromBlock: _from_block,
         toBlock: _to_block
@@ -258,13 +259,13 @@ module.exports.block = async function (req, res) {
           web3.eth.getBlock(result['0'].blockNumber, async function (error, result1) {
             if (!error) {
               let time = result1.timestamp
-              var date = new Date(time * 1000);
-              var day = date.getDate();
-              var month = date.getMonth();
-              var hours = date.getHours();
-              var minutes = "0" + date.getMinutes();
-              var seconds = "0" + date.getSeconds();
-              var formattedTime = day + '-' + ("0" + month + 1).slice(-2) + ' ' + hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
+              let date = new Date(time * 1000);
+              let day = date.getDate();
+              let month = date.getMonth();
+              let hours = date.getHours();
+              let minutes = "0" + date.getMinutes();
+              let seconds = "0" + date.getSeconds();
+              let formattedTime = day + '-' + ("0" + month + 1).slice(-2) + ' ' + hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
               let data = {
                 status: true,
                 number: result['0'].blockNumber,
@@ -287,7 +288,7 @@ module.exports.block = async function (req, res) {
       })
     })
 
-    var e2 = new Promise((resolve, reject) => {
+    let e2 = new Promise((resolve, reject) => {
       Seigniorage.getPastEvents('Unlock', {
         fromBlock: _from_block,
         toBlock: _to_block
@@ -313,7 +314,7 @@ module.exports.block = async function (req, res) {
       })
     })
 
-    var e3 = new Promise((resolve, reject) => {
+    let e3 = new Promise((resolve, reject) => {
       Seigniorage.getPastEvents('Slash', {
         fromBlock: _from_block,
         toBlock: _to_block
@@ -343,7 +344,7 @@ module.exports.block = async function (req, res) {
       })
     })
 
-    var e4 = new Promise((resolve, reject) => {
+    let e4 = new Promise((resolve, reject) => {
       Seigniorage.getPastEvents('Revoke', {
         fromBlock: _from_block,
         toBlock: _to_block
@@ -369,7 +370,7 @@ module.exports.block = async function (req, res) {
       })
     })
 
-    var e5 = new Promise((resolve, reject) => {
+    let e5 = new Promise((resolve, reject) => {
       Seigniorage.getPastEvents('Preemptive', {
         fromBlock: _from_block,
         toBlock: _to_block
@@ -407,7 +408,7 @@ module.exports.block = async function (req, res) {
       })
     })
 
-    var e6 = new Promise((resolve, reject) => {
+    let e6 = new Promise((resolve, reject) => {
       Seigniorage.getPastEvents('Absorption', {
         fromBlock: _from_block,
         toBlock: _to_block
@@ -440,7 +441,7 @@ module.exports.block = async function (req, res) {
       })
     })
 
-    var e7 = new Promise((resolve, reject) => {
+    let e7 = new Promise((resolve, reject) => {
       Seigniorage.getPastEvents('Stop', {
         fromBlock: _from_block,
         toBlock: _to_block
@@ -459,7 +460,7 @@ module.exports.block = async function (req, res) {
       })
     })
 
-    var e8 = new Promise((resolve, reject) => {
+    let e8 = new Promise((resolve, reject) => {
       StableToken.getPastEvents('Transfer', {
         fromBlock: _from_block,
         toBlock: _to_block
@@ -480,13 +481,13 @@ module.exports.block = async function (req, res) {
           web3.eth.getBlock(result['0'].blockNumber, async function (error, result1) {
             if (!error) {
               let time = result1.timestamp
-              var date = new Date(time * 1000);
-              var day = date.getDate();
-              var month = date.getMonth();
-              var hours = date.getHours();
-              var minutes = "0" + date.getMinutes();
-              var seconds = "0" + date.getSeconds();
-              var formattedTime = day + '-' + ("0" + month + 1).slice(-2) + ' ' + hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
+              let date = new Date(time * 1000);
+              let day = date.getDate();
+              let month = date.getMonth();
+              let hours = date.getHours();
+              let minutes = "0" + date.getMinutes();
+              let seconds = "0" + date.getSeconds();
+              let formattedTime = day + '-' + ("0" + month + 1).slice(-2) + ' ' + hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
               let data = {
                 status: true,
                 number: result['0'].blockNumber,
@@ -507,7 +508,7 @@ module.exports.block = async function (req, res) {
       })
     })
 
-    var e9 = new Promise((resolve, reject) => {
+    let e9 = new Promise((resolve, reject) => {
       StableToken.getPastEvents('Transfer', {
         fromBlock: _from_block,
         toBlock: _to_block
@@ -537,13 +538,13 @@ module.exports.block = async function (req, res) {
           web3.eth.getBlock(result['0'].blockNumber, async function (error, result1) {
             if (!error) {
               let time = result1.timestamp
-              var date = new Date(time * 1000);
-              var day = date.getDate();
-              var month = date.getMonth();
-              var hours = date.getHours();
-              var minutes = "0" + date.getMinutes();
-              var seconds = "0" + date.getSeconds();
-              var formattedTime = day + '-' + ("0" + month + 1).slice(-2) + ' ' + hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
+              let date = new Date(time * 1000);
+              let day = date.getDate();
+              let month = date.getMonth();
+              let hours = date.getHours();
+              let minutes = "0" + date.getMinutes();
+              let seconds = "0" + date.getSeconds();
+              let formattedTime = day + '-' + ("0" + month + 1).slice(-2) + ' ' + hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
               let data = {
                 status: true,
                 number: result['0'].blockNumber,
@@ -565,7 +566,7 @@ module.exports.block = async function (req, res) {
       })
     })
 
-    var e10 = new Promise((resolve, reject) => {
+    let e10 = new Promise((resolve, reject) => {
       StableToken.getPastEvents('OwnershipTransferred', {
         fromBlock: _from_block,
         toBlock: _to_block
@@ -598,7 +599,7 @@ module.exports.block = async function (req, res) {
       })
     })
 
-    var e11 = new Promise((resolve, reject) => {
+    let e11 = new Promise((resolve, reject) => {
       StableToken.getPastEvents('Approval', {
         fromBlock: _from_block,
         toBlock: _to_block
@@ -637,7 +638,7 @@ module.exports.block = async function (req, res) {
       })
     })
 
-    var e12 = new Promise((resolve, reject) => {
+    let e12 = new Promise((resolve, reject) => {
       VolatileToken.getPastEvents('Transfer', {
         fromBlock: _from_block,
         toBlock: _to_block
@@ -658,13 +659,13 @@ module.exports.block = async function (req, res) {
           web3.eth.getBlock(result['0'].blockNumber, async function (error, result1) {
             if (!error) {
               let time = result1.timestamp
-              var date = new Date(time * 1000);
-              var day = date.getDate();
-              var month = date.getMonth();
-              var hours = date.getHours();
-              var minutes = "0" + date.getMinutes();
-              var seconds = "0" + date.getSeconds();
-              var formattedTime = day + '-' + ("0" + month + 1).slice(-2) + ' ' + hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
+              let date = new Date(time * 1000);
+              let day = date.getDate();
+              let month = date.getMonth();
+              let hours = date.getHours();
+              let minutes = "0" + date.getMinutes();
+              let seconds = "0" + date.getSeconds();
+              let formattedTime = day + '-' + ("0" + month + 1).slice(-2) + ' ' + hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
               let data = {
                 status: true,
                 number: result['0'].blockNumber,
@@ -685,7 +686,7 @@ module.exports.block = async function (req, res) {
       })
     })
 
-    var e13 = new Promise((resolve, reject) => {
+    let e13 = new Promise((resolve, reject) => {
       VolatileToken.getPastEvents('Transfer', {
         fromBlock: _from_block,
         toBlock: _to_block
@@ -715,13 +716,13 @@ module.exports.block = async function (req, res) {
           web3.eth.getBlock(result['0'].blockNumber, async function (error, result1) {
             if (!error) {
               let time = result1.timestamp
-              var date = new Date(time * 1000);
-              var day = date.getDate();
-              var month = date.getMonth();
-              var hours = date.getHours();
-              var minutes = "0" + date.getMinutes();
-              var seconds = "0" + date.getSeconds();
-              var formattedTime = day + '-' + ("0" + month + 1).slice(-2) + ' ' + hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
+              let date = new Date(time * 1000);
+              let day = date.getDate();
+              let month = date.getMonth();
+              let hours = date.getHours();
+              let minutes = "0" + date.getMinutes();
+              let seconds = "0" + date.getSeconds();
+              let formattedTime = day + '-' + ("0" + month + 1).slice(-2) + ' ' + hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
               let data = {
                 status: true,
                 number: result['0'].blockNumber,
@@ -743,7 +744,7 @@ module.exports.block = async function (req, res) {
       })
     })
 
-    var e14 = new Promise((resolve, reject) => {
+    let e14 = new Promise((resolve, reject) => {
       VolatileToken.getPastEvents('OwnershipTransferred', {
         fromBlock: _from_block,
         toBlock: _to_block
@@ -776,7 +777,7 @@ module.exports.block = async function (req, res) {
       })
     })
 
-    var e15 = new Promise((resolve, reject) => {
+    let e15 = new Promise((resolve, reject) => {
       VolatileToken.getPastEvents('Approval', {
         fromBlock: _from_block,
         toBlock: _to_block
@@ -872,7 +873,7 @@ module.exports.block = async function (req, res) {
 
 
 module.exports.show = async function (req, res) {
-  var show = await Data.find({
+  let show = await Data.find({
     status: true,
   }).sort({
     blockNumber: -1
@@ -881,7 +882,7 @@ module.exports.show = async function (req, res) {
 }
 
 module.exports.preemptive = async function (req, res) {
-  var show = await Data.find({
+  let show = await Data.find({
     status: true,
     Event: "Preemptive"
   }).sort({
@@ -891,7 +892,7 @@ module.exports.preemptive = async function (req, res) {
 }
 
 module.exports.propose = async function (req, res) {
-  var show = await Data.find({
+  let show = await Data.find({
     status: true,
     name: "Event: Propose"
   }).sort({
@@ -901,7 +902,7 @@ module.exports.propose = async function (req, res) {
 }
 
 module.exports.transfer = async function (req, res) {
-  var show = await Data.find({
+  let show = await Data.find({
     status: true,
     name: "Event: Transfer"
   }).sort({
@@ -911,7 +912,7 @@ module.exports.transfer = async function (req, res) {
 }
 
 module.exports.absorption = async function (req, res) {
-  var show = await Data.find({
+  let show = await Data.find({
     status: true,
     name: "Event: Absorption"
   }).sort({
@@ -921,7 +922,7 @@ module.exports.absorption = async function (req, res) {
 }
 
 module.exports.slash = async function (req, res) {
-  var show = await Data.find({
+  let show = await Data.find({
     status: true,
     name: "Event: Slash"
   }).sort({
@@ -931,7 +932,7 @@ module.exports.slash = async function (req, res) {
 }
 
 module.exports.approval = async function (req, res) {
-  var show = await Data.find({
+  let show = await Data.find({
     status: true,
     name: "Event: Approval"
   }).sort({
@@ -948,24 +949,39 @@ module.exports.clear = async function (req, res) {
 }
 
 module.exports.gettoptrade = async function (req, res) {
-  var show = await Trade.find({status:'order'}).limit(40).sort({
+  let show = await Trade.find({status:'order'}).limit(40).sort({
     blockNumber: -1
   })
   res.json(show)
 }
 
 module.exports.getopenorder = async function (req, res) {
-  var show = await Trade.find({
+  const queryObject = url.parse(req.url,true).query;
+  let address = queryObject.address
+  let from = parseInt(queryObject.from)
+  let to = parseInt(queryObject.to)
+  
+  let show = await Trade.find({
     $or: [ { status: 'order' }, { status: 'filling' } ]
+    , address : address
+    , time: {$gte: from, $lte: to}
   }).sort({
     blockNumber: -1
   })
+  console.log(show)
   res.json(show)
 }
 
 module.exports.getopenhistory = async function (req, res) {
-  var show = await Trade.find({
-    $or: [ { status: 'canceled' }, { status: 'filled' }, { status: 'order' } ]
+  const queryObject = url.parse(req.url,true).query;
+  let address = queryObject.address
+  let from = parseInt(queryObject.from)
+  let to = parseInt(queryObject.to)
+  
+  let show = await Trade.find({
+    $or: [ { status: 'canceled' }, { status: 'filled' }, { status: 'order' } ],
+    address : address,
+    time: {$gte: from, $lte: to}
   }).sort({
     blockNumber: -1
   })
@@ -973,8 +989,15 @@ module.exports.getopenhistory = async function (req, res) {
 }
 
 module.exports.gettradehistory = async function (req, res) {
-  var show = await Trade.find({
-    $or: [ { status: 'filling' }, { status: 'filled' } ]
+  const queryObject = url.parse(req.url,true).query;
+  let address = queryObject.address
+  let from = parseInt(queryObject.from)
+  let to = parseInt(queryObject.to)
+  
+  let show = await Trade.find({
+    $or: [ { status: 'filling' }, { status: 'filled' } ],
+    address : address,
+    time: {$gte: from, $lte: to}
   }).sort({
     blockNumber: -1
   })

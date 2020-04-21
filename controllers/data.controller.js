@@ -47,7 +47,7 @@ module.exports.trade = async function (req, res) {
                       if (db == null) {
                         Trade.create({
                           status: 'order',
-                          address: e.from,
+                          address: e.from.toLowerCase(),
                           to: e.to,
                           haveAmount: weiToMNTY(decode["1"]) + ' MNTY',
                           wantAmount: weiToNUSD(decode["2"]) + ' NewSD',
@@ -69,7 +69,7 @@ module.exports.trade = async function (req, res) {
                       if (db == null) {
                         Trade.create({
                           status: 'order',
-                          address: e.from,
+                          address: e.from.toLowerCase(),
                           to: e.to,
                           haveAmount: weiToNUSD(decode["1"]) + ' NewSD',
                           wantAmount: weiToMNTY(decode["2"]) + ' MNTY',
@@ -93,7 +93,7 @@ module.exports.trade = async function (req, res) {
                       if (db == null) {
                         Trade.create({
                           status: 'order',
-                          address: e.from,
+                          address: e.from.toLowerCase(),
                           to: e.to,
                           haveAmount: weiToMNTY(decode["1"]) + ' MNTY',
                           wantAmount: weiToNUSD(decode["2"]) + ' NewSD',
@@ -114,7 +114,7 @@ module.exports.trade = async function (req, res) {
                       if (db == null) {
                         Trade.create({
                           status: 'order',
-                          address: e.from,
+                          address: e.from.toLowerCase(),
                           to: e.to,
                           haveAmount: weiToNUSD(decode["1"]) + ' NewSD',
                           wantAmount: weiToMNTY(decode["2"]) + ' MNTY',
@@ -938,7 +938,7 @@ module.exports.getopenorder = async function (req, res) {
   
   let show = await Trade.find({
     $or: [ { status: 'order' }, { status: 'filling' } ]
-    , address : address
+    , address : address.toLowerCase()
     , time: {$gte: from, $lte: to}
   }).sort({
     blockNumber: -1
@@ -955,7 +955,7 @@ module.exports.getopenhistory = async function (req, res) {
   
   let show = await Trade.find({
     $or: [ { status: 'canceled' }, { status: 'filled' }, { status: 'order' } ],
-    address : address,
+    address : address.toLowerCase(),
     time: {$gte: from, $lte: to}
   }).sort({
     blockNumber: -1
@@ -971,7 +971,7 @@ module.exports.gettradehistory = async function (req, res) {
   
   let show = await Trade.find({
     $or: [ { status: 'filling' }, { status: 'filled' } ],
-    address : address,
+    address : address.toLowerCase(),
     time: {$gte: from, $lte: to}
   }).sort({
     blockNumber: -1

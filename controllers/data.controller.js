@@ -21,29 +21,42 @@ let Seigniorage = new web3.eth.Contract(SeigniorageABI, '0x000000000000000000000
 let VolatileToken = new web3.eth.Contract(VolatileTokenABI, '0x0000000000000000000000000000000000034567');
 let StableToken = new web3.eth.Contract(StableTokenABI, '0x0000000000000000000000000000000000045678');
 
-module.exports.candle = async function (req, res) {
+module.exports.candle = function (req, res) {
   let open, close, top, bot
-  // Volume.findOne().sort({
-  //     filledTime: -1
-  //   }),
-  //   function (err, doc) {
-  //     if (doc == null) {
-  //       Trade.find({
-  //         status: 'filled'
-  //       }.sort({
-  //         filledTime: 1
-  //       }), function (err, doc) {
-  //         if (!err) {
-  //           open = parseFloat(doc.price)
+ 
+  Volume.findOne().sort({
+      filledTime: -1
+    }),
+    function (err, doc) {
+      if (doc == null) {
+        Trade.find({
+          status: 'filled'
+        }.sort({
+          filledTime: 1
+        }), function (err, doc) {
+          if (!err) {
+            open = parseFloat(doc.price)
             Trade.find({
-              status: 'false'
+              status: 'filled',
+              filledTime: {
+                $gte: doc.filledTime,
+                $lte: doc.filledTime+900
+              }
             }, function (err, doc1) {
-console.log(doc1.number)
+              let array = []
+              for(let i = 0 ; i < doc1.lenght ; i++) {
+                array.push(doc1[i].price)
+              }
+              top = Math.max.apply(Math, array)
+              bot = Math.min.apply(Math, array)
+              open = doc1[0].price
+              open = doc1[doc1.lenght].price
+              console.log( array, top, bot)
             })
-    //       }
-    //     })
-    //   }
-    // }
+          }
+        })
+      }
+    }
 
 }
 
@@ -201,7 +214,7 @@ module.exports.trade = async function (req, res) {
                       to: e.to,
                       haveAmount: weiToMNTY(decode["1"]) + ' MNTY',
                       wantAmount: weiToNUSD(decode["2"]) + ' NewSD',
-                      price: weiToMNTY(decode["1"])/weiToNUSD(decode["2"]),
+                      price: weiToMNTY(decode["1"]) / weiToNUSD(decode["2"]),
                       haveAmountNow: weiToMNTY(decode["1"]) + ' MNTY',
                       wantAmountNow: weiToNUSD(decode["2"]) + ' NewSD',
                       orderID: '0x' + sha256(Buffer.from(packed, 'hex')),
@@ -227,7 +240,7 @@ module.exports.trade = async function (req, res) {
                       to: e.to,
                       haveAmount: weiToNUSD(decode["1"]) + ' NewSD',
                       wantAmount: weiToMNTY(decode["2"]) + ' MNTY',
-                      price: weiToMNTY(decode["2"])/weiToNUSD(decode["1"]),
+                      price: weiToMNTY(decode["2"]) / weiToNUSD(decode["1"]),
                       haveAmountNow: weiToNUSD(decode["1"]) + ' NewSD',
                       wantAmountNow: weiToMNTY(decode["2"]) + ' MNTY',
                       orderID: '0x' + sha256(Buffer.from(packed, 'hex')),
@@ -254,7 +267,7 @@ module.exports.trade = async function (req, res) {
                       to: e.to,
                       haveAmount: weiToMNTY(decode["1"]) + ' MNTY',
                       wantAmount: weiToNUSD(decode["2"]) + ' NewSD',
-                      price: weiToMNTY(decode["1"])/weiToNUSD(decode["2"]),
+                      price: weiToMNTY(decode["1"]) / weiToNUSD(decode["2"]),
                       haveAmountNow: weiToMNTY(decode["1"]) + ' MNTY',
                       wantAmountNow: weiToNUSD(decode["2"]) + ' NewSD',
                       orderID: '0x' + sha256(Buffer.from(packed, 'hex')),
@@ -281,7 +294,7 @@ module.exports.trade = async function (req, res) {
                       to: e.to,
                       haveAmount: weiToNUSD(decode["1"]) + ' NewSD',
                       wantAmount: weiToMNTY(decode["2"]) + ' MNTY',
-                      price: weiToMNTY(decode["2"])/weiToNUSD(decode["1"]),
+                      price: weiToMNTY(decode["2"]) / weiToNUSD(decode["1"]),
                       haveAmountNow: weiToNUSD(decode["1"]) + ' NewSD',
                       wantAmountNow: weiToMNTY(decode["2"]) + ' MNTY',
                       orderID: '0x' + sha256(Buffer.from(packed, 'hex')),

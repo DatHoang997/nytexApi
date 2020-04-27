@@ -6,11 +6,13 @@ let tradeSchema = new mongoose.Schema({
     to: String,
     haveAmount: String,
     wantAmount: String,
+    price: Number,
     haveAmountNow: String,
     wantAmountNow: String,
     number: Number,
     orderID : String,
-    time: Number
+    time: Number,
+    filledTime: Number
 });
 
 var Trade = mongoose.model('Trade', tradeSchema, 'trade')

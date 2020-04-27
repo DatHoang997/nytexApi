@@ -35,7 +35,9 @@ router.get('/get-open-history', controller.getopenhistory)
 
 router.get('/get-trade-history', controller.gettradehistory) 
 
-router.get('/get-open-order', controller.getopenorder) 
+router.get('/get-open-order', controller.getopenorder)
+
+router.get('/get-lastest-fill', controller.getlastestfill)
 
 
 module.exports = router

@@ -43,6 +43,7 @@ module.exports.trade = async function (req, res) {
                           to: e.to,
                           haveAmount: weiToMNTY(decode["1"]) + ' MNTY',
                           wantAmount: weiToNUSD(decode["2"]) + ' NewSD',
+                          price: weiToMNTY(decode["1"]) / weiToNUSD(decode["2"]),
                           haveAmountNow: weiToMNTY(decode["1"]) + ' MNTY',
                           wantAmountNow: weiToNUSD(decode["2"]) + ' NewSD',
                           orderID: '0x' + sha256(Buffer.from(packed, 'hex')),
@@ -65,6 +66,7 @@ module.exports.trade = async function (req, res) {
                           to: e.to,
                           haveAmount: weiToNUSD(decode["1"]) + ' NewSD',
                           wantAmount: weiToMNTY(decode["2"]) + ' MNTY',
+                          price: weiToMNTY(decode["2"]) / weiToNUSD(decode["1"]),
                           haveAmountNow: weiToNUSD(decode["1"]) + ' NewSD',
                           wantAmountNow: weiToMNTY(decode["2"]) + ' MNTY',
                           orderID: '0x' + sha256(Buffer.from(packed, 'hex')),
@@ -89,6 +91,7 @@ module.exports.trade = async function (req, res) {
                           to: e.to,
                           haveAmount: weiToMNTY(decode["1"]) + ' MNTY',
                           wantAmount: weiToNUSD(decode["2"]) + ' NewSD',
+                          price: weiToMNTY(decode["1"]) / weiToNUSD(decode["2"]),
                           haveAmountNow: weiToMNTY(decode["1"]) + ' MNTY',
                           wantAmountNow: weiToNUSD(decode["2"]) + ' NewSD',
                           orderID: '0x' + sha256(Buffer.from(packed, 'hex')),
@@ -110,6 +113,7 @@ module.exports.trade = async function (req, res) {
                           to: e.to,
                           haveAmount: weiToNUSD(decode["1"]) + ' NewSD',
                           wantAmount: weiToMNTY(decode["2"]) + ' MNTY',
+                          price: weiToMNTY(decode["2"]) / weiToNUSD(decode["1"]),
                           haveAmountNow: weiToNUSD(decode["1"]) + ' NewSD',
                           wantAmountNow: weiToMNTY(decode["2"]) + ' MNTY',
                           orderID: '0x' + sha256(Buffer.from(packed, 'hex')),
@@ -138,7 +142,12 @@ module.exports.trade = async function (req, res) {
               Seigniorage.methods.getOrder(0, doc[n].orderID).call(undefined,i-1, function (error, result) {
                 if (!error && result.maker != '0x0000000000000000000000000000000000000000' && parseFloat(weiToNUSD(result.want))<parseFloat(doc[0].wantAmount.slice(0,-6))) {
                   Trade.findOneAndUpdate({
-                    orderID: doc[n].orderID}, {$set: {haveAmountNow: result.have,wantAmountNow: result.want,}}, function (err, doc) {
+                    orderID: doc[n].orderID}, {
+                      $set: {
+                        haveAmountNow: result.have,
+                        wantAmountNow: result.want,
+                        filledTime: new_block.timestamp
+                      }}, {useFindAndModify: false}, function (err, doc) {
                     if (err) return handleError(err);
                   });
                 }else if (!error && result.maker == '0x0000000000000000000000000000000000000000') {
@@ -161,6 +170,7 @@ module.exports.trade = async function (req, res) {
                       status: 'filling',
                       haveAmountNow: result.have,
                       wantAmountNow: result.want,
+                      filledTime: new_block.timestamp
                     }}, {useFindAndModify: false}, function (err, doc) {
                     if (err) return handleError(err);
                   });
@@ -173,7 +183,6 @@ module.exports.trade = async function (req, res) {
             }
           }
         });
-    
   })
   // web3.eth.subscribe('newBlockHeaders', function (error, new_block) {
   //   if (!error) {
@@ -226,14 +235,6 @@ module.exports.block = async function (req, res) {
           }], result['0'].raw.data, result['0'].raw.topics)
           web3.eth.getBlock(result['0'].blockNumber, async function (error, result1) {
             if (!error) {
-              let time = result1.timestamp
-              let date = new Date(time * 1000);
-              let day = date.getDate();
-              let month = date.getMonth();
-              let hours = date.getHours();
-              let minutes = "0" + date.getMinutes();
-              let seconds = "0" + date.getSeconds();
-              let formattedTime = day + '-' + ("0" + month + 1).slice(-2) + ' ' + hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
               let data = {
                 status: true,
                 number: result['0'].blockNumber,
@@ -245,7 +246,7 @@ module.exports.block = async function (req, res) {
                   param4: 'LockdownExpiration: ' + eventparam[3],
                   param5: 'SlashingRate: ' + eventparam[4]
                 },
-                time: formattedTime
+                time: result1.timestamp
               }
               resolve(data)
             }
@@ -448,14 +449,6 @@ module.exports.block = async function (req, res) {
           }], result['0'].raw.data, result['0'].raw.topics)
           web3.eth.getBlock(result['0'].blockNumber, async function (error, result1) {
             if (!error) {
-              let time = result1.timestamp
-              let date = new Date(time * 1000);
-              let day = date.getDate();
-              let month = date.getMonth();
-              let hours = date.getHours();
-              let minutes = "0" + date.getMinutes();
-              let seconds = "0" + date.getSeconds();
-              let formattedTime = day + '-' + ("0" + month + 1).slice(-2) + ' ' + hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
               let data = {
                 status: true,
                 number: result['0'].blockNumber,
@@ -465,7 +458,7 @@ module.exports.block = async function (req, res) {
                   param2: 'To: ' + eventparam[1],
                   param3: 'Value: ' + weiToNUSD(eventparam[2]) + ' NewSD',
                 },
-                time: formattedTime
+                time: result1.timestamp
               }
               resolve(data)
             }
@@ -505,14 +498,6 @@ module.exports.block = async function (req, res) {
           ], result['0'].raw.data, result['0'].raw.topics)
           web3.eth.getBlock(result['0'].blockNumber, async function (error, result1) {
             if (!error) {
-              let time = result1.timestamp
-              let date = new Date(time * 1000);
-              let day = date.getDate();
-              let month = date.getMonth();
-              let hours = date.getHours();
-              let minutes = "0" + date.getMinutes();
-              let seconds = "0" + date.getSeconds();
-              let formattedTime = day + '-' + ("0" + month + 1).slice(-2) + ' ' + hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
               let data = {
                 status: true,
                 number: result['0'].blockNumber,
@@ -523,7 +508,7 @@ module.exports.block = async function (req, res) {
                   param3: 'Value: ' + weiToMNTY(eventparam[2]) + ' MNTY',
                   param4: 'data: ' + eventparam[3],
                 },
-                time: formattedTime
+                time: result1.timestamp
               }
               resolve(data)
             }
@@ -626,14 +611,6 @@ module.exports.block = async function (req, res) {
           }], result['0'].raw.data, result['0'].raw.topics)
           web3.eth.getBlock(result['0'].blockNumber, async function (error, result1) {
             if (!error) {
-              let time = result1.timestamp
-              let date = new Date(time * 1000);
-              let day = date.getDate();
-              let month = date.getMonth();
-              let hours = date.getHours();
-              let minutes = "0" + date.getMinutes();
-              let seconds = "0" + date.getSeconds();
-              let formattedTime = day + '-' + ("0" + month + 1).slice(-2) + ' ' + hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
               let data = {
                 status: true,
                 number: result['0'].blockNumber,
@@ -643,7 +620,7 @@ module.exports.block = async function (req, res) {
                   param2: 'To: ' + eventparam[1],
                   param3: 'Value: ' + weiToMNTY(eventparam[2]) + ' MNTY',
                 },
-                time: formattedTime
+                time: result1.timestamp
               }
               resolve(data)
             }
@@ -683,14 +660,6 @@ module.exports.block = async function (req, res) {
           ], result['0'].raw.data, result['0'].raw.topics)
           web3.eth.getBlock(result['0'].blockNumber, async function (error, result1) {
             if (!error) {
-              let time = result1.timestamp
-              let date = new Date(time * 1000);
-              let day = date.getDate();
-              let month = date.getMonth();
-              let hours = date.getHours();
-              let minutes = "0" + date.getMinutes();
-              let seconds = "0" + date.getSeconds();
-              let formattedTime = day + '-' + ("0" + month + 1).slice(-2) + ' ' + hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
               let data = {
                 status: true,
                 number: result['0'].blockNumber,
@@ -701,7 +670,7 @@ module.exports.block = async function (req, res) {
                   param3: 'Value: ' + weiToMNTY(eventparam[2]) + ' MNTY',
                   param4: 'data: ' + eventparam[3],
                 },
-                time: formattedTime
+                time: result1.timestamp
               }
               resolve(data)
             }
@@ -968,6 +937,15 @@ module.exports.gettradehistory = async function (req, res) {
     time: {$gte: from, $lte: to}
   }).sort({
     blockNumber: -1
+  })
+  res.json(show)
+}
+
+module.exports.getlastestfill = async function (req, res) {
+  let show = await Trade.find({
+    status: 'filled'
+  }).limit(1).sort({
+    filledTime: -1
   })
   res.json(show)
 }

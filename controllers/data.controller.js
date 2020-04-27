@@ -1,7 +1,7 @@
 const url = require('url');
 let Data = require('../models/data.model')
 let Trade = require('../models/trade.model')
-let Volume = require('../models/volume.model')
+let Candle = require('../models/candle.model')
 let Web3 = require('web3');
 let SeigniorageABI = require('../JSON/Seigniorage.json')
 let StableTokenABI = require('../JSON/StableToken.json')
@@ -22,9 +22,9 @@ let VolatileToken = new web3.eth.Contract(VolatileTokenABI, '0x00000000000000000
 let StableToken = new web3.eth.Contract(StableTokenABI, '0x0000000000000000000000000000000000045678');
 
 module.exports.candle = function (req, res) {
-  let open, close, top, bot
- 
-  Volume.findOne().sort({
+  let open, close, top, bot, next
+
+  Candle.findOne().sort({
       filledTime: -1
     }),
     function (err, doc) {
@@ -33,25 +33,25 @@ module.exports.candle = function (req, res) {
           status: 'filled'
         }.sort({
           filledTime: 1
-        }), function (err, doc) {
+        }), function (err, doc1) {
           if (!err) {
-            open = parseFloat(doc.price)
+            open = doc1[0].price
+            next = open
             Trade.find({
               status: 'filled',
               filledTime: {
-                $gte: doc.filledTime,
-                $lte: doc.filledTime+900
+                $gte: doc1[0].filledTime,
+                $lte: doc1[0].filledTime + 900
               }
-            }, function (err, doc1) {
+            }, function (err, doc2) {
               let array = []
-              for(let i = 0 ; i < doc1.lenght ; i++) {
-                array.push(doc1[i].price)
+              for (let i = 0; i < doc2.lenght; i++) {
+                array.push(doc2[i].price)
               }
               top = Math.max.apply(Math, array)
               bot = Math.min.apply(Math, array)
-              open = doc1[0].price
-              open = doc1[doc1.lenght].price
-              console.log( array, top, bot)
+              close = doc1[doc1.lenght].price
+              // console.log(array, top, bot)
             })
           }
         })
@@ -67,7 +67,7 @@ module.exports.trade = async function (req, res) {
   let timestamp = 0
   let open = 0
   async function scanBlock(i) {
-    Volume.findOne().sort({
+    Candle.findOne().sort({
       filledTime: -1
     }).exec(async function (err, doc) {
       if (doc == null) {
@@ -81,7 +81,7 @@ module.exports.trade = async function (req, res) {
         filledTime: -1
       }), function (err, doc) {
         if (!err) {
-          Volume.create({
+          Candle.create({
             open: doc.wantAmount,
             close: doc.wantAmount,
             top: doc.wantAmount,
@@ -101,7 +101,7 @@ module.exports.trade = async function (req, res) {
         if (!err) {
           if (doc.time < timestamp + 900) {
             if (doc.wantAmount < open) {
-              Volume.findOneAndUpdate({
+              Candle.findOneAndUpdate({
                 time: timestamp
               }, {
                 $set: {
@@ -115,7 +115,7 @@ module.exports.trade = async function (req, res) {
               });
             }
             if (doc.wantAmount > open) {
-              Volume.findOneAndUpdate({
+              Candle.findOneAndUpdate({
                 time: timestamp
               }, {
                 $set: {
@@ -129,7 +129,7 @@ module.exports.trade = async function (req, res) {
               });
             }
 
-            Volume.create({
+            Candle.create({
               time: timestamp + 900,
               open: doc.wantAmount
             })

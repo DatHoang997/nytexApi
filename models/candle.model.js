@@ -1,6 +1,6 @@
 var mongoose = require('mongoose')
 
-let volumeSchema = new mongoose.Schema({
+let candleSchema = new mongoose.Schema({
     open: Number,
     close: Number,
     top: Number,
@@ -8,6 +8,6 @@ let volumeSchema = new mongoose.Schema({
     time: Number
 })
 
-var Volume = mongoose.model('Volume', volumeSchema, 'volume')
+var Candle = mongoose.model('Candle', candleSchema, 'candle')
 
-module.exports = Volume;
+module.exports = Candle;

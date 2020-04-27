@@ -27,14 +27,6 @@ module.exports.trade = async function (req, res) {
         web3.eth.getBlock(i, true, function (error, result) { //31945638 
           if (!error) {
             // console.log(result)
-            // let time = result.timestamp
-            // let date = new Date(time * 1000);
-            // let day = date.getDate();
-            // let month = date.getMonth()+1;
-            // let hours = date.getHours();
-            // let minutes = "0" + date.getMinutes();
-            // let seconds = "0" + date.getSeconds();
-            // let formattedTime = day + '-' + ("0" + month).slice(-2) + ' ' + hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
             if (result.transactions != null) {
               result.transactions.forEach(function (e) {
                 let id = e.input.slice(2, 10);
@@ -143,7 +135,7 @@ module.exports.trade = async function (req, res) {
         Trade.find({to: "0x0000000000000000000000000000000000034567",  $or: [{ status: 'order' }, { status: 'filling' }]}, function (err, doc) {
           if (!err) {
             for (let n = 0; n < doc.length; n++) {
-              Seigniorage.methods.getOrder(1, doc[n].orderID).call(undefined,i-1, function (error, result) {
+              Seigniorage.methods.getOrder(0, doc[n].orderID).call(undefined,i-1, function (error, result) {
                 if (!error && result.maker != '0x0000000000000000000000000000000000000000' && result.want<doc.wantAmount) {
                   Trade.findOneAndUpdate({
                     orderID: doc[n].orderID}, {$set: {haveAmountNow: result.have,wantAmountNow: result.want,}}, function (err, doc) {

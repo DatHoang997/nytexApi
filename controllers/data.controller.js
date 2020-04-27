@@ -134,9 +134,12 @@ module.exports.trade = async function (req, res) {
         });
         Trade.find({to: "0x0000000000000000000000000000000000034567",  $or: [{ status: 'order' }, { status: 'filling' }]}, function (err, doc) {
           if (!err) {
+            console.log(parseFloat(doc[0].wantAmount.slice(0,-6)))
+            let want = doc[0].wantAmount.slice(0,-6)
             for (let n = 0; n < doc.length; n++) {
               Seigniorage.methods.getOrder(0, doc[n].orderID).call(undefined,i-1, function (error, result) {
-                if (!error && result.maker != '0x0000000000000000000000000000000000000000' && result.want<doc.wantAmount) {
+                console.log(parseFloat(weiToNUSD(result.want)))
+                if (!error && result.maker != '0x0000000000000000000000000000000000000000' && parseFloat(weiToNUSD(result.want))<parseFloat(doc[0].wantAmount.slice(0,-6))) {
                   Trade.findOneAndUpdate({
                     orderID: doc[n].orderID}, {$set: {haveAmountNow: result.have,wantAmountNow: result.want,}}, function (err, doc) {
                     if (err) return handleError(err);
@@ -153,8 +156,9 @@ module.exports.trade = async function (req, res) {
         Trade.find({to: "0x0000000000000000000000000000000000045678",  $or: [{ status: 'order' }, { status: 'filling' }]}, function (err, doc) {
           if (!err) {
             for (let n = 0; n < doc.length; n++) {
-              Seigniorage.methods.getOrder(1, doc[n].orderID).call(undefined,i-1, function (error, result) {
-                if (!error && result.maker != '0x0000000000000000000000000000000000000000' && result.want<doc.wantAmount) {
+              Seigniorage.methods.getOrder(1, "0x629bc97b7eadb03dbf66199ff98b15ed4577b4c54f6c8202491f753900b7852b").call(undefined,32775430, function (error, result) {
+                // console.log(weiToMNTY(result.want)) parseFloat(doc.wantAmount.slice(0,-5))
+                if (!error && result.maker != '0x0000000000000000000000000000000000000000' && parseFloat(weiToNUSD(result.want))<parseFloat(doc[0].wantAmount.slice(0,-5))) {
                   Trade.findOneAndUpdate({orderID: doc[n].orderID}, {
                     $set: {
                       status: 'filling',

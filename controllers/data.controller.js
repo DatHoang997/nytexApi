@@ -134,11 +134,8 @@ module.exports.trade = async function (req, res) {
         });
         Trade.find({to: "0x0000000000000000000000000000000000034567",  $or: [{ status: 'order' }, { status: 'filling' }]}, function (err, doc) {
           if (!err) {
-            console.log(parseFloat(doc[0].wantAmount.slice(0,-6)))
-            let want = doc[0].wantAmount.slice(0,-6)
             for (let n = 0; n < doc.length; n++) {
               Seigniorage.methods.getOrder(0, doc[n].orderID).call(undefined,i-1, function (error, result) {
-                console.log(parseFloat(weiToNUSD(result.want)))
                 if (!error && result.maker != '0x0000000000000000000000000000000000000000' && parseFloat(weiToNUSD(result.want))<parseFloat(doc[0].wantAmount.slice(0,-6))) {
                   Trade.findOneAndUpdate({
                     orderID: doc[n].orderID}, {$set: {haveAmountNow: result.have,wantAmountNow: result.want,}}, function (err, doc) {

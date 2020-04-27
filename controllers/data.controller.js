@@ -158,8 +158,8 @@ module.exports.trade = async function (req, res) {
                   Trade.findOneAndUpdate({orderID: doc[n].orderID}, {
                     $set: {
                       status: 'filling',
-                      haveAmountnow: result.have,
-                      wantAmountnow: result.want,
+                      haveAmountNow: result.have,
+                      wantAmountNow: result.want,
                     }}, {useFindAndModify: false}, function (err, doc) {
                     if (err) return handleError(err);
                   });

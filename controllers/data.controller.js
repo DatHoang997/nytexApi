@@ -1158,6 +1158,13 @@ module.exports.getlastestfill = async function (req, res) {
   res.json(show)
 }
 
+module.exports.getcandle = async function (req, res) {
+  let show = await Candle.find({}).sort({
+    time: 1
+  })
+  res.json(show)
+}
+
 module.exports.tradeclear = async function (req, res) {
   Trade.deleteMany({}, function (err, res) {
     if (err) console.log(err)

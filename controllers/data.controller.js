@@ -1,13 +1,18 @@
 const url = require('url');
 let Data = require('../models/data.model')
 let Trade = require('../models/trade.model')
+let Candle = require('../models/candle.modle')
 let Web3 = require('web3');
 let SeigniorageABI = require('../JSON/Seigniorage.json')
 let StableTokenABI = require('../JSON/StableToken.json')
 let VolatileTokenABI = require('../JSON/VolatileToken.json')
 let sha256 = require('js-sha256');
-
-const {weiToNTY,weiToMNTY,weiToNUSD,} = require('../util/help')
+let current_new_block
+const {
+  weiToNTY,
+  weiToMNTY,
+  weiToNUSD,
+} = require('../util/help')
 
 
 const web3 = new Web3(new Web3.providers.WebsocketProvider("wss://ws.nexty.io"))
@@ -32,10 +37,10 @@ module.exports.candle = function (req, res) {
         $lte: end
       }
     }, function (err, doc) {
-      console.log(doc)
+      // console.log(doc)
       let array = []
       for (let i = 0; i < doc.length; i++) {
-        array.push(doc[i].price)
+        array.push(doc[i].time)
       }
       Candle.create({
         open: doc[0].price,
@@ -59,30 +64,29 @@ module.exports.candle = function (req, res) {
   Candle.findOne().sort({
     filledTime: -1
   }).exec(async function (err, doc) {
-    console.log(doc)
     if (doc == null) {
       console.log(1, 'null')
-      Trade.findOnelkl({
+      Trade.findOne({
         status: 'filled'
-      }).sort({
+      }).
+      sort({
         filledTime: 1
-      }).exec(async function (err, doc1) {
-        console.log(doc1[0].time) //filledTime
+      })
+      .exec(async function (err, doc1) {
         if (!err) {
-          // createCandle(doc1[0].filledTime) // first point
+          console.log(doc1.time) //filledTime
+          createCandle(doc1.time) // first point
         }
       })
     } else {
       Candle.findOne({}).sort({
         time: -1
       }).exec(async function (err, doc) {
-        createCandle(doc[0].time)
+        createCandle(doc.time)
       })
     }
   })
 }
-
-
 module.exports.trade = async function (req, res) {
   let cursor = 32214930
   web3.eth.subscribe('newBlockHeaders', function (error, new_block) {
@@ -1014,6 +1018,11 @@ module.exports.getlastestfill = async function (req, res) {
   }).limit(1).sort({
     filledTime: -1
   })
+  res.json(show)
+}
+
+module.export.getcandle = async function (req, res) {
+  let show = await Candle.find({}).sort({time: 1})
   res.json(show)
 }
 

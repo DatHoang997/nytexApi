@@ -39,5 +39,9 @@ router.get('/get-open-order', controller.getopenorder)
 
 router.get('/get-lastest-fill', controller.getlastestfill)
 
+router.get('/candle', controller.candle)
+
+router.get('/getcandle', controller.getcandle)
+
 
 module.exports = router

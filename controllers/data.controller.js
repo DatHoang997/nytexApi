@@ -14,7 +14,6 @@ const {
   weiToNUSD,
 } = require('../util/help')
 
-
 const web3 = new Web3(new Web3.providers.WebsocketProvider("wss://ws.nexty.io"))
 let seigniorageAddress = '0x0000000000000000000000000000000000023456'
 let volatileTokenAddress = '0x0000000000000000000000000000000000034567'
@@ -38,7 +37,6 @@ module.exports.candle = function (req, res) {
       }
     }, function (err, doc) {
       if(!err) {
-        // console.log(doc)
         let array = []
         for (let i = 0; i < doc.length; i++) {
           array.push(doc[i].time)
@@ -67,7 +65,6 @@ module.exports.candle = function (req, res) {
     filledTime: -1
   }).exec(async function (err, doc) {
     if(!err) {
-      console.log(doc)
       if (doc == null) {
         Trade.findOne({
           status: 'filled'
@@ -96,88 +93,10 @@ module.exports.candle = function (req, res) {
 module.exports.trade = async function (req, res) {
   let cursor = 32520260
   let scanning_old_blocks = 1
-  let array = []
-  let timestamp = 0
-  let open = 0
+ 
   async function scanBlock(i) {
-    Candle.findOne().sort({
-      filledTime: -1
-    }).exec(async function (err, doc) {
-      if (doc == null) {
-        timestamp = 0
-      }
-    })
-    if (timestamp == 0) {
-      Trade.find({
-        status: 'filled'
-      }.sort({
-        filledTime: -1
-      }), function (err, doc) {
-        if (!err) {
-          Candle.create({
-            open: doc.wantAmount,
-            close: doc.wantAmount,
-            top: doc.wantAmount,
-            bot: doc.wantAmount,
-            time: doc.filledTime
-          })
-          timestamp = doc.time
-          open = doc.wantAmount
-        }
-      })
-    } else {
-      Trade.find({
-        status: 'filled'
-      }.sort({
-        filledTime: -1
-      }), function (err, doc) {
-        if (!err) {
-          if (doc.time < timestamp + 900) {
-            if (doc.wantAmount < open) {
-              Candle.findOneAndUpdate({
-                time: timestamp
-              }, {
-                $set: {
-                  close: doc.wantAmount,
-                  bot: doc.wantAmount
-                }
-              }, {
-                useFindAndModify: false
-              }, function (err, doc) {
-                if (err) return handleError(err);
-              });
-            }
-            if (doc.wantAmount > open) {
-              Candle.findOneAndUpdate({
-                time: timestamp
-              }, {
-                $set: {
-                  close: doc.wantAmount,
-                  top: doc.wantAmount
-                }
-              }, {
-                useFindAndModify: false
-              }, function (err, doc) {
-                if (err) return handleError(err);
-              });
-            }
-
-            Candle.create({
-              time: timestamp + 900,
-              open: doc.wantAmount
-            })
-          } else {
-
-          }
-        }
-      })
-    }
-
-
-
     web3.eth.getBlock(i, true, function (error, result) {
       if (!error) {
-        // console.log(result)
         Trade.find({
           $or: [{
             to: volatileTokenAddress
@@ -262,7 +181,6 @@ module.exports.trade = async function (req, res) {
               } else if (e.to == stableTokenAddress) {
                 let decode = web3.eth.abi.decodeParameters(['bytes32', 'uint256', 'uint256', 'bytes32'], para);
                 const packed = e.from.substring(2) + decode["0"].substring(2)
-                console.log('0x' + sha256(Buffer.from(packed, 'hex')))
                 Trade.findOne({
                   orderID: '0x' + sha256(Buffer.from(packed, 'hex'))
                 }).exec(async function (err, db) {
@@ -315,8 +233,6 @@ module.exports.trade = async function (req, res) {
               } else if (e.to == stableTokenAddress) {
                 let decode = web3.eth.abi.decodeParameters(['bytes32', 'uint256', 'uint256', 'bytes32'], para);
                 const packed = e.from.substring(2) + decode["0"].substring(2)
-                console.log('aaa' + packed)
-
                 Trade.findOne({
                   orderID: '0x' + sha256(Buffer.from(packed, 'hex'))
                 }).exec(async function (err, db) {
@@ -342,7 +258,6 @@ module.exports.trade = async function (req, res) {
               }
             } else if (id == "43271d79") { //cancel(bool, ID bytes32)
               let decode = web3.eth.abi.decodeParameters(['bool', 'bytes32'], para);
-              console.log(decode["1"])
               Trade.findOneAndUpdate({
                 orderID: decode["1"]
               }, {
@@ -362,7 +277,6 @@ module.exports.trade = async function (req, res) {
       status: 'false',
       number: i
     }, function (err) {
-      // console.log(i)
       if (err) return handleError(err);
     });
   }
@@ -440,7 +354,6 @@ module.exports.trade = async function (req, res) {
     await Promise.all(promises);
     scanOldBlock()
   }
-
 }
 
 module.exports.block = async function (req, res) {
@@ -1051,7 +964,6 @@ module.exports.block = async function (req, res) {
         console.log(reason)
       });
   }
-  // scanBlock(28587379,28588311)
 
   web3.eth.subscribe('newBlockHeaders', function (error, new_block) {
     if (!error) {
@@ -1082,8 +994,6 @@ module.exports.block = async function (req, res) {
     }
   })
 }
-
-
 
 module.exports.show = async function (req, res) {
   let show = await Data.find({
@@ -1190,7 +1100,6 @@ module.exports.getopenorder = async function (req, res) {
   }).sort({
     blockNumber: -1
   })
-  console.log(show)
   res.json(show)
 }
 
@@ -1199,7 +1108,6 @@ module.exports.getopenhistory = async function (req, res) {
   let address = queryObject.address
   let from = parseInt(queryObject.from)
   let to = parseInt(queryObject.to)
-
   let show = await Trade.find({
     $or: [{
       status: 'canceled'
@@ -1224,7 +1132,6 @@ module.exports.gettradehistory = async function (req, res) {
   let address = queryObject.address
   let from = parseInt(queryObject.from)
   let to = parseInt(queryObject.to)
-
   let show = await Trade.find({
     $or: [{
       status: 'filling'

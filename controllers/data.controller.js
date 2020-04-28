@@ -37,10 +37,10 @@ module.exports.candle = function (req, res) {
         $lte: end
       }
     }, function (err, doc) {
-      console.log(doc)
+      // console.log(doc)
       let array = []
       for (let i = 0; i < doc.length; i++) {
-        array.push(doc[i].price)
+        array.push(doc[i].time)
       }
       Candle.create({
         open: doc[0].price,
@@ -67,21 +67,23 @@ module.exports.candle = function (req, res) {
     console.log(doc)
     if (doc == null) {
       console.log(1, 'null')
-      Trade.findOnelkl({
+      Trade.findOne({
         status: 'filled'
-      }).sort({
+      }).
+      sort({
         filledTime: 1
-      }).exec(async function (err, doc1) {
-        console.log(doc1[0].time) //filledTime
+      })
+      .exec(async function (err, doc1) {
         if (!err) {
-          // createCandle(doc1[0].filledTime) // first point
+          console.log(doc1.time) //filledTime
+          createCandle(doc1.time) // first point
         }
       })
     } else {
       Candle.findOne({}).sort({
         time: -1
       }).exec(async function (err, doc) {
-        createCandle(doc[0].time)
+        createCandle(doc.time)
       })
     }
   })

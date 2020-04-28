@@ -11,10 +11,77 @@ const {weiToNTY,weiToMNTY,weiToNUSD,} = require('../util/help')
 
 
 const web3 = new Web3(new Web3.providers.WebsocketProvider("wss://ws.nexty.io"))
+let seigniorageAddress = '0x0000000000000000000000000000000000023456'
+let volatileTokenAddress = '0x0000000000000000000000000000000000034567'
+let stableTokenAddress = '0x0000000000000000000000000000000000045678'
+let burn = '0x0000000000000000000000000000000000000000'
+let Seigniorage = new web3.eth.Contract(SeigniorageABI, seigniorageAddress);
+let VolatileToken = new web3.eth.Contract(VolatileTokenABI, volatileTokenAddress);
+let StableToken = new web3.eth.Contract(StableTokenABI, stableTokenAddress);
 
-let Seigniorage = new web3.eth.Contract(SeigniorageABI, '0x0000000000000000000000000000000000023456');
-let VolatileToken = new web3.eth.Contract(VolatileTokenABI, '0x0000000000000000000000000000000000034567');
-let StableToken = new web3.eth.Contract(StableTokenABI, '0x0000000000000000000000000000000000045678');
+module.exports.candle = function (req, res) {
+  let timing = Date.now()
+
+  function createCandle(filledTime) {
+    console.log('run')
+    end = filledTime + 900
+    Trade.find({
+      status: 'filled',
+      filledTime: {
+        $gte: filledTime,
+        $lte: end
+      }
+    }, function (err, doc) {
+      console.log(doc)
+      let array = []
+      for (let i = 0; i < doc.length; i++) {
+        array.push(doc[i].price)
+      }
+      Candle.create({
+        open: doc[0].price,
+        top: Math.max.apply(Math, array),
+        bot: Math.min.apply(Math, array),
+        close: doc[doc.lenght - 1].price,
+        time: end
+      }, function (err) {
+        if (!err && end + 900 < timing) {
+          createCandle(end)
+        } else if (!err) {
+          let wait = end - timing + 5
+          setTimeout(createCandle(end), wait)
+        }
+      })
+    })
+  }
+
+  //start
+  console.log('start')
+  Candle.findOne().sort({
+    filledTime: -1
+  }).exec(async function (err, doc) {
+    console.log(doc)
+    if (doc == null) {
+      console.log(1, 'null')
+      Trade.findOnelkl({
+        status: 'filled'
+      }).sort({
+        filledTime: 1
+      }).exec(async function (err, doc1) {
+        console.log(doc1[0].time) //filledTime
+        if (!err) {
+          // createCandle(doc1[0].filledTime) // first point
+        }
+      })
+    } else {
+      Candle.findOne({}).sort({
+        time: -1
+      }).exec(async function (err, doc) {
+        createCandle(doc[0].time)
+      })
+    }
+  })
+}
+
 
 module.exports.trade = async function (req, res) {
   let cursor = 32214930
@@ -31,8 +98,8 @@ module.exports.trade = async function (req, res) {
               result.transactions.forEach(function (e) {
                 let id = e.input.slice(2, 10);
                 let para = '0x' + e.input.slice(10);
-                if (id === "7ca3c7c7") { //depositAndTrade(bytes32,uint256,uint256,bytes32) trade(bytes32,uint256,uint256,bytes32) id === "37a7113d" || 
-                  if (e.to == "0x0000000000000000000000000000000000034567") { 
+                if (id === "7ca3c7c7") { //depositAndTrade(bytes32,uint256,uint256,bytes32) trade(bytes32,uint256,uint256,bytes32) id === "37a7113d"
+                  if (e.to == volatileTokenAddress) { 
                     let decode = web3.eth.abi.decodeParameters(['bytes32', 'uint256', 'uint256', 'bytes32'], para);
                     const packed = e.from.substring(2) + decode["0"].substring(2)
                     Trade.findOne({orderID: '0x' + sha256(Buffer.from(packed, 'hex'))}).exec(async function (err, db) {
@@ -54,7 +121,7 @@ module.exports.trade = async function (req, res) {
                         });
                       }
                     })
-                  } else if (e.to == "0x0000000000000000000000000000000000045678") {
+                  } else if (e.to == stableTokenAddress) {
                     let decode = web3.eth.abi.decodeParameters(['bytes32', 'uint256', 'uint256', 'bytes32'], para);
                     const packed = e.from.substring(2) + decode["0"].substring(2)
                     console.log('order'+'0x' + sha256(Buffer.from(packed, 'hex')))
@@ -80,7 +147,7 @@ module.exports.trade = async function (req, res) {
                   }
                 }
                 else if (id === "37a7113d") { //depositAndTrade(bytes32,uint256,uint256,bytes32) trade(bytes32,uint256,uint256,bytes32) id === "37a7113d" || 
-                  if (e.to == "0x0000000000000000000000000000000000034567") { 
+                  if (e.to == volatileTokenAddress) { 
                     let decode = web3.eth.abi.decodeParameters(['bytes32', 'uint256', 'uint256', 'bytes32'], para);
                     const packed = e.from.substring(2) + decode["0"].substring(2)
                     Trade.findOne({orderID: '0x' + sha256(Buffer.from(packed, 'hex'))}).exec(async function (err, db) {
@@ -102,7 +169,7 @@ module.exports.trade = async function (req, res) {
                         });
                       }
                     })
-                  } else if (e.to == "0x0000000000000000000000000000000000045678") {
+                  } else if (e.to == stableTokenAddress) {
                     let decode = web3.eth.abi.decodeParameters(['bytes32', 'uint256', 'uint256', 'bytes32'], para);
                     const packed = e.from.substring(2) + decode["0"].substring(2)
                     Trade.findOne({orderID: '0x' + sha256(Buffer.from(packed, 'hex'))}).exec(async function (err, db) {
@@ -136,11 +203,11 @@ module.exports.trade = async function (req, res) {
             }
           }
         });
-        Trade.find({to: "0x0000000000000000000000000000000000034567",  $or: [{ status: 'order' }, { status: 'filling' }]}, function (err, doc) {
+        Trade.find({to: volatileTokenAddress,  $or: [{ status: 'order' }, { status: 'filling' }]}, function (err, doc) {
           if (!err) {
             for (let n = 0; n < doc.length; n++) {
               Seigniorage.methods.getOrder(0, doc[n].orderID).call(undefined,i-1, function (error, result) {
-                if (!error && result.maker != '0x0000000000000000000000000000000000000000' && parseFloat(weiToNUSD(result.want))<parseFloat(doc[0].wantAmount.slice(0,-6))) {
+                if (!error && result.maker != burn && parseFloat(weiToNUSD(result.want))<parseFloat(doc[0].wantAmount.slice(0,-6))) {
                   Trade.findOneAndUpdate({
                     orderID: doc[n].orderID}, {
                       $set: {
@@ -150,7 +217,7 @@ module.exports.trade = async function (req, res) {
                       }}, {useFindAndModify: false}, function (err, doc) {
                     if (err) return handleError(err);
                   });
-                }else if (!error && result.maker == '0x0000000000000000000000000000000000000000') {
+                }else if (!error && result.maker == burn) {
                   Trade.findOneAndUpdate({orderID: doc[n].orderID}, {$set: {status: 'filled'}}, {useFindAndModify: false}, function (err, doc) {
                     if (err) return handleError(err);
                   });
@@ -159,12 +226,12 @@ module.exports.trade = async function (req, res) {
             }
           }
         });
-        Trade.find({to: "0x0000000000000000000000000000000000045678",  $or: [{ status: 'order' }, { status: 'filling' }]}, function (err, doc) {
+        Trade.find({to: stableTokenAddress,  $or: [{ status: 'order' }, { status: 'filling' }]}, function (err, doc) {
           if (!err) {
             for (let n = 0; n < doc.length; n++) {
               Seigniorage.methods.getOrder(1, doc[n].orderID).call(undefined,i-1, function (error, result) {
                 // console.log(weiToMNTY(result.want)) parseFloat(doc.wantAmount.slice(0,-5))
-                if (!error && result.maker != '0x0000000000000000000000000000000000000000' && parseFloat(weiToNUSD(result.want))<parseFloat(doc[0].wantAmount.slice(0,-5))) {
+                if (!error && result.maker != burn && parseFloat(weiToNUSD(result.want))<parseFloat(doc[0].wantAmount.slice(0,-5))) {
                   Trade.findOneAndUpdate({orderID: doc[n].orderID}, {
                     $set: {
                       status: 'filling',
@@ -174,7 +241,7 @@ module.exports.trade = async function (req, res) {
                     }}, {useFindAndModify: false}, function (err, doc) {
                     if (err) return handleError(err);
                   });
-                }else if (!error && result.maker  == '0x0000000000000000000000000000000000000000') {
+                }else if (!error && result.maker  == burn) {
                   Trade.findOneAndUpdate({orderID: doc[n].orderID}, {$set: {status: 'filled'}}, {useFindAndModify: false}, function (err, doc) {
                     if (err) return handleError(err);
                   });

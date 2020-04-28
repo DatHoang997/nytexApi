@@ -36,7 +36,7 @@ module.exports.candle = function (req, res) {
         $lte: end
       }
     }, function (err, doc) {
-      if(!err) {
+      if (!err) {
         let array = []
         for (let i = 0; i < doc.length; i++) {
           array.push(doc[i].time)
@@ -64,19 +64,19 @@ module.exports.candle = function (req, res) {
   Candle.findOne().sort({
     filledTime: -1
   }).exec(async function (err, doc) {
-    if(!err) {
+    if (!err) {
       if (doc == null) {
         Trade.findOne({
           status: 'filled'
         }).
         sort({
-          filledTime: 1
-        })
-        .exec(async function (err, doc1) {
-          if (!err) {
-            createCandle(doc1.filledTime) // first point
-          }
-        })
+            filledTime: 1
+          })
+          .exec(async function (err, doc1) {
+            if (!err) {
+              createCandle(doc1.filledTime) // first point
+            }
+          })
       } else {
         Candle.findOne({}).sort({
           time: -1
@@ -93,7 +93,7 @@ module.exports.candle = function (req, res) {
 module.exports.trade = async function (req, res) {
   let cursor = 32520260
   let scanning_old_blocks = 1
- 
+
   async function scanBlock(i) {
     web3.eth.getBlock(i, true, function (error, result) {
       if (!error) {

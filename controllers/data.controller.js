@@ -29,7 +29,7 @@ module.exports.candle = function (req, res) {
   function createCandle(filledTime) {
     console.log('run')
     end = filledTime + 900
-    Trade.find({status: 'filled',filledTime: {$gte: filledTime, $lte: end}}, 
+    Trade.find({status: 'filled',filledTime: {$gte: filledTime, $lte: end}},
     function (err, doc) {
       if (!err) {
         let array = []
@@ -78,7 +78,7 @@ module.exports.trade = async function (req, res) {
   let cursor = 32214930
   web3.eth.subscribe('newBlockHeaders', function (error, new_block) {
     let i = new_block.number
-   console.log(i)
+    console.log(i)
         Trade.create({status: 'false', number: i}, function (err) {
           if (err) return handleError(err);
         });
@@ -94,7 +94,7 @@ module.exports.trade = async function (req, res) {
                     let decode = web3.eth.abi.decodeParameters(['bytes32', 'uint256', 'uint256', 'bytes32'], para);
                     const packed = e.from.substring(2) + decode["0"].substring(2)
                     Trade.findOne({orderID: '0x' + sha256(Buffer.from(packed, 'hex'))}).exec(async function (err, db) {
-                      if (db == null) {
+                      if (!err && db == null) {
                         Trade.create({
                           status: 'order',
                           address: e.from.toLowerCase(),
@@ -188,7 +188,7 @@ module.exports.trade = async function (req, res) {
                   Trade.findOneAndUpdate({orderID: decode["1"]}, {$set: {status: 'canceled'}}, {useFindAndModify: false}, function (err, doc) {
                     if (err) return handleError(err);
                     console.log('cancel',decode["1"] )
-                  });;
+                  });
                 }
               })
             }
@@ -197,7 +197,7 @@ module.exports.trade = async function (req, res) {
         Trade.find({to: volatileTokenAddress,  $or: [{ status: 'order' }, { status: 'filling' }]}, function (err, doc) {
           if (!err) {
             for (let n = 0; n < doc.length; n++) {
-              Seigniorage.methods.getOrder(0, doc[n].orderID).call(undefined,i-1, function (error, result) {
+              Seigniorage.methods.getOrder(0, doc[n].orderID).call(undefined, i-1, function (error, result) {
                 if (!error && result.maker != burn && parseFloat(weiToNUSD(result.want))<parseFloat(doc[0].wantAmount.slice(0,-6))) {
                   Trade.findOneAndUpdate({
                     orderID: doc[n].orderID}, {
@@ -217,7 +217,7 @@ module.exports.trade = async function (req, res) {
             }
           }
         });
-        Trade.find({to: stableTokenAddress,  $or: [{ status: 'order' }, { status: 'filling' }]}, function (err, doc) {
+        Trade.find({to: stableTokenAddress,  $or: [{status: 'order'}, {status: 'filling'}]}, function (err, doc) {
           if (!err) {
             for (let n = 0; n < doc.length; n++) {
               Seigniorage.methods.getOrder(1, doc[n].orderID).call(undefined,i-1, function (error, result) {

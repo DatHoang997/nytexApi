@@ -1,218 +1,260 @@
 const url = require('url');
 let Data = require('../models/data.model')
 let Trade = require('../models/trade.model')
+
 let Web3 = require('web3');
 let SeigniorageABI = require('../JSON/Seigniorage.json')
 let StableTokenABI = require('../JSON/StableToken.json')
 let VolatileTokenABI = require('../JSON/VolatileToken.json')
 let sha256 = require('js-sha256');
-
-const {weiToNTY,weiToMNTY,weiToNUSD,} = require('../util/help')
-
+let current_new_block
+const {
+  weiToNTY,
+  weiToMNTY,
+  weiToNUSD,
+} = require('../util/help')
 
 const web3 = new Web3(new Web3.providers.WebsocketProvider("wss://ws.nexty.io"))
+let seigniorageAddress = '0x0000000000000000000000000000000000023456'
+let volatileTokenAddress = '0x0000000000000000000000000000000000034567'
+let stableTokenAddress = '0x0000000000000000000000000000000000045678'
+let burn = '0x0000000000000000000000000000000000000000'
+let Seigniorage = new web3.eth.Contract(SeigniorageABI, seigniorageAddress);
+let VolatileToken = new web3.eth.Contract(VolatileTokenABI, volatileTokenAddress);
+let StableToken = new web3.eth.Contract(StableTokenABI, stableTokenAddress);
 
-let Seigniorage = new web3.eth.Contract(SeigniorageABI, '0x0000000000000000000000000000000000023456');
-let VolatileToken = new web3.eth.Contract(VolatileTokenABI, '0x0000000000000000000000000000000000034567');
-let StableToken = new web3.eth.Contract(StableTokenABI, '0x0000000000000000000000000000000000045678');
 
 module.exports.trade = async function (req, res) {
-  let cursor = 32214930
+  let cursor = 32510260
+  let scanning_old_blocks = 1
+
+  async function scanBlock(i) {
+    web3.eth.getBlock(i, true, function (error, result) { //31945638 
+      if (!error) {
+        // console.log(result)
+        if (result.transactions != null) {
+          result.transactions.forEach(function (e) {
+            let id = e.input.slice(2, 10);
+            let para = '0x' + e.input.slice(10);
+            if (id === "7ca3c7c7") { //depositAndTrade(bytes32,uint256,uint256,bytes32) trade(bytes32,uint256,uint256,bytes32) id === "37a7113d"
+              if (e.to == volatileTokenAddress) { 
+                let decode = web3.eth.abi.decodeParameters(['bytes32', 'uint256', 'uint256', 'bytes32'], para);
+                const packed = e.from.substring(2) + decode["0"].substring(2)
+                Trade.findOne({orderID: '0x' + sha256(Buffer.from(packed, 'hex'))}).exec(async function (err, db) {
+                  if (!err && db == null) {
+                    Trade.create({
+                      status: 'order',
+                      address: e.from.toLowerCase(),
+                      to: e.to,
+                      haveAmount: weiToMNTY(decode["1"]) + ' MNTY',
+                      wantAmount: weiToNUSD(decode["2"]) + ' NewSD',
+                      price: weiToMNTY(decode["1"]) / weiToNUSD(decode["2"]),
+                      haveAmountNow: weiToMNTY(decode["1"]) + ' MNTY',
+                      wantAmountNow: weiToNUSD(decode["2"]) + ' NewSD',
+                      orderID: '0x' + sha256(Buffer.from(packed, 'hex')),
+                      number: result.number,
+                      time: result.timestamp,
+                    }, function (err) {
+                      if (err) return handleError(err);
+                    });
+                  }
+                })
+              } else if (e.to == stableTokenAddress) {
+                let decode = web3.eth.abi.decodeParameters(['bytes32', 'uint256', 'uint256', 'bytes32'], para);
+                const packed = e.from.substring(2) + decode["0"].substring(2)
+                console.log('order'+'0x' + sha256(Buffer.from(packed, 'hex')))
+                Trade.findOne({orderID: '0x' + sha256(Buffer.from(packed, 'hex'))}).exec(async function (err, db) {
+                  if (db == null) {
+                    Trade.create({
+                      status: 'order',
+                      address: e.from.toLowerCase(),
+                      to: e.to,
+                      haveAmount: weiToNUSD(decode["1"]) + ' NewSD',
+                      wantAmount: weiToMNTY(decode["2"]) + ' MNTY',
+                      price: weiToMNTY(decode["2"]) / weiToNUSD(decode["1"]),
+                      haveAmountNow: weiToNUSD(decode["1"]) + ' NewSD',
+                      wantAmountNow: weiToMNTY(decode["2"]) + ' MNTY',
+                      orderID: '0x' + sha256(Buffer.from(packed, 'hex')),
+                      number: result.number,
+                      time: result.timestamp,
+                    }, function (err) {
+                      if (err) return handleError(err);
+                    });
+                  }
+                })
+              }
+            }
+            else if (id === "37a7113d") { //depositAndTrade(bytes32,uint256,uint256,bytes32) trade(bytes32,uint256,uint256,bytes32) id === "37a7113d" || 
+              if (e.to == volatileTokenAddress) { 
+                let decode = web3.eth.abi.decodeParameters(['bytes32', 'uint256', 'uint256', 'bytes32'], para);
+                const packed = e.from.substring(2) + decode["0"].substring(2)
+                Trade.findOne({orderID: '0x' + sha256(Buffer.from(packed, 'hex'))}).exec(async function (err, db) {
+                  if (db == null) {
+                    Trade.create({
+                      status: 'order',
+                      address: e.from.toLowerCase(),
+                      to: e.to,
+                      haveAmount: weiToMNTY(decode["1"]) + ' MNTY',
+                      wantAmount: weiToNUSD(decode["2"]) + ' NewSD',
+                      price: weiToMNTY(decode["1"]) / weiToNUSD(decode["2"]),
+                      haveAmountNow: weiToMNTY(decode["1"]) + ' MNTY',
+                      wantAmountNow: weiToNUSD(decode["2"]) + ' NewSD',
+                      orderID: '0x' + sha256(Buffer.from(packed, 'hex')),
+                      number: result.number,
+                      time: result.timestamp,
+                    }, function (err) {
+                      if (err) return handleError(err);
+                    });
+                  }
+                })
+              } else if (e.to == stableTokenAddress) {
+                let decode = web3.eth.abi.decodeParameters(['bytes32', 'uint256', 'uint256', 'bytes32'], para);
+                const packed = e.from.substring(2) + decode["0"].substring(2)
+                Trade.findOne({orderID: '0x' + sha256(Buffer.from(packed, 'hex'))}).exec(async function (err, db) {
+                  if (db == null) {
+                    Trade.create({
+                      status: 'order',
+                      address: e.from.toLowerCase(),
+                      to: e.to,
+                      haveAmount: weiToNUSD(decode["1"]) + ' NewSD',
+                      wantAmount: weiToMNTY(decode["2"]) + ' MNTY',
+                      price: weiToMNTY(decode["2"]) / weiToNUSD(decode["1"]),
+                      haveAmountNow: weiToNUSD(decode["1"]) + ' NewSD',
+                      wantAmountNow: weiToMNTY(decode["2"]) + ' MNTY',
+                      orderID: '0x' + sha256(Buffer.from(packed, 'hex')),
+                      number: result.number,
+                      time: result.timestamp,
+                    }, function (err) {
+                      if (err) return handleError(err);
+                    });
+                  }
+                })
+              }
+            } else if (id == "43271d79") { //cancel(bool, ID bytes32)
+              let decode = web3.eth.abi.decodeParameters(['bool', 'bytes32'], para);
+              Trade.findOneAndUpdate({orderID: decode["1"]}, {$set: {status: 'canceled'}}, {useFindAndModify: false}, function (err, doc) {
+                if (err) return handleError(err);
+                console.log('cancel',decode["1"] )
+              });
+            }
+          })
+        }
+      }
+    });
+    // Trade.find({to: volatileTokenAddress,  $or: [{ status: 'order' }, { status: 'filling' }]}, function (err, doc) {
+    //   if (!err) {
+    //     for (let n = 0; n < doc.length; n++) {
+    //       Seigniorage.methods.getOrder(0, doc[n].orderID).call(undefined, i-1, function (error, result) {
+    //         if (!error && result.maker != burn && parseFloat(weiToNUSD(result.want))<parseFloat(doc[0].wantAmount.slice(0,-6))) {
+    //           Trade.findOneAndUpdate({
+    //             orderID: doc[n].orderID}, {
+    //               $set: {
+    //                 haveAmountNow: result.have,
+    //                 wantAmountNow: result.want,
+    //                 filledTime: new_block.timestamp
+    //               }}, {useFindAndModify: false}, function (err, doc) {
+    //             if (err) return handleError(err);
+    //           });
+    //         }else if (!error && result.maker == burn) {
+    //           Trade.findOneAndUpdate({orderID: doc[n].orderID}, {$set: {status: 'filled'}}, {useFindAndModify: false}, function (err, doc) {
+    //             if (err) return handleError(err);
+    //           });
+    //         }
+    //       });
+    //     }
+    //   }
+    // });
+    // Trade.find({to: stableTokenAddress,  $or: [{status: 'order'}, {status: 'filling'}]}, function (err, doc) {
+    //   if (!err) {
+    //     for (let n = 0; n < doc.length; n++) {
+    //       Seigniorage.methods.getOrder(1, doc[n].orderID).call(undefined,i-1, function (error, result) {
+    //         // console.log(weiToMNTY(result.want)) parseFloat(doc.wantAmount.slice(0,-5))
+    //         if (!error && result.maker != burn && parseFloat(weiToNUSD(result.want))<parseFloat(doc[0].wantAmount.slice(0,-5))) {
+    //           Trade.findOneAndUpdate({orderID: doc[n].orderID}, {
+    //             $set: {
+    //               status: 'filling',
+    //               haveAmountNow: result.have,
+    //               wantAmountNow: result.want,
+    //               filledTime: new_block.timestamp
+    //             }}, {useFindAndModify: false}, function (err, doc) {
+    //             if (err) return handleError(err);
+    //           });
+    //         }else if (!error && result.maker  == burn) {
+    //           Trade.findOneAndUpdate({orderID: doc[n].orderID}, {$set: {status: 'filled'}}, {useFindAndModify: false}, function (err, doc) {
+    //             if (err) return handleError(err);
+    //           });
+    //         }
+    //       });
+    //     }
+    //   }
+    // });
+
+    Trade.create({status: 'false', number: i}, function (err) {
+      if (err) return handleError(err);
+    });
+  }
+
   web3.eth.subscribe('newBlockHeaders', function (error, new_block) {
-    let i = new_block.number
-   console.log(i)
-        Trade.create({status: 'false', number: i}, function (err) {
-          if (err) return handleError(err);
-        });
-        web3.eth.getBlock(i, true, function (error, result) { //31945638 
-          if (!error) {
-            // console.log(result)
-            // let time = result.timestamp
-            // let date = new Date(time * 1000);
-            // let day = date.getDate();
-            // let month = date.getMonth()+1;
-            // let hours = date.getHours();
-            // let minutes = "0" + date.getMinutes();
-            // let seconds = "0" + date.getSeconds();
-            // let formattedTime = day + '-' + ("0" + month).slice(-2) + ' ' + hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
-            if (result.transactions != null) {
-              result.transactions.forEach(function (e) {
-                let id = e.input.slice(2, 10);
-                let para = '0x' + e.input.slice(10);
-                if (id === "7ca3c7c7") { //depositAndTrade(bytes32,uint256,uint256,bytes32) trade(bytes32,uint256,uint256,bytes32) id === "37a7113d" || 
-                  if (e.to == "0x0000000000000000000000000000000000034567") { 
-                    let decode = web3.eth.abi.decodeParameters(['bytes32', 'uint256', 'uint256', 'bytes32'], para);
-                    const packed = e.from.substring(2) + decode["0"].substring(2)
-                    Trade.findOne({orderID: '0x' + sha256(Buffer.from(packed, 'hex'))}).exec(async function (err, db) {
-                      if (db == null) {
-                        Trade.create({
-                          status: 'order',
-                          address: e.from.toLowerCase(),
-                          to: e.to,
-                          haveAmount: weiToMNTY(decode["1"]) + ' MNTY',
-                          wantAmount: weiToNUSD(decode["2"]) + ' NewSD',
-                          haveAmountNow: weiToMNTY(decode["1"]) + ' MNTY',
-                          wantAmountNow: weiToNUSD(decode["2"]) + ' NewSD',
-                          orderID: '0x' + sha256(Buffer.from(packed, 'hex')),
-                          number: result.number,
-                          time: result.timestamp,
-                        }, function (err) {
-                          if (err) return handleError(err);
-                        });
-                      }
-                    })
-                  } else if (e.to == "0x0000000000000000000000000000000000045678") {
-                    let decode = web3.eth.abi.decodeParameters(['bytes32', 'uint256', 'uint256', 'bytes32'], para);
-                    const packed = e.from.substring(2) + decode["0"].substring(2)
-                    console.log('order'+'0x' + sha256(Buffer.from(packed, 'hex')))
-                    Trade.findOne({orderID: '0x' + sha256(Buffer.from(packed, 'hex'))}).exec(async function (err, db) {
-                      if (db == null) {
-                        Trade.create({
-                          status: 'order',
-                          address: e.from.toLowerCase(),
-                          to: e.to,
-                          haveAmount: weiToNUSD(decode["1"]) + ' NewSD',
-                          wantAmount: weiToMNTY(decode["2"]) + ' MNTY',
-                          haveAmountNow: weiToNUSD(decode["1"]) + ' NewSD',
-                          wantAmountNow: weiToMNTY(decode["2"]) + ' MNTY',
-                          orderID: '0x' + sha256(Buffer.from(packed, 'hex')),
-                          number: result.number,
-                          time: result.timestamp,
-                        }, function (err) {
-                          if (err) return handleError(err);
-                        });
-                      }
-                    })
-                  }
-                }
-                else if (id === "37a7113d") { //depositAndTrade(bytes32,uint256,uint256,bytes32) trade(bytes32,uint256,uint256,bytes32) id === "37a7113d" || 
-                  if (e.to == "0x0000000000000000000000000000000000034567") { 
-                    let decode = web3.eth.abi.decodeParameters(['bytes32', 'uint256', 'uint256', 'bytes32'], para);
-                    const packed = e.from.substring(2) + decode["0"].substring(2)
-                    Trade.findOne({orderID: '0x' + sha256(Buffer.from(packed, 'hex'))}).exec(async function (err, db) {
-                      if (db == null) {
-                        Trade.create({
-                          status: 'order',
-                          address: e.from.toLowerCase(),
-                          to: e.to,
-                          haveAmount: weiToMNTY(decode["1"]) + ' MNTY',
-                          wantAmount: weiToNUSD(decode["2"]) + ' NewSD',
-                          haveAmountNow: weiToMNTY(decode["1"]) + ' MNTY',
-                          wantAmountNow: weiToNUSD(decode["2"]) + ' NewSD',
-                          orderID: '0x' + sha256(Buffer.from(packed, 'hex')),
-                          number: result.number,
-                          time: result.timestamp,
-                        }, function (err) {
-                          if (err) return handleError(err);
-                        });
-                      }
-                    })
-                  } else if (e.to == "0x0000000000000000000000000000000000045678") {
-                    let decode = web3.eth.abi.decodeParameters(['bytes32', 'uint256', 'uint256', 'bytes32'], para);
-                    const packed = e.from.substring(2) + decode["0"].substring(2)
-                    Trade.findOne({orderID: '0x' + sha256(Buffer.from(packed, 'hex'))}).exec(async function (err, db) {
-                      if (db == null) {
-                        Trade.create({
-                          status: 'order',
-                          address: e.from.toLowerCase(),
-                          to: e.to,
-                          haveAmount: weiToNUSD(decode["1"]) + ' NewSD',
-                          wantAmount: weiToMNTY(decode["2"]) + ' MNTY',
-                          haveAmountNow: weiToNUSD(decode["1"]) + ' NewSD',
-                          wantAmountNow: weiToMNTY(decode["2"]) + ' MNTY',
-                          orderID: '0x' + sha256(Buffer.from(packed, 'hex')),
-                          number: result.number,
-                          time: result.timestamp,
-                        }, function (err) {
-                          if (err) return handleError(err);
-                        });
-                      }
-                    })
-                  }
-                } else if (id == "43271d79") { //cancel(bool, ID bytes32)
-                  let decode = web3.eth.abi.decodeParameters(['bool', 'bytes32'], para);
-                  Trade.findOneAndUpdate({orderID: decode["1"]}, {$set: {status: 'canceled'}}, {useFindAndModify: false}, function (err, doc) {
-                    if (err) return handleError(err);
-                    console.log('cancel',decode["1"] )
-                  });;
-                }
-              })
-            }
+    if (!error) {
+      
+      current_new_block = new_block.number
+      Trade.findOne().sort({number: -1}).exec(async function (err, db_block) {
+        if (db_block == null)  db_block = {number: cursor}
+        Trade.deleteMany({number: {$lte: db_block.number - 100}, status: 'false'}, function (err, res) {
+          if (err) console.log(err)
+        })
+        console.log("New block", current_new_block, scanning_old_blocks)
+        if (db_block.number < new_block.number - 7) {
+          if (scanning_old_blocks === 1) {
+            console.log('aaaaaaaaaaaaa')
+            scanOldBlock()
           }
-        });
-        Trade.find({to: "0x0000000000000000000000000000000000034567",  $or: [{ status: 'order' }, { status: 'filling' }]}, function (err, doc) {
-          if (!err) {
-            for (let n = 0; n < doc.length; n++) {
-              Seigniorage.methods.getOrder(0, doc[n].orderID).call(undefined,i-1, function (error, result) {
-                if (!error && result.maker != '0x0000000000000000000000000000000000000000' && result.want<doc.wantAmount) {
-                  Trade.findOneAndUpdate({
-                    orderID: doc[n].orderID}, {$set: {haveAmountNow: result.have,wantAmountNow: result.want,}}, function (err, doc) {
-                    if (err) return handleError(err);
-                  });
-                }else if (!error && result.maker == '0x0000000000000000000000000000000000000000') {
-                  Trade.findOneAndUpdate({orderID: doc[n].orderID}, {$set: {status: 'filled'}}, {useFindAndModify: false}, function (err, doc) {
-                    if (err) return handleError(err);
-                  });
-                }
-              });
-            }
-          }
-        });
-        Trade.find({to: "0x0000000000000000000000000000000000045678",  $or: [{ status: 'order' }, { status: 'filling' }]}, function (err, doc) {
-          if (!err) {
-            for (let n = 0; n < doc.length; n++) {
-              Seigniorage.methods.getOrder(1, doc[n].orderID).call(undefined,i-1, function (error, result) {
-                if (!error && result.maker != '0x0000000000000000000000000000000000000000' && result.want<doc.wantAmount) {
-                  Trade.findOneAndUpdate({orderID: doc[n].orderID}, {
-                    $set: {
-                      status: 'filling',
-                      haveAmountnow: result.have,
-                      wantAmountnow: result.want,
-                    }}, {useFindAndModify: false}, function (err, doc) {
-                    if (err) return handleError(err);
-                  });
-                }else if (!error && result.maker  == '0x0000000000000000000000000000000000000000') {
-                  Trade.findOneAndUpdate({orderID: doc[n].orderID}, {$set: {status: 'filled'}}, {useFindAndModify: false}, function (err, doc) {
-                    if (err) return handleError(err);
-                  });
-                }
-              });
-            }
-          }
-        });
-    
+          scanning_old_blocks++
+        } else {
+          console.log('else')
+          scanning_old_blocks = 1
+          await scanBlock(new_block.number - 6)
+        }
+      })
+    }
   })
-  // web3.eth.subscribe('newBlockHeaders', function (error, new_block) {
-  //   if (!error) {
-  //     Trade.findOne().sort({number: -1}).exec(async function (err, db_block) {
-  //       if (db_block == null) {
-  //         db_block = {number: cursor}
-  //       }
-  //       Trade.deleteMany({number: {$lte: db_block.number - 1000},status: 'false'}, function (err, res) {
-  //         if (err) console.log(err)
-  //       })
-  //       if (db_block.number < new_block.number - 6) {
-  //         let _from_block = Math.max(db_block.number, cursor)
-  //         let _to_block = Math.min(new_block.number - 6, db_block.number + 200)
-  //         console.log("db " + db_block.number)
-  //         console.log("new " + new_block.number)
-  //         await scanBlock(_from_block + 1, _to_block)
-  //       } else {
-  //         await scanBlock(new_block.number - 6, new_block.number - 6)
-  //       }
-  //     })
-  //   }
-  // })
+
+  async function scanOldBlock() {
+    let array = []
+    Trade.findOne().sort({number: -1}).exec(async function (err, db_block) {
+      if (db_block == null) db_block = {number: cursor}
+      Trade.deleteMany({number: {$lte: db_block.number - 100},status: 'false'}, function (err, res) {
+        if (err) console.log(err)
+      })
+      array.splice(0, 100)
+      if (db_block.number < current_new_block - 7) {
+        let _from_block = Math.max(db_block.number, cursor)
+        let _to_block = Math.min(current_new_block - 6, db_block.number + 10)
+        console.log("db " + db_block.number)
+        console.log("new " + current_new_block)
+        console.log("from " + _from_block)
+        console.log("to " + _to_block)
+        // await scanBlock(_from_block + 1, _to_block)
+        for (let i = _from_block + 1; i <= _to_block; i++) array.push(i)
+        processArray(array)
+      }
+    })
+  }
+
+  async function processArray(array) {
+    const promises = array.map(scanBlock);
+    // wait until all promises are resolved
+    await Promise.all(promises);
+    scanOldBlock()
+  }
+  res.send('...............')
 }
 
 module.exports.block = async function (req, res) {
   let cursor = 26500000
   scanBlock = async (_from_block, _to_block) => {
     let e1 = new Promise((resolve, reject) => {
-      Seigniorage.getPastEvents('Propose', {
-        fromBlock: _from_block,
-        toBlock: _to_block
-      }, async function (error, result) {
+      Seigniorage.getPastEvents('Propose', {fromBlock: _from_block,toBlock: _to_block}, async function (error, result) {
         if (result['0'] !== undefined) {
           let eventparam = web3.eth.abi.decodeLog([{
             type: 'address',
@@ -233,14 +275,6 @@ module.exports.block = async function (req, res) {
           }], result['0'].raw.data, result['0'].raw.topics)
           web3.eth.getBlock(result['0'].blockNumber, async function (error, result1) {
             if (!error) {
-              let time = result1.timestamp
-              let date = new Date(time * 1000);
-              let day = date.getDate();
-              let month = date.getMonth();
-              let hours = date.getHours();
-              let minutes = "0" + date.getMinutes();
-              let seconds = "0" + date.getSeconds();
-              let formattedTime = day + '-' + ("0" + month + 1).slice(-2) + ' ' + hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
               let data = {
                 status: true,
                 number: result['0'].blockNumber,
@@ -252,7 +286,7 @@ module.exports.block = async function (req, res) {
                   param4: 'LockdownExpiration: ' + eventparam[3],
                   param5: 'SlashingRate: ' + eventparam[4]
                 },
-                time: formattedTime
+                time: result1.timestamp
               }
               resolve(data)
             }
@@ -264,10 +298,7 @@ module.exports.block = async function (req, res) {
     })
 
     let e2 = new Promise((resolve, reject) => {
-      Seigniorage.getPastEvents('Unlock', {
-        fromBlock: _from_block,
-        toBlock: _to_block
-      }, async function (error, result) {
+      Seigniorage.getPastEvents('Unlock', {fromBlock: _from_block, toBlock: _to_block}, async function (error, result) {
         if (result['0'] !== undefined) {
           let eventparam = web3.eth.abi.decodeLog([{
             type: 'address',
@@ -290,10 +321,7 @@ module.exports.block = async function (req, res) {
     })
 
     let e3 = new Promise((resolve, reject) => {
-      Seigniorage.getPastEvents('Slash', {
-        fromBlock: _from_block,
-        toBlock: _to_block
-      }, async function (error, result) {
+      Seigniorage.getPastEvents('Slash', {fromBlock: _from_block, toBlock: _to_block}, async function (error, result) {
         if (result['0'] !== undefined) {
           let eventparam = web3.eth.abi.decodeLog([{
             type: 'address',
@@ -320,10 +348,7 @@ module.exports.block = async function (req, res) {
     })
 
     let e4 = new Promise((resolve, reject) => {
-      Seigniorage.getPastEvents('Revoke', {
-        fromBlock: _from_block,
-        toBlock: _to_block
-      }, async function (error, result) {
+      Seigniorage.getPastEvents('Revoke', {fromBlock: _from_block, toBlock: _to_block}, async function (error, result) {
         if (result['0'] !== undefined) {
           let eventparam = web3.eth.abi.decodeLog([{
             type: 'address',
@@ -346,10 +371,7 @@ module.exports.block = async function (req, res) {
     })
 
     let e5 = new Promise((resolve, reject) => {
-      Seigniorage.getPastEvents('Preemptive', {
-        fromBlock: _from_block,
-        toBlock: _to_block
-      }, async function (error, result) {
+      Seigniorage.getPastEvents('Preemptive', {fromBlock: _from_block, toBlock: _to_block}, async function (error, result) {
         if (result['0'] !== undefined) {
           let eventparam = web3.eth.abi.decodeLog([{
             type: 'address',
@@ -384,10 +406,7 @@ module.exports.block = async function (req, res) {
     })
 
     let e6 = new Promise((resolve, reject) => {
-      Seigniorage.getPastEvents('Absorption', {
-        fromBlock: _from_block,
-        toBlock: _to_block
-      }, async function (error, result) {
+      Seigniorage.getPastEvents('Absorption', {fromBlock: _from_block, toBlock: _to_block}, async function (error, result) {
         if (result['0'] !== undefined) {
           let eventparam = web3.eth.abi.decodeLog([{
             type: 'int256',
@@ -417,10 +436,7 @@ module.exports.block = async function (req, res) {
     })
 
     let e7 = new Promise((resolve, reject) => {
-      Seigniorage.getPastEvents('Stop', {
-        fromBlock: _from_block,
-        toBlock: _to_block
-      }, async function (error, result) {
+      Seigniorage.getPastEvents('Stop', {fromBlock: _from_block, toBlock: _to_block}, async function (error, result) {
         if (result['0'] !== undefined) {
           let eventparam = web3.eth.abi.decodeLog([], result['0'].raw.data, result['0'].raw.topics)
           let data = {
@@ -436,10 +452,7 @@ module.exports.block = async function (req, res) {
     })
 
     let e8 = new Promise((resolve, reject) => {
-      StableToken.getPastEvents('Transfer', {
-        fromBlock: _from_block,
-        toBlock: _to_block
-      }, async function (error, result) {
+      StableToken.getPastEvents('Transfer', {fromBlock: _from_block, toBlock: _to_block}, async function (error, result) {
         if (result['0'] !== undefined) {
           let eventparam = web3.eth.abi.decodeLog([{
             type: 'address',
@@ -455,14 +468,6 @@ module.exports.block = async function (req, res) {
           }], result['0'].raw.data, result['0'].raw.topics)
           web3.eth.getBlock(result['0'].blockNumber, async function (error, result1) {
             if (!error) {
-              let time = result1.timestamp
-              let date = new Date(time * 1000);
-              let day = date.getDate();
-              let month = date.getMonth();
-              let hours = date.getHours();
-              let minutes = "0" + date.getMinutes();
-              let seconds = "0" + date.getSeconds();
-              let formattedTime = day + '-' + ("0" + month + 1).slice(-2) + ' ' + hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
               let data = {
                 status: true,
                 number: result['0'].blockNumber,
@@ -472,7 +477,7 @@ module.exports.block = async function (req, res) {
                   param2: 'To: ' + eventparam[1],
                   param3: 'Value: ' + weiToNUSD(eventparam[2]) + ' NewSD',
                 },
-                time: formattedTime
+                time: result1.timestamp
               }
               resolve(data)
             }
@@ -484,10 +489,7 @@ module.exports.block = async function (req, res) {
     })
 
     let e9 = new Promise((resolve, reject) => {
-      StableToken.getPastEvents('Transfer', {
-        fromBlock: _from_block,
-        toBlock: _to_block
-      }, async function (error, result) {
+      StableToken.getPastEvents('Transfer', {fromBlock: _from_block, toBlock: _to_block}, async function (error, result) {
         if (result['0'] !== undefined) {
           let eventparam = web3.eth.abi.decodeLog([{
               "indexed": true,
@@ -512,14 +514,6 @@ module.exports.block = async function (req, res) {
           ], result['0'].raw.data, result['0'].raw.topics)
           web3.eth.getBlock(result['0'].blockNumber, async function (error, result1) {
             if (!error) {
-              let time = result1.timestamp
-              let date = new Date(time * 1000);
-              let day = date.getDate();
-              let month = date.getMonth();
-              let hours = date.getHours();
-              let minutes = "0" + date.getMinutes();
-              let seconds = "0" + date.getSeconds();
-              let formattedTime = day + '-' + ("0" + month + 1).slice(-2) + ' ' + hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
               let data = {
                 status: true,
                 number: result['0'].blockNumber,
@@ -530,7 +524,7 @@ module.exports.block = async function (req, res) {
                   param3: 'Value: ' + weiToMNTY(eventparam[2]) + ' MNTY',
                   param4: 'data: ' + eventparam[3],
                 },
-                time: formattedTime
+                time: result1.timestamp
               }
               resolve(data)
             }
@@ -542,10 +536,7 @@ module.exports.block = async function (req, res) {
     })
 
     let e10 = new Promise((resolve, reject) => {
-      StableToken.getPastEvents('OwnershipTransferred', {
-        fromBlock: _from_block,
-        toBlock: _to_block
-      }, async function (error, result) {
+      StableToken.getPastEvents('OwnershipTransferred', {fromBlock: _from_block, toBlock: _to_block}, async function (error, result) {
         if (result['0'] !== undefined) {
           let eventparam = web3.eth.abi.decodeLog([{
               indexed: true,
@@ -575,10 +566,7 @@ module.exports.block = async function (req, res) {
     })
 
     let e11 = new Promise((resolve, reject) => {
-      StableToken.getPastEvents('Approval', {
-        fromBlock: _from_block,
-        toBlock: _to_block
-      }, async function (error, result) {
+      StableToken.getPastEvents('Approval', {fromBlock: _from_block, toBlock: _to_block}, async function (error, result) {
         if (result['0'] !== undefined) {
           let eventparam = web3.eth.abi.decodeLog([{
               indexed: true,
@@ -614,10 +602,7 @@ module.exports.block = async function (req, res) {
     })
 
     let e12 = new Promise((resolve, reject) => {
-      VolatileToken.getPastEvents('Transfer', {
-        fromBlock: _from_block,
-        toBlock: _to_block
-      }, async function (error, result) {
+      VolatileToken.getPastEvents('Transfer', {fromBlock: _from_block, toBlock: _to_block}, async function (error, result) {
         if (result['0'] !== undefined) {
           let eventparam = web3.eth.abi.decodeLog([{
             type: 'address',
@@ -633,14 +618,6 @@ module.exports.block = async function (req, res) {
           }], result['0'].raw.data, result['0'].raw.topics)
           web3.eth.getBlock(result['0'].blockNumber, async function (error, result1) {
             if (!error) {
-              let time = result1.timestamp
-              let date = new Date(time * 1000);
-              let day = date.getDate();
-              let month = date.getMonth();
-              let hours = date.getHours();
-              let minutes = "0" + date.getMinutes();
-              let seconds = "0" + date.getSeconds();
-              let formattedTime = day + '-' + ("0" + month + 1).slice(-2) + ' ' + hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
               let data = {
                 status: true,
                 number: result['0'].blockNumber,
@@ -650,7 +627,7 @@ module.exports.block = async function (req, res) {
                   param2: 'To: ' + eventparam[1],
                   param3: 'Value: ' + weiToMNTY(eventparam[2]) + ' MNTY',
                 },
-                time: formattedTime
+                time: result1.timestamp
               }
               resolve(data)
             }
@@ -662,10 +639,7 @@ module.exports.block = async function (req, res) {
     })
 
     let e13 = new Promise((resolve, reject) => {
-      VolatileToken.getPastEvents('Transfer', {
-        fromBlock: _from_block,
-        toBlock: _to_block
-      }, async function (error, result) {
+      VolatileToken.getPastEvents('Transfer', {fromBlock: _from_block, toBlock: _to_block}, async function (error, result) {
         if (result['0'] !== undefined) {
           let eventparam = web3.eth.abi.decodeLog([{
               "indexed": true,
@@ -690,14 +664,6 @@ module.exports.block = async function (req, res) {
           ], result['0'].raw.data, result['0'].raw.topics)
           web3.eth.getBlock(result['0'].blockNumber, async function (error, result1) {
             if (!error) {
-              let time = result1.timestamp
-              let date = new Date(time * 1000);
-              let day = date.getDate();
-              let month = date.getMonth();
-              let hours = date.getHours();
-              let minutes = "0" + date.getMinutes();
-              let seconds = "0" + date.getSeconds();
-              let formattedTime = day + '-' + ("0" + month + 1).slice(-2) + ' ' + hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
               let data = {
                 status: true,
                 number: result['0'].blockNumber,
@@ -708,7 +674,7 @@ module.exports.block = async function (req, res) {
                   param3: 'Value: ' + weiToMNTY(eventparam[2]) + ' MNTY',
                   param4: 'data: ' + eventparam[3],
                 },
-                time: formattedTime
+                time: result1.timestamp
               }
               resolve(data)
             }
@@ -720,10 +686,7 @@ module.exports.block = async function (req, res) {
     })
 
     let e14 = new Promise((resolve, reject) => {
-      VolatileToken.getPastEvents('OwnershipTransferred', {
-        fromBlock: _from_block,
-        toBlock: _to_block
-      }, async function (error, result) {
+      VolatileToken.getPastEvents('OwnershipTransferred', {fromBlock: _from_block, toBlock: _to_block}, async function (error, result) {
         if (result['0'] !== undefined) {
           let eventparam = web3.eth.abi.decodeLog([{
               indexed: true,
@@ -753,10 +716,7 @@ module.exports.block = async function (req, res) {
     })
 
     let e15 = new Promise((resolve, reject) => {
-      VolatileToken.getPastEvents('Approval', {
-        fromBlock: _from_block,
-        toBlock: _to_block
-      }, async function (error, result) {
+      VolatileToken.getPastEvents('Approval', {fromBlock: _from_block, toBlock: _to_block}, async function (error, result) {
         if (result['0'] !== undefined) {
           let eventparam = web3.eth.abi.decodeLog([{
               indexed: true,
@@ -791,13 +751,10 @@ module.exports.block = async function (req, res) {
       })
     })
 
-    Promise.all([e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15])
+    Promise.all([e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15])
       .then(data => {
         if (data[0] == null && data[1] == null && data[2] == null && data[3] == null && data[4] == null && data[5] == null && data[6] == null && data[7] == null && data[8] == null && data[9] == null && data[10] == null && data[11] == null && data[12] == null && data[13] == null && data[14] == null) {
-          Data.create({
-            status: false,
-            number: _to_block
-          }, function (err) {
+          Data.create({status: false,number: _to_block}, function (err) {
             if (err) return handleError(err);
           });
         } else {
@@ -813,24 +770,12 @@ module.exports.block = async function (req, res) {
         console.log(reason)
       });
   }
-  // scanBlock(28587379,28588311)
 
   web3.eth.subscribe('newBlockHeaders', function (error, new_block) {
     if (!error) {
-      Data.findOne().sort({
-        number: -1
-      }).exec(async function (err, db_block) {
-        if (db_block == null) {
-          db_block = {
-            number: cursor
-          }
-        }
-        Data.deleteMany({
-          number: {
-            $lte: db_block.number - 1000
-          },
-          status: false
-        }, function (err, res) {
+      Data.findOne().sort({number: -1}).exec(async function (err, db_block) {
+        if (db_block == null) db_block = {number: cursor}
+        Data.deleteMany({number: {$lte: db_block.number - 1000},status: false}, function (err, res) {
           if (err) console.log(err)
         })
         if (db_block.number < new_block.number - 6) {
@@ -845,74 +790,38 @@ module.exports.block = async function (req, res) {
   })
 }
 
-
-
 module.exports.show = async function (req, res) {
-  let show = await Data.find({
-    status: true,
-  }).sort({
-    blockNumber: -1
-  })
+  let show = await Data.find({status: true,}).sort({blockNumber: -1})
   res.json(show)
 }
 
 module.exports.preemptive = async function (req, res) {
-  let show = await Data.find({
-    status: true,
-    Event: "Preemptive"
-  }).sort({
-    blockNumber: -1
-  })
+  let show = await Data.find({status: true,Event: "Preemptive"}).sort({blockNumber: -1})
   res.json(show)
 }
 
 module.exports.propose = async function (req, res) {
-  let show = await Data.find({
-    status: true,
-    name: "Event: Propose"
-  }).sort({
-    blockNumber: -1
-  })
+  let show = await Data.find({status: true,name: "Event: Propose"}).sort({blockNumber: -1})
   res.json(show)
 }
 
 module.exports.transfer = async function (req, res) {
-  let show = await Data.find({
-    status: true,
-    name: "Event: Transfer"
-  }).sort({
-    blockNumber: -1
-  })
+  let show = await Data.find({status: true,name: "Event: Transfer"}).sort({blockNumber: -1})
   res.json(show)
 }
 
 module.exports.absorption = async function (req, res) {
-  let show = await Data.find({
-    status: true,
-    name: "Event: Absorption"
-  }).sort({
-    blockNumber: -1
-  })
+  let show = await Data.find({status: true,name: "Event: Absorption"}).sort({blockNumber: -1})
   res.json(show)
 }
 
 module.exports.slash = async function (req, res) {
-  let show = await Data.find({
-    status: true,
-    name: "Event: Slash"
-  }).sort({
-    blockNumber: -1
-  })
+  let show = await Data.find({status: true,name: "Event: Slash"}).sort({blockNumber: -1})
   res.json(show)
 }
 
 module.exports.approval = async function (req, res) {
-  let show = await Data.find({
-    status: true,
-    name: "Event: Approval"
-  }).sort({
-    blockNumber: -1
-  })
+  let show = await Data.find({status: true,name: "Event: Approval"}).sort({blockNumber: -1})
   res.json(show)
 }
 
@@ -924,64 +833,47 @@ module.exports.clear = async function (req, res) {
 }
 
 module.exports.gettoptrade = async function (req, res) {
-  let show = await Trade.find({status:'order'}).limit(40).sort({
-    blockNumber: -1
-  })
+  let show = await Trade.find({status: 'order'}).limit(40).sort({number: -1})
   res.json(show)
 }
 
 module.exports.getopenorder = async function (req, res) {
-  const queryObject = url.parse(req.url,true).query;
+  const queryObject = url.parse(req.url, true).query;
   let address = queryObject.address
   let from = parseInt(queryObject.from)
   let to = parseInt(queryObject.to)
-  
-  let show = await Trade.find({
-    $or: [ { status: 'order' }, { status: 'filling' } ]
-    , address : address.toLowerCase()
-    , time: {$gte: from, $lte: to}
-  }).sort({
-    blockNumber: -1
-  })
-  console.log(show)
+  let show = await Trade.find({$or: [{status: 'order'}, {status: 'filling'}],address: address,time: {$gte: from, $lte: to}}).sort({blockNumber: -1})
   res.json(show)
 }
 
 module.exports.getopenhistory = async function (req, res) {
-  const queryObject = url.parse(req.url,true).query;
+  const queryObject = url.parse(req.url, true).query;
   let address = queryObject.address
   let from = parseInt(queryObject.from)
   let to = parseInt(queryObject.to)
-  
-  let show = await Trade.find({
-    $or: [ { status: 'canceled' }, { status: 'filled' }, { status: 'order' } ],
-    address : address.toLowerCase(),
-    time: {$gte: from, $lte: to}
-  }).sort({
-    blockNumber: -1
-  })
+  let show = await Trade.find({$or: [{status: 'canceled'}, {status: 'filled'}, {status: 'order'}],address: address,time: {$gte: from, $lte: to}}).sort({blockNumber: -1})
   res.json(show)
 }
 
 module.exports.gettradehistory = async function (req, res) {
-  const queryObject = url.parse(req.url,true).query;
+  const queryObject = url.parse(req.url, true).query;
   let address = queryObject.address
   let from = parseInt(queryObject.from)
   let to = parseInt(queryObject.to)
-  
-  let show = await Trade.find({
-    $or: [ { status: 'filling' }, { status: 'filled' } ],
-    address : address.toLowerCase(),
-    time: {$gte: from, $lte: to}
-  }).sort({
-    blockNumber: -1
-  })
+  let show = await Trade.find({$or: [{status: 'filling'}, {status: 'filled'}],address: address,time: {$gte: from, $lte: to}}).sort({blockNumber: -1})
+  res.json(show)
+}
+
+module.exports.getlastestfill = async function (req, res) {
+  let show = await Trade.find({status: 'filled'}).limit(1).sort({filledTime: -1})
+  res.json(show[0].price)
+}
+
+module.exports.getcandle = async function (req, res) {let show = await Candle.find({}).sort({time: 1})
   res.json(show)
 }
 
 module.exports.tradeclear = async function (req, res) {
-  Trade.deleteMany({}, function (err, res) {
-    if (err) console.log(err)
-  })
+  Trade.deleteMany({}, function (err, res) {if (err) console.log(err)})
   res.send('da xoa DB')
 }

@@ -28,6 +28,8 @@ router.get('/clear', controller.clear)
 
 router.get('/tradeclear', controller.tradeclear)
 
+router.get('/candleclear', controller.candleclear)
+
 //trade
 router.get('/gettoptrade', controller.gettoptrade) 
 
@@ -39,9 +41,12 @@ router.get('/get-open-order', controller.getopenorder)
 
 router.get('/get-lastest-fill', controller.getlastestfill)
 
+//Candle
 router.get('/candle', controller.candle)
 
 router.get('/getcandle', controller.getcandle)
+
+router.get('/getcandle30', controller.getcandle30)
 
 
 module.exports = router

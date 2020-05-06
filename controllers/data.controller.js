@@ -159,9 +159,48 @@ module.exports.trade = async function (req, res) {
           if (id === "7ca3c7c7" && e.to == volatileTokenAddress) { //depositAndTrade(bytes32,uint256,uint256,bytes32) trade(bytes32,uint256,uint256,bytes32) id === "37a7113d" || 
             let decode = web3.eth.abi.decodeParameters(['bytes32', 'uint256', 'uint256', 'bytes32'], para);
             const packed = e.from.substring(2) + decode["0"].substring(2)
-            Trade.findOne({
-              orderID: '0x' + sha256(Buffer.from(packed, 'hex'))
-            }).exec(async function (err, db) {
+            if (db == null) {
+              Trade.create({
+                status: 'order',
+                address: e.from,
+                to: e.to,
+                haveAmount: weiToMNTY(decode["1"]) + ' MNTY',
+                wantAmount: weiToNUSD(decode["2"]) + ' NewSD',
+                price: parseFloat(weiToMNTY(decode["1"])) / parseFloat(weiToNUSD(decode["2"])),
+                haveAmountNow: weiToMNTY(decode["1"]) + ' MNTY',
+                wantAmountNow: weiToNUSD(decode["2"]) + ' NewSD',
+                orderID: '0x' + sha256(Buffer.from(packed, 'hex')),
+                number: result.number,
+                time: result.timestamp,
+                filledTime: 0
+              }, function (err) {
+                if (err) return handleError(err);
+              });
+            }
+          } else if (id === "7ca3c7c7" && e.to == stableTokenAddress) {
+            let decode = web3.eth.abi.decodeParameters(['bytes32', 'uint256', 'uint256', 'bytes32'], para);
+            const packed = e.from.substring(2) + decode["0"].substring(2)
+            if (db == null) {
+              Trade.create({
+                status: 'order',
+                address: e.from,
+                to: e.to,
+                haveAmount: weiToNUSD(decode["1"]) + ' NewSD',
+                wantAmount: weiToMNTY(decode["2"]) + ' MNTY',
+                price: parseFloat(weiToMNTY(decode["2"])) / parseFloat(weiToNUSD(decode["1"])),
+                haveAmountNow: weiToNUSD(decode["1"]) + ' NewSD',
+                wantAmountNow: weiToMNTY(decode["2"]) + ' MNTY',
+                orderID: '0x' + sha256(Buffer.from(packed, 'hex')),
+                number: result.number,
+                time: result.timestamp,
+                filledTime: 0
+              }, function (err) {
+                if (err) return handleError(err);
+              });
+            }
+          } else if (id === "37a7113d" && e.to == volatileTokenAddress) { //depositAndTrade(bytes32,uint256,uint256,bytes32) trade(bytes32,uint256,uint256,bytes32) id === "37a7113d" || 
+            let decode = web3.eth.abi.decodeParameters(['bytes32', 'uint256', 'uint256', 'bytes32'], para);
+            const packed = e.from.substring(2) + decode["0"].substring(2)
               if (db == null) {
                 Trade.create({
                   status: 'order',
@@ -180,82 +219,27 @@ module.exports.trade = async function (req, res) {
                   if (err) return handleError(err);
                 });
               }
-            })
-          } else if (id === "7ca3c7c7" && e.to == stableTokenAddress) {
-              let decode = web3.eth.abi.decodeParameters(['bytes32', 'uint256', 'uint256', 'bytes32'], para);
-              const packed = e.from.substring(2) + decode["0"].substring(2)
-              Trade.findOne({
-                orderID: '0x' + sha256(Buffer.from(packed, 'hex'))
-              }).exec(async function (err, db) {
-                if (db == null) {
-                  Trade.create({
-                    status: 'order',
-                    address: e.from,
-                    to: e.to,
-                    haveAmount: weiToNUSD(decode["1"]) + ' NewSD',
-                    wantAmount: weiToMNTY(decode["2"]) + ' MNTY',
-                    price: parseFloat(weiToMNTY(decode["2"])) / parseFloat(weiToNUSD(decode["1"])),
-                    haveAmountNow: weiToNUSD(decode["1"]) + ' NewSD',
-                    wantAmountNow: weiToMNTY(decode["2"]) + ' MNTY',
-                    orderID: '0x' + sha256(Buffer.from(packed, 'hex')),
-                    number: result.number,
-                    time: result.timestamp,
-                    filledTime: 0
-                  }, function (err) {
-                    if (err) return handleError(err);
-                  });
-                }
-              })
-          } else if (id === "37a7113d" && e.to == volatileTokenAddress) { //depositAndTrade(bytes32,uint256,uint256,bytes32) trade(bytes32,uint256,uint256,bytes32) id === "37a7113d" || 
-              let decode = web3.eth.abi.decodeParameters(['bytes32', 'uint256', 'uint256', 'bytes32'], para);
-              const packed = e.from.substring(2) + decode["0"].substring(2)
-              Trade.findOne({
-                orderID: '0x' + sha256(Buffer.from(packed, 'hex'))
-              }).exec(async function (err, db) {
-                if (db == null) {
-                  Trade.create({
-                    status: 'order',
-                    address: e.from,
-                    to: e.to,
-                    haveAmount: weiToMNTY(decode["1"]) + ' MNTY',
-                    wantAmount: weiToNUSD(decode["2"]) + ' NewSD',
-                    price: parseFloat(weiToMNTY(decode["1"])) / parseFloat(weiToNUSD(decode["2"])),
-                    haveAmountNow: weiToMNTY(decode["1"]) + ' MNTY',
-                    wantAmountNow: weiToNUSD(decode["2"]) + ' NewSD',
-                    orderID: '0x' + sha256(Buffer.from(packed, 'hex')),
-                    number: result.number,
-                    time: result.timestamp,
-                    filledTime: 0
-                  }, function (err) {
-                    if (err) return handleError(err);
-                  });
-                }
-              })
           }else if (id === "37a7113d" && e.to == stableTokenAddress) {
             let decode = web3.eth.abi.decodeParameters(['bytes32', 'uint256', 'uint256', 'bytes32'], para);
             const packed = e.from.substring(2) + decode["0"].substring(2)
-            Trade.findOne({
-              orderID: '0x' + sha256(Buffer.from(packed, 'hex'))
-            }).exec(async function (err, db) {
-              if (db == null) {
-                Trade.create({
-                  status: 'order',
-                  address: e.from,
-                  to: e.to,
-                  haveAmount: weiToNUSD(decode["1"]) + ' NewSD',
-                  wantAmount: weiToMNTY(decode["2"]) + ' MNTY',
-                  price: parseFloat(weiToMNTY(decode["2"])) / parseFloat(weiToNUSD(decode["1"])),
-                  haveAmountNow: weiToNUSD(decode["1"]) + ' NewSD',
-                  wantAmountNow: weiToMNTY(decode["2"]) + ' MNTY',
-                  orderID: '0x' + sha256(Buffer.from(packed, 'hex')),
-                  number: result.number,
-                  time: result.timestamp,
-                  filledTime: 0
-                }, function (err) {
-                  if (err) return handleError(err);
-                });
-              }
-            })
+            if (db == null) {
+              Trade.create({
+                status: 'order',
+                address: e.from,
+                to: e.to,
+                haveAmount: weiToNUSD(decode["1"]) + ' NewSD',
+                wantAmount: weiToMNTY(decode["2"]) + ' MNTY',
+                price: parseFloat(weiToMNTY(decode["2"])) / parseFloat(weiToNUSD(decode["1"])),
+                haveAmountNow: weiToNUSD(decode["1"]) + ' NewSD',
+                wantAmountNow: weiToMNTY(decode["2"]) + ' MNTY',
+                orderID: '0x' + sha256(Buffer.from(packed, 'hex')),
+                number: result.number,
+                time: result.timestamp,
+                filledTime: 0
+              }, function (err) {
+                if (err) return handleError(err);
+              });
+            }
           } else if (id == "43271d79") { //cancel(bool, ID bytes32)
             let decode = web3.eth.abi.decodeParameters(['bool', 'bytes32'], para);
             Trade.findOneAndUpdate({orderID: decode["1"]}, {$set: {status: 'canceled'}}, {useFindAndModify: false}, function (err, doc) {

@@ -334,7 +334,7 @@ module.exports.trade = async function (req, res) {
   })
 
   async function scanOldBlock() {
-    console.log(current_new_block)
+    // console.log(current_new_block)
     Trade.findOne().sort({number: -1}).exec(async function (err, db_block) {
       if (db_block == null) db_block = {number: cursor}
       Trade.deleteMany({number: {$lte: db_block.number - 1000},status: 'false'}, function (err, res) {

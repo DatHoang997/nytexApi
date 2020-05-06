@@ -318,9 +318,12 @@ module.exports.trade = async function (req, res) {
         // console.log('New block', current_new_block, new_block.number, scanning_old_blocks)
         if (db_block.number < new_block.number - 7) {
           if (scanning_old_blocks === 1) {
-            console.log('ifffffffffffff')
-            scanOldBlock()
-            scanning_old_blocks++
+            console.log('xoaaaaaaaaaaaaaaaaaaaaaaaaaaa')
+            Trade.deleteMany({number: {$gte: db_block.number - 10},status: 'false'}, function (err, res) {
+              if (err) console.log(err)
+                scanOldBlock()
+                scanning_old_blocks++
+            })
           }else scanning_old_blocks++
         } else {
           console.log('else')
@@ -340,16 +343,12 @@ module.exports.trade = async function (req, res) {
       })
       array.splice(0, 100)
       if (db_block.number < current_new_block - 7) {
-        console.log('xoaaaaaaaaaaaaaaaaaaaaaaaaaaa')
-        Trade.deleteMany({number: {$gte: db_block.number - 10},status: 'false'}, function (err, res) {
-          if (err) console.log(err)
           let _from_block = Math.max(db_block.number, cursor)
           // let _to_block = Math.min(current_new_block - 6, db_block.number + 5)
           // console.log('db ' , db_block.number, 'new ' , current_new_block, 'from ' , _from_block,'to ' , _to_block)
           // for (let i = _from_block + 1; i <= _to_block; i++) 
           array.push(_from_block+1)
           processArray(array)
-        })
       }
     })
   }

@@ -145,7 +145,7 @@ module.exports.trade = async function (req, res) {
 
   let cursor = 32251021
   async function scanBlock(i) {
-    console.log('bl',i)
+    console.log(i)
     Trade.create({status: 'false', number: i}, function (err) {
       if (err) return handleError(err);
     });
@@ -260,7 +260,7 @@ module.exports.trade = async function (req, res) {
             let decode = web3.eth.abi.decodeParameters(['bool', 'bytes32'], para);
             Trade.findOneAndUpdate({orderID: decode["1"]}, {$set: {status: 'canceled'}}, {useFindAndModify: false}, function (err, doc) {
               if (err) return handleError(err);
-              console.log('cancel',decode["1"] )
+              // console.log('cancel',decode["1"] )
             });
           }
         })
@@ -318,7 +318,6 @@ module.exports.trade = async function (req, res) {
         // console.log('New block', current_new_block, new_block.number, scanning_old_blocks)
         if (db_block.number < new_block.number - 7) {
           if (scanning_old_blocks === 1) {
-            console.log('xoaaaaaaaaaaaaaaaaaaaaaaaaaaa')
             Trade.deleteMany({number: {$gte: db_block.number - 10},status: 'false'}, function (err, res) {
               if (err) console.log(err)
                 scanOldBlock()
@@ -335,7 +334,7 @@ module.exports.trade = async function (req, res) {
   })
 
   async function scanOldBlock() {
-    console.log(current_new_block)
+    // console.log(current_new_block)
     Trade.findOne().sort({number: -1}).exec(async function (err, db_block) {
       if (db_block == null) db_block = {number: cursor}
       Trade.deleteMany({number: {$lte: db_block.number - 1000},status: 'false'}, function (err, res) {

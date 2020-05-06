@@ -23,7 +23,7 @@ let StableToken = new web3.eth.Contract(StableTokenABI, stableTokenAddress);
 module.exports.candle = function (req, res) {
   function createFirstCandle(begin) {
     // console.log('run', begin)
-    end = begin + 90
+    end = begin + 900
     // console.log('end',end)
     Trade.find({status: 'filled', filledTime: {$gte: begin, $lt: end}}).exec( function (err, doc) {
       if (err) return handleError(err);
@@ -39,9 +39,9 @@ module.exports.candle = function (req, res) {
         if (err) return handleError(err);
         Trade.findOne().sort({time: -1}).exec(async function (err, doc) {
           if (err) return handleError(err);
-          if (end + 90 < doc.time) createCandle(end)
+          if (end + 900 < doc.time) createCandle(end)
           else {
-            let wait = (end + 90 - doc.time  + 5)*1000
+            let wait = (end + 900 - doc.time  + 5)*1000
             console.log('waitfirs',wait)
             setTimeout(function() {createCandle(end); }, wait)
           }
@@ -52,7 +52,7 @@ module.exports.candle = function (req, res) {
 
   function createCandle(begin) {
     // console.log('run', begin)
-    end = begin + 90
+    end = begin + 900
     // console.log('end',end)
     Trade.find({status: 'filled', filledTime: {$gte: begin, $lt: end}}).exec( function (err, doc) {
       if (err) return handleError(err);
@@ -72,9 +72,9 @@ module.exports.candle = function (req, res) {
             if (err) return handleError(err);
             Trade.findOne().sort({time: -1}).exec(async function (err, doc) {
               if (err) return handleError(err);
-              if (end + 90 < doc.time) createCandle(end)
+              if (end + 900 < doc.time) createCandle(end)
               else {
-                let wait = (end + 90 - doc.time  + 5)*1000
+                let wait = (end + 900 - doc.time  + 5)*1000
                 console.log('wait1',wait)
                 setTimeout(function() {createCandle(end); }, wait)
               }
@@ -96,10 +96,10 @@ module.exports.candle = function (req, res) {
             Trade.findOne().sort({time: -1}).exec(async function (err, doc) {
               // console.log(end, doc.time)
               if (err) return handleError(err);
-              if (end + 90 < doc.time) {
+              if (end + 900 < doc.time) {
                 createCandle(end)
               }else {
-                let wait = (end + 90 - doc.time  + 5)*1000
+                let wait = (end + 900 - doc.time  + 5)*1000
                 console.log('wait2',wait)
                 setTimeout(function() {createCandle(end); }, wait)
               }
@@ -211,23 +211,21 @@ module.exports.trade = async function (req, res) {
             });
           }
         })
-      }   
+      }
     });
-
     Trade.find({to: volatileTokenAddress,  $or: [{ status: 'order' }, { status: 'filling' }]}, function (err, doc) {
       if (err) return handleError(err);
       for (let n = 0; n < doc.length; n++) {
         Seigniorage.methods.getOrder(0, doc[n].orderID).call(undefined, i-1, function (error, result) {
-          if (!error && result.maker != burn && parseFloat(weiToNUSD(result.want))<parseFloat(doc[0].wantAmount.slice(0,-6))) {
-            Trade.findOneAndUpdate({
-              orderID: doc[n].orderID}, {
-                $set: {
-                  wantAmountNow: result.want,
-                }}, {useFindAndModify: false}, function (err, doc) {
+          if (err) return handleError(err);
+          if (!error && result.maker == burn) {
+            Trade.findOneAndUpdate({orderID: doc[n].orderID}, {$set: {status: 'filled', filledTime: new_block.timestamp}}, {useFindAndModify: false}, function (err, doc) {
               if (err) return handleError(err);
             });
-          }else if (!error && result.maker == burn) {
-            Trade.findOneAndUpdate({orderID: doc[n].orderID}, {$set: {status: 'filled', filledTime: new_block.timestamp}}, {useFindAndModify: false}, function (err, doc) {
+          } else if (result.maker != burn && parseFloat(weiToNUSD(result.want))<parseFloat(doc[0].wantAmount.slice(0,-6))) {
+            Trade.findOneAndUpdate({
+              orderID: doc[n].orderID}, {
+                $set: {status: 'filling', wantAmountNow: result.want}}, {useFindAndModify: false}, function (err, doc) {
               if (err) return handleError(err);
             });
           }
@@ -238,17 +236,15 @@ module.exports.trade = async function (req, res) {
       if (err) return handleError(err);
       for (let n = 0; n < doc.length; n++) {
         Seigniorage.methods.getOrder(1, doc[n].orderID).call(undefined,i-1, function (error, result) {
+          if (err) return handleError(err);
           // console.log(weiToMNTY(result.want)) parseFloat(doc.wantAmount.slice(0,-5))
-          if (!error && result.maker != burn && parseFloat(weiToNUSD(result.want))<parseFloat(doc[0].wantAmount.slice(0,-5))) {
-            Trade.findOneAndUpdate({orderID: doc[n].orderID}, {
-              $set: {
-                status: 'filling',
-                wantAmountNow: result.want,
-              }}, {useFindAndModify: false}, function (err, doc) {
+          if (result.maker  == burn) {
+            Trade.findOneAndUpdate({orderID: doc[n].orderID}, {$set: {status: 'filled', filledTime: new_block.timestamp}}, {useFindAndModify: false}, function (err, doc) {
               if (err) return handleError(err);
             });
-          }else if (!error && result.maker  == burn) {
-            Trade.findOneAndUpdate({orderID: doc[n].orderID}, {$set: {status: 'filled', filledTime: new_block.timestamp}}, {useFindAndModify: false}, function (err, doc) {
+          } else if (!error && result.maker != burn && parseFloat(weiToNUSD(result.want))<parseFloat(doc[0].wantAmount.slice(0,-5))) {
+            Trade.findOneAndUpdate({orderID: doc[n].orderID}, {
+              $set: {status: 'filling', wantAmountNow: result.want}}, {useFindAndModify: false}, function (err, doc) {
               if (err) return handleError(err);
             });
           }
@@ -306,14 +302,14 @@ module.exports.trade = async function (req, res) {
   //   scanOldBlock()
   // }
 
-  async function processArray(array) {
-    for await(const i of array) {
-      await scanBlock(i);
-    }
-    console.log('Done!');
-    scanOldBlock()
-  }
-  res.send('collecting...')
+  // async function processArray(array) {
+  //   for (const i of array) {
+  //     await scanBlock(i);
+  //   }
+  //   console.log('Done!');
+  //   scanOldBlock()
+  // }
+  // res.send('collecting...')
 }
 
 module.exports.block = async function (req, res) {
@@ -942,24 +938,81 @@ module.exports.getcandle = async function (req, res) {
 }
 
 module.exports.getcandle30 = async function (req, res) {
+  let result = []
+  function getCandle (from) {
+    let to = from + 1800
+    Candle.countDocuments({}).exec(async function (err, doc) {
+      if (err) return handleError(err)
+      let count = Math.floor(doc/2)
+      console.log(result.length, count)
+      Candle.find({time: {$gte: from, $lt: to}}).exec(function (err, doc1) {
+        if (err) return handleError(err)
+        console.log(doc1.length, result.length, count)
+        if(doc1.length > 1 && result.length < count) {
+          let array = []
+          for (let i = 0; i < 2 ; i++) array.push(doc1[i].top, doc1[i].bot)
+          let data = {
+            top : Math.max.apply(Math, array),
+            bot : Math.min.apply(Math, array),
+            open : doc1[0].open,
+            close : doc1[1].close,
+            time: doc1[0].time
+          }
+          result.push(data)
+          getCandle(to)
+          console.log(result)
+        }else {
+          console.log('else')
+          let show = result
+          console.log('show', show)
+          res.json(show)
+        }
+      })
+    })
+  }  
   Candle.findOne({}).sort({time: 1}).exec(function (err, doc) {
     if (err) return handleError(err)
-    Candle.find({time: {$gte: doc.time, $lt: doc.time+1800}}).exec(function (err, doc1) {
-      if (err) return handleError(err)
-      let array = []
-      for(let i; i < 4 ; i++) {
-        array.push(doc[i].top, doc[i].bot)
-      }
-      let data = {
-        top : Math.max.apply(Math, array),
-        bot : Math.min.apply(Math, array),
-        open : doc1[0].open,
-        close : doc1[3].close
-      }
-    })
-    res.json(data)
+    getCandle(doc.time)
   })
-  
+}
+
+module.exports.getcandle60 = async function (req, res) {
+  let result = []
+  function getCandle (from) {
+    let to = from + 3600
+    Candle.countDocuments({}).exec(async function (err, doc) {
+      if (err) return handleError(err)
+      let count = Math.floor(doc/4)
+      console.log(result.length, count)
+      Candle.find({time: {$gte: from, $lt: to}}).exec(function (err, doc1) {
+        if (err) return handleError(err)
+        console.log(doc1.length, result.length, count)
+        if(doc1.length > 1 && result.length < count) {
+          let array = []
+          for (let i = 0; i < 4 ; i++) array.push(doc1[i].top, doc1[i].bot)
+          let data = {
+            top : Math.max.apply(Math, array),
+            bot : Math.min.apply(Math, array),
+            open : doc1[0].open,
+            close : doc1[3].close,
+            time: doc1[0].time
+          }
+          result.push(data)
+          getCandle(to)
+          console.log(result)
+        }else {
+          console.log('else')
+          let show = result
+          console.log('show', show)
+          res.json(show)
+        }
+      })
+    })
+  }  
+  Candle.findOne({}).sort({time: 1}).exec(function (err, doc) {
+    if (err) return handleError(err)
+    getCandle(doc.time)
+  })
 }
 
 module.exports.tradeclear = async function (req, res) {

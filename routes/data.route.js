@@ -48,5 +48,7 @@ router.get('/getcandle', controller.getcandle)
 
 router.get('/getcandle30', controller.getcandle30)
 
+router.get('/getcandle60', controller.getcandle60)
+
 
 module.exports = router

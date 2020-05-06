@@ -143,7 +143,7 @@ module.exports.trade = async function (req, res) {
   let array = []
   console.log('start')
 
-  let cursor = 32251021
+  let cursor = 33157326
   async function scanBlock(i) {
     console.log(i)
     Trade.create({status: 'false', number: i}, function (err) {
@@ -950,6 +950,11 @@ module.exports.gettoptrade = async function (req, res) {
   res.json(show)
 }
 
+module.exports.alltrade = async function (req, res) {
+  let show = await Trade.find().sort({blockNumber: -1})
+  res.json(show)
+}
+
 module.exports.getopenorder = async function (req, res) {
   const queryObject = url.parse(req.url, true).query;
   let address = queryObject.address
@@ -1045,6 +1050,45 @@ module.exports.getcandle60 = async function (req, res) {
             bot : Math.min.apply(Math, array),
             open : doc1[0].open,
             close : doc1[3].close,
+            time: doc1[0].time
+          }
+          result.push(data)
+          getCandle(to)
+          console.log(result)
+        }else {
+          console.log('else')
+          let show = result
+          console.log('show', show)
+          res.json(show)
+        }
+      })
+    })
+  }  
+  Candle.findOne({}).sort({time: 1}).exec(function (err, doc) {
+    if (err) return handleError(err)
+    getCandle(doc.time)
+  })
+}
+
+module.exports.getcandle1 = async function (req, res) {
+  let result = []
+  function getCandle (from) {
+    let to = from + 864000
+    Candle.countDocuments({}).exec(async function (err, doc) {
+      if (err) return handleError(err)
+      let count = Math.floor(doc/96)
+      console.log(result.length, count)
+      Candle.find({time: {$gte: from, $lt: to}}).exec(function (err, doc1) {
+        if (err) return handleError(err)
+        console.log(doc1.length, result.length, count)
+        if(doc1.length > 1 && result.length < count) {
+          let array = []
+          for (let i = 0; i < 96 ; i++) array.push(doc1[i].top, doc1[i].bot)
+          let data = {
+            top : Math.max.apply(Math, array),
+            bot : Math.min.apply(Math, array),
+            open : doc1[0].open,
+            close : doc1[95].close,
             time: doc1[0].time
           }
           result.push(data)

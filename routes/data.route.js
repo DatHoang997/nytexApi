@@ -31,11 +31,13 @@ router.get('/tradeclear', controller.tradeclear)
 router.get('/candleclear', controller.candleclear)
 
 //trade
+router.get('/alltrade', controller.alltrade)
+
 router.get('/gettoptrade', controller.gettoptrade) 
 
-router.get('/get-open-history', controller.getopenhistory) 
+router.get('/get-open-history', controller.getopenhistory)
 
-router.get('/get-trade-history', controller.gettradehistory) 
+router.get('/get-trade-history', controller.gettradehistory)
 
 router.get('/get-open-order', controller.getopenorder)
 
@@ -49,6 +51,8 @@ router.get('/getcandle', controller.getcandle)
 router.get('/getcandle30', controller.getcandle30)
 
 router.get('/getcandle60', controller.getcandle60)
+
+router.get('/getcandle1', controller.getcandle1)
 
 
 module.exports = router

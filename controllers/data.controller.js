@@ -340,6 +340,7 @@ module.exports.trade = async function (req, res) {
       })
       array.splice(0, 100)
       if (db_block.number < current_new_block - 7) {
+        console.log('xoaaaaaaaaaaaaaaaaaaaaaaaaaaa')
         Trade.deleteMany({number: {$gte: db_block.number - 10},status: 'false'}, function (err, res) {
           if (err) console.log(err)
           let _from_block = Math.max(db_block.number, cursor)

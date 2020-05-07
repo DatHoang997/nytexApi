@@ -43,6 +43,8 @@ router.get('/get-open-order', controller.getopenorder)
 
 router.get('/get-lastest-fill', controller.getlastestfill)
 
+router.get('/filled', controller.filled)
+
 //Candle
 router.get('/candle', controller.candle)
 

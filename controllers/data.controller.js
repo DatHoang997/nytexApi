@@ -1097,3 +1097,7 @@ module.exports.candleclear = async function (req, res) {
   res.send('da xoa DB')
 }
 
+module.exports.filled = async function (req, res) {
+  let show = await Trade.find({status: 'filled'}).sort({filledTime: 1})
+  res.json(show)
+}

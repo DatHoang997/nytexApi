@@ -243,7 +243,7 @@ module.exports.trade = async function (req, res) {
         Trade.find({to: volatileTokenAddress,  $or: [{ status: 'order' }, { status: 'filling' }]}, function (err, doc) {
           if (err) return handleError(err);
           for (let n = 0; n < doc.length; n++) {
-            Seigniorage.methods.getOrder(0, doc[n].orderID).call(undefined, i-1, function (error, result1) {
+            Seigniorage.methods.getOrder(0, doc[n].orderID).call(undefined, i-6, function (error, result1) {
               if (err) return handleError(err);
               if (result1!=null && result1.maker == burn) {
                 Trade.findOneAndUpdate({orderID: doc[n].orderID}, {$set: {status: 'filled', filledTime: result.timestamp}}, {useFindAndModify: false}, function (err, doc) {
@@ -262,7 +262,7 @@ module.exports.trade = async function (req, res) {
         Trade.find({to: stableTokenAddress,  $or: [{status: 'order'}, {status: 'filling'}]}, function (err, doc) {
           if (err) return handleError(err);
           for (let n = 0; n < doc.length; n++) {
-            Seigniorage.methods.getOrder(1, doc[n].orderID).call(undefined,i-1, function (error, result1) {
+            Seigniorage.methods.getOrder(1, doc[n].orderID).call(undefined,i-6, function (error, result1) {
               if (err) return handleError(err);
               // console.log(weiToMNTY(result.want)) parseFloat(doc.wantAmount.slice(0,-5))
               if (result1!=null && result1.maker  == burn) {

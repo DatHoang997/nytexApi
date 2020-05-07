@@ -1101,3 +1101,9 @@ module.exports.filled = async function (req, res) {
   let show = await Trade.find({status: 'filled'}).sort({filledTime: 1})
   res.json(show)
 }
+
+module.exports.subscribe = async function (req, res) {
+  web3.eth.subscribe('newBlockHeaders', function (error, new_block) {
+    console.log(new_block.number)
+  })
+}

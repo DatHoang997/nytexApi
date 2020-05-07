@@ -1097,10 +1097,10 @@ module.exports.candleclear = async function (req, res) {
 }
 
 module.exports.del2 = async function (req, res) {
-  Candle.deleteOne({orderID:'0xf84c20bb12303c33a39e35c88be1b845db718246a73edb8318d30d57dd81f415'}, function (err, res) {if (err) console.log(err)})
+  Candle.deleteOne({number:28588091}, function (err, res) {if (err) console.log(err)})
   res.send('da xoa DB')
 }
 module.exports.del1 = async function (req, res) {
-  Candle.deleteOne({orderID:'0xd98457308d1b7786804f5d256ab6eda97b4c70421e5c016a7ba71de18b09d41c'}, function (err, res) {if (err) console.log(err)})
+  Candle.deleteOne({number:28588311}, function (err, res) {if (err) console.log(err)})
   res.send('da xoa DB')
 }

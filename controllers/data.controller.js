@@ -110,7 +110,6 @@ module.exports.candle = function (req, res) {
     })
   }
 
-
   //start
   console.log('start')
   Candle.findOne().sort({filledTime: -1}).exec(async function (err, doc) {
@@ -123,7 +122,6 @@ module.exports.candle = function (req, res) {
           createFirstCandle(doc1.filledTime) // first point
           res.send('collecting1...')
         } else res.send('Wait for the database to complete then run again')
-        
       })
     } else {
       Candle.findOne({}).sort({time: -1}).exec(async function (err, doc) {
@@ -143,7 +141,7 @@ module.exports.trade = async function (req, res) {
   let array = []
   console.log('start')
 
-  let cursor = 28000000
+  let cursor = 33068795 //28588000
   async function scanBlock(i) {
     console.log(i)
     Trade.create({status: 'false', number: i}, function (err) {
@@ -197,22 +195,22 @@ module.exports.trade = async function (req, res) {
           } else if (id === "37a7113d" && e.to == volatileTokenAddress) { //depositAndTrade(bytes32,uint256,uint256,bytes32) trade(bytes32,uint256,uint256,bytes32) id === "37a7113d" || 
             let decode = web3.eth.abi.decodeParameters(['bytes32', 'uint256', 'uint256', 'bytes32'], para);
             const packed = e.from.substring(2) + decode["0"].substring(2)
-              Trade.create({
-                status: 'order',
-                address: e.from,
-                to: e.to,
-                haveAmount: weiToMNTY(decode["1"]) + ' MNTY',
-                wantAmount: weiToNUSD(decode["2"]) + ' NewSD',
-                price: parseFloat(weiToMNTY(decode["1"])) / parseFloat(weiToNUSD(decode["2"])),
-                haveAmountNow: weiToMNTY(decode["1"]) + ' MNTY',
-                wantAmountNow: weiToNUSD(decode["2"]) + ' NewSD',
-                orderID: '0x' + sha256(Buffer.from(packed, 'hex')),
-                number: result.number,
-                time: result.timestamp,
-                filledTime: 0
-              }, function (err) {
-                if (err) return handleError(err);
-              });
+            Trade.create({
+              status: 'order',
+              address: e.from,
+              to: e.to,
+              haveAmount: weiToMNTY(decode["1"]) + ' MNTY',
+              wantAmount: weiToNUSD(decode["2"]) + ' NewSD',
+              price: parseFloat(weiToMNTY(decode["1"])) / parseFloat(weiToNUSD(decode["2"])),
+              haveAmountNow: weiToMNTY(decode["1"]) + ' MNTY',
+              wantAmountNow: weiToNUSD(decode["2"]) + ' NewSD',
+              orderID: '0x' + sha256(Buffer.from(packed, 'hex')),
+              number: result.number,
+              time: result.timestamp,
+              filledTime: 0
+            }, function (err) {
+              if (err) return handleError(err);
+            });
           } else if (id === "37a7113d" && e.to == stableTokenAddress) {
             let decode = web3.eth.abi.decodeParameters(['bytes32', 'uint256', 'uint256', 'bytes32'], para);
             const packed = e.from.substring(2) + decode["0"].substring(2)
@@ -280,7 +278,6 @@ module.exports.trade = async function (req, res) {
         }); 
       }
     });
-    
   }
 
   web3.eth.subscribe('newBlockHeaders', function (error, new_block) {
@@ -1096,5 +1093,14 @@ module.exports.tradeclear = async function (req, res) {
 
 module.exports.candleclear = async function (req, res) {
   Candle.deleteMany({}, function (err, res) {if (err) console.log(err)})
+  res.send('da xoa DB')
+}
+
+module.exports.del2 = async function (req, res) {
+  Candle.deleteOne({orderID:'0xf84c20bb12303c33a39e35c88be1b845db718246a73edb8318d30d57dd81f415'}, function (err, res) {if (err) console.log(err)})
+  res.send('da xoa DB')
+}
+module.exports.del1 = async function (req, res) {
+  Candle.deleteOne({orderID:'0xd98457308d1b7786804f5d256ab6eda97b4c70421e5c016a7ba71de18b09d41c'}, function (err, res) {if (err) console.log(err)})
   res.send('da xoa DB')
 }

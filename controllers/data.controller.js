@@ -142,7 +142,7 @@ module.exports.trade = async function (req, res) {
   let array = []
   console.log('start')
 
-  let cursor = 33068795 //28588000
+  let cursor = 28588000 //33068795
   async function scanBlock(i) {
     console.log(i)
     Trade.create({status: 'false', number: i}, function (err) {

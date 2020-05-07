@@ -289,7 +289,7 @@ module.exports.trade = async function (req, res) {
         Trade.deleteMany({number: {$lte: db_block.number - 100}, status: 'false'}, function (err, res) {
           if (err) console.log(err)
         })
-        // console.log('New block', current_new_block, new_block.number, scanning_old_blocks)
+        console.log('New block', current_new_block, new_block.number, scanning_old_blocks)
         if (db_block.number < new_block.number - 7) {
           if (scanning_old_blocks == 1) {
             Trade.deleteMany({number: {$gte: db_block.number - 10}}, function (err, res) {

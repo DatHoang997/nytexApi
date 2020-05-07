@@ -54,8 +54,5 @@ router.get('/getcandle60', controller.getcandle60)
 
 router.get('/getcandle1', controller.getcandle1)
 
-router.get('/del1', controller.del1)
-router.get('/del2', controller.del2)
-
 
 module.exports = router

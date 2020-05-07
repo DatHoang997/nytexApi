@@ -117,6 +117,7 @@ module.exports.candle = function (req, res) {
     if (err) return handleError(err);
     if(doc == null) {
       Trade.findOne({status: 'filled'}).sort({filledTime: 1}).exec(async function (err, doc1) {
+        console.log(doc1)
         if (err) return handleError(err);
         if (doc1 != null ) {
           createFirstCandle(doc1.filledTime) // first point
@@ -1096,11 +1097,3 @@ module.exports.candleclear = async function (req, res) {
   res.send('da xoa DB')
 }
 
-module.exports.del2 = async function (req, res) {
-  Trade.deleteOne({number:28588091}, function (err, res) {if (err) console.log(err)})
-  res.send('da xoa DB')
-}
-module.exports.del1 = async function (req, res) {
-  Trade.deleteOne({number:28588311}, function (err, res) {if (err) console.log(err)})
-  res.send('da xoa DB')
-}

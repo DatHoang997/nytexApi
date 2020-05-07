@@ -312,7 +312,6 @@ module.exports.trade = async function (req, res) {
   async function scanOldBlock() {
     // console.log(current_new_block)
     Trade.findOne().sort({number: -1}).exec(async function (err, db_block) {
-      console.log('block',db_block.number)
       if (db_block == null) db_block = {number: cursor}
       array.splice(0, 100)
       if (db_block.number < current_new_block - 7) {

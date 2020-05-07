@@ -1097,10 +1097,10 @@ module.exports.candleclear = async function (req, res) {
 }
 
 module.exports.del2 = async function (req, res) {
-  Candle.deleteOne({number:28588091}, function (err, res) {if (err) console.log(err)})
+  Trade.deleteOne({number:28588091}, function (err, res) {if (err) console.log(err)})
   res.send('da xoa DB')
 }
 module.exports.del1 = async function (req, res) {
-  Candle.deleteOne({number:28588311}, function (err, res) {if (err) console.log(err)})
+  Trade.deleteOne({number:28588311}, function (err, res) {if (err) console.log(err)})
   res.send('da xoa DB')
 }

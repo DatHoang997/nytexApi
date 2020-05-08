@@ -1134,14 +1134,14 @@ module.exports.getcandle1 = async function (req, res) {
           result.push(data)
           getCandle(to)
         } else if (doc1.length == 0) {
-          let past = result[length-1].close
+          console.log(result[result.length-1])
           let data = {
-            hight : result[length-1].close,
-            low : result[length-1].close,
-            open : result[length-1].close,
+            hight : result[result.length-1].close,
+            low : result[result.length-1].close,
+            open : result[result.length-1].close,
             volumeMNTY: 0,
             volumeNewSD: 0,
-            close : result[length-1].close,
+            close : result[result.length-1].close,
             time: doc1[0].time
           }
           result.push(data)

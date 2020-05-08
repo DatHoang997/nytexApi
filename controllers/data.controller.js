@@ -1011,7 +1011,7 @@ module.exports.getcandle30 = function (req, res) {
   let count
   Candle.countDocuments({}).exec(async function (err, doc) {
     if (err) return handleError(err)
-    count = Math.floor(doc/4)
+    count = Math.floor(doc/2)
   })
   Candle.find({}).sort({time:1}).exec(function (err, doc) {
     if (err) return handleError(err)
@@ -1035,7 +1035,7 @@ module.exports.getcandle30 = function (req, res) {
         count: count
       }    
       result.push(data)
-      if (i+2 == count) {
+      if (i+2 >=count) {
         let show = result
         res.json(show)
       }

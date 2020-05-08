@@ -121,7 +121,7 @@ module.exports.candle = function (req, res) {
             Trade.findOne().sort({time: -1}).exec(function (err, doc1) {
               // console.log(end, doc.time)
               if (err) return handleError(err);
-              console.log('aa', end + 900 - doc1.time )
+              console.log('aa', end + 900 , doc1.time )
               if (end + 900 < doc1.time) {
                 createCandle(end)
               } else {

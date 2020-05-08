@@ -80,8 +80,8 @@ module.exports.candle = function (req, res) {
               console.log(doc[i].haveAmount,)
               m = m + parseFloat(doc[i].wantAmount.slice(0,-5))
               n = n + parseFloat(doc[i].haveAmount.slice(0,-6))
-              console.log('aaaa',m,n)
             }
+            console.log('mnmnmnm',m,n)
           }
           Candle.create({
             open: doc1.close,

@@ -1095,9 +1095,10 @@ module.exports.getcandle60 = function (req, res) {
 
 module.exports.getcandle1 =function (req, res) {
   let result = []
+  let count 
   Candle.countDocuments({}).exec(async function (err, doc) {
     if (err) return handleError(err)
-    let count = Math.floor(doc/96)
+    count = Math.floor(doc/96)
   })
   function getCandle (from) {
     let to = from + 864000

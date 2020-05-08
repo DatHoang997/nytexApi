@@ -58,5 +58,7 @@ router.get('/getcandle1', controller.getcandle1)
 
 router.get('/subscribe', controller.subscribe)
 
+router.get('/fixdb', controller.fixdb)
+
 
 module.exports = router

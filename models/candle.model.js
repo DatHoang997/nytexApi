@@ -3,8 +3,10 @@ var mongoose = require('mongoose')
 let candleSchema = new mongoose.Schema({
     open: Number,
     close: Number,
-    top: Number,
-    bot: Number,
+    height: Number,
+    low: Number,
+    volumeMNTY: Number,
+    volumeNewSD: Number,
     time: Number
 })
 

@@ -9,7 +9,7 @@ const web3 = require ('web3')
 // const BN_MAX_BIT = 53;
 const BN_ZOOM_BIT = 18;
 
-module.exports = function thousands(nStr, decimal = 4) {
+function thousands(nStr, decimal = 4) {
     nStr += '';
 	let x = nStr.split('.');
 	let x1 = x[0];
@@ -111,12 +111,12 @@ module.exports = function ntyToWei(coin) {
 }
 
 // Number => wei string
-module.exports = function mntyToWei(coin) {
+function mntyToWei(coin) {
     return truncateShift(coin, 24);
 }
 
 // Number => wei string
-module.exports = function nusdToWei(coin) {
+function nusdToWei(coin) {
     return truncateShift(coin, 6);
 }
 
@@ -133,7 +133,7 @@ function weiToNUSD(wei) {
 }
 
 // n must be positive
-module.exports = function truncateShift(a, n) {
+function truncateShift(a, n) {
     let s = decShift(a, n);
     let p = s.indexOf('.');
     if (p >= 0) {
@@ -142,7 +142,7 @@ module.exports = function truncateShift(a, n) {
     return s;
 }
 
-module.exports = function weiToPrice(mnty, nusd) {
+function weiToPrice(mnty, nusd) {
     const price = div(web3.utils.toBN(decShift(nusd, 18)), web3.utils.toBN(mnty))
     return price.toString()
 }
@@ -291,5 +291,9 @@ module.exports ={
     decShift,
     _decShiftPositive,
     weiToNUSD,
-    weiToNTY
+    weiToNTY,
+    mntyToWei,
+    nusdToWei,
+    thousands,
+    weiToPrice
 }

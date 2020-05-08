@@ -75,8 +75,6 @@ module.exports.candle = function (req, res) {
           let n = 0
           for (let i = 0; i < doc.length; i++) 
           {
-            // console.log(doc[i])
-
             array.push(doc[i].price)
             if (doc[i].to == stableTokenAddress) {
               console.log(doc[i].haveAmount,)
@@ -84,9 +82,7 @@ module.exports.candle = function (req, res) {
               n = n + parseFloat(doc[i].haveAmount.slice(0,-6))
               console.log('aaaa',m,n)
             }
-            
           }
-          
           Candle.create({
             open: doc1.close,
             height: Math.max.apply(Math, array),
@@ -101,7 +97,7 @@ module.exports.candle = function (req, res) {
               if (err) return handleError(err);
               if (end + 900 < doc.time) createCandle(end)
               else {
-                let wait = (end + 900 - doc.time  + 5)*1000
+                let wait = (end + 900 - doc.time + 5)*1000
                 console.log('waitfirs',wait)
                 setTimeout(function() {createCandle(end); }, wait)
               }
@@ -122,15 +118,14 @@ module.exports.candle = function (req, res) {
             time: end
           }, function (err) {
             if (err) return handleError(err);
-            Trade.findOne().sort({filledTime: -1}).exec(function (err, doc1) {
+            Trade.findOne().sort({time: -1}).exec(function (err, doc1) {
               // console.log(end, doc.time)
               if (err) return handleError(err);
-              console.log('aa', end, doc1.time)
+              console.log('aa', end + 900 - doc1.time )
               if (end + 900 < doc1.time) {
-                
                 createCandle(end)
               } else {
-                let wait = (end + 900 - doc1.time  + 5)*1000
+                let wait = (end + 900 - doc1.time + 5)*1000
                 console.log('wait2',wait)
                 setTimeout(function() {createCandle(end)}, wait)
               }
@@ -176,11 +171,12 @@ module.exports.trade = async function (req, res) {
   let cursor = 28588000 //33068795
   async function scanBlock(i) {
     console.log(i)
-    Trade.create({status: 'false', number: i}, function (err) {
-      if (err) return handleError(err);
-    });
     web3.eth.getBlock(i, true, function (err, result) { //31945638 
       if (err) return handleError(err);
+      console.log(result.timestamp)
+      Trade.create({status: 'false', number: i, time: result.timestamp}, function (err) {
+        if (err) return handleError(err);
+      });
       // console.log(result)
       if (result.transactions != null) {
         result.transactions.forEach(function (e) {

@@ -48,7 +48,7 @@ router.get('/filled', controller.filled)
 //Candle
 router.get('/candle', controller.candle)
 
-router.get('/getcandle', controller.getcandle)
+router.get('/get-candle', controller.getcandle)
 
 router.get('/get-candle-half-hour', controller.getcandle30)
 

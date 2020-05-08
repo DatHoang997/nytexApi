@@ -1050,6 +1050,7 @@ module.exports.getcandle60 = function (req, res) {
     if (err) return handleError(err)
     count = Math.floor(doc/4)
   })
+  console.log(count)
   Candle.find({}).sort({time:1}).exec(function (err, doc) {
     if (err) return handleError(err)
     for(i = 0; i < count; i+=4) {
@@ -1093,7 +1094,7 @@ module.exports.getcandle1 =function (req, res) {
       let array = []
       let m = 0
       let n = 0
-      for(j = i; j <= i+97; j++) {
+      for(j = i; j <= i+95; j++) {
         array.push(doc[j].high, doc[j].low)
         m = m + doc[j].volumeMNTY
         n = n + doc[j].volumeNewSD

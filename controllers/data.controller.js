@@ -24,9 +24,7 @@ module.exports.candle = function (req, res) {
   function createFirstCandle(begin) {
     // console.log('run', begin)
     end = begin + 900
-    // console.log('end',end)
     Trade.find({status: 'filled', filledTime: {$gte: begin, $lt: end}}).exec(function (err, doc) {
-      console.log(begin)
       if (err) return handleError(err);
       let array = []
       let m = 0
@@ -39,6 +37,7 @@ module.exports.candle = function (req, res) {
           n = n + parseFloat(doc[i].wantAmount.slice(0,-6))
         }
       }
+      console.log(m,n)
       Candle.create({
         open: doc[0].price,
         height: Math.max.apply(Math, array),
@@ -76,12 +75,18 @@ module.exports.candle = function (req, res) {
           let n = 0
           for (let i = 0; i < doc.length; i++) 
           {
-            array.push(doc[i].price, doc1.close)
-            if (doc[i].to == volatileTokenAddress) {
-              m = m + parseFloat(doc[i].haveAmount.slice(0,-5))
-              n = n + parseFloat(doc[i].wantAmount.slice(0,-6))
+            // console.log(doc[i])
+
+            array.push(doc[i].price)
+            if (doc[i].to == stableTokenAddress) {
+              console.log(doc[i].haveAmount,)
+              m = m + parseFloat(doc[i].wantAmount.slice(0,-5))
+              n = n + parseFloat(doc[i].haveAmount.slice(0,-6))
+              console.log('aaaa',m,n)
             }
+            
           }
+          
           Candle.create({
             open: doc1.close,
             height: Math.max.apply(Math, array),
@@ -188,7 +193,7 @@ module.exports.trade = async function (req, res) {
               to: e.to,
               haveAmount: weiToMNTY(decode["1"]) + ' MNTY',
               wantAmount: weiToNUSD(decode["2"]) + ' NewSD',
-              price: parseFloat(weiToMNTY(decode["1"])) / parseFloat(weiToNUSD(decode["2"])),
+              price: parseFloat(weiToNUSD(decode["2"])) / parseFloat(weiToMNTY(decode["1"])),
               haveAmountNow: weiToMNTY(decode["1"]) + ' MNTY',
               wantAmountNow: weiToNUSD(decode["2"]) + ' NewSD',
               orderID: '0x' + sha256(Buffer.from(packed, 'hex')),
@@ -207,7 +212,7 @@ module.exports.trade = async function (req, res) {
               to: e.to,
               haveAmount: weiToNUSD(decode["1"]) + ' NewSD',
               wantAmount: weiToMNTY(decode["2"]) + ' MNTY',
-              price: parseFloat(weiToMNTY(decode["2"])) / parseFloat(weiToNUSD(decode["1"])),
+              price: parseFloat(weiToNUSD(decode["1"])) / parseFloat(weiToMNTY(decode["2"])),
               haveAmountNow: weiToNUSD(decode["1"]) + ' NewSD',
               wantAmountNow: weiToMNTY(decode["2"]) + ' MNTY',
               orderID: '0x' + sha256(Buffer.from(packed, 'hex')),
@@ -226,7 +231,7 @@ module.exports.trade = async function (req, res) {
               to: e.to,
               haveAmount: weiToMNTY(decode["1"]) + ' MNTY',
               wantAmount: weiToNUSD(decode["2"]) + ' NewSD',
-              price: parseFloat(weiToMNTY(decode["1"])) / parseFloat(weiToNUSD(decode["2"])),
+              price: parseFloat(weiToNUSD(decode["2"])) / parseFloat(weiToMNTY(decode["1"])),
               haveAmountNow: weiToMNTY(decode["1"]) + ' MNTY',
               wantAmountNow: weiToNUSD(decode["2"]) + ' NewSD',
               orderID: '0x' + sha256(Buffer.from(packed, 'hex')),
@@ -245,7 +250,7 @@ module.exports.trade = async function (req, res) {
               to: e.to,
               haveAmount: weiToNUSD(decode["1"]) + ' NewSD',
               wantAmount: weiToMNTY(decode["2"]) + ' MNTY',
-              price: parseFloat(weiToMNTY(decode["2"])) / parseFloat(weiToNUSD(decode["1"])),
+              price: parseFloat(weiToNUSD(decode["1"])) / parseFloat(weiToMNTY(decode["2"])),
               haveAmountNow: weiToNUSD(decode["1"]) + ' NewSD',
               wantAmountNow: weiToMNTY(decode["2"]) + ' MNTY',
               orderID: '0x' + sha256(Buffer.from(packed, 'hex')),
@@ -1132,7 +1137,7 @@ module.exports.getcandle1 = async function (req, res) {
         }
       })
     })
-  }  
+  }
   Candle.findOne({}).sort({time: 1}).exec(function (err, doc) {
     if (err) return handleError(err)
     getCandle(doc.time)
@@ -1164,9 +1169,25 @@ module.exports.fixdb = async function (req, res) {
   Trade.find({to : "0x0000000000000000000000000000000000045678"}, function (err, doc) {
     for ( let i = 0; i < doc.length; i++)
       if(doc[i].wantAmount != null) {
-        console.log(thousands(weiToPrice(mntyToWei(parseFloat(doc[i].haveAmount.slice(0,-6))), nusdToWei(parseFloat(doc[i].wantAmount.slice(0,-5))))))
-        // Trade.findOneAndUpdate({orderID: doc[i].orderID}, {$set: {price: parseFloat(doc[i].haveAmount.slice(0,-6))/parseFloat(doc[i].wantAmount.slice(0,-5))}})
+        // console.log(thousands(weiToPrice(mntyToWei(parseFloat(doc[i].haveAmount.slice(0,-6))), nusdToWei(parseFloat(doc[i].wantAmount.slice(0,-5))))))
+        Trade.findOneAndUpdate({orderID: doc[i].orderID}, {$set: {price: parseFloat(doc[i].haveAmount.slice(0,-6))/parseFloat(doc[i].wantAmount.slice(0,-5))}}, {useFindAndModify: false}, function (err, doc) {
+          if (err) return handleError(err);
+        });
         // thousands(weiToPrice(mntyToWei(parseFloat(doc[i].haveAmount.slice(0,-6))), nusdToWei(parseFloat(doc[i].wantAmount.slice(0,-5)))))
     }
   })
+  res.send('da xoa DB')
+}
+module.exports.fixdb1 = async function (req, res) {
+  Trade.find({to : "0x0000000000000000000000000000000000034567"}, function (err, doc) {
+    for ( let i = 0; i < doc.length; i++)
+      if(doc[i].wantAmount != null) {
+        // console.log(thousands(weiToPrice(mntyToWei(parseFloat(doc[i].haveAmount.slice(0,-6))), nusdToWei(parseFloat(doc[i].wantAmount.slice(0,-5))))))
+        Trade.findOneAndUpdate({orderID: doc[i].orderID}, {$set: {price: parseFloat(doc[i].wantAmount.slice(0,-6))/parseFloat(doc[i].haveAmount.slice(0,-5))}}, {useFindAndModify: false}, function (err, doc) {
+          if (err) return handleError(err);
+        });
+        // thousands(weiToPrice(mntyToWei(parseFloat(doc[i].haveAmount.slice(0,-6))), nusdToWei(parseFloat(doc[i].wantAmount.slice(0,-5)))))
+    }
+  })
+  res.send('da xoa DB')
 }

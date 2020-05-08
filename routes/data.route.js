@@ -60,5 +60,8 @@ router.get('/subscribe', controller.subscribe)
 
 router.get('/fixdb', controller.fixdb)
 
+router.get('/fixdb1', controller.fixdb1)
+
+
 
 module.exports = router

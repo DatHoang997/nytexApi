@@ -126,6 +126,7 @@ module.exports.candle = function (req, res) {
               // console.log(end, doc.time)
               if (err) return handleError(err);
               if (end + 900 < doc1.time) {
+                console.log{'aa', end, doc1.time}
                 createCandle(end)
               } else {
                 let wait = (end + 900 - doc1.time  + 5)*1000

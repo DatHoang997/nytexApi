@@ -1035,7 +1035,10 @@ module.exports.getcandle30 = function (req, res) {
         count: count
       }    
       result.push(data)
-      if (i+2 == count) console.log('re',result.length)
+      if (i+2 == count) {
+        let show = result
+        res.json(show)
+      }
     }
   })
   

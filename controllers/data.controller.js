@@ -1006,7 +1006,7 @@ module.exports.getcandle = async function (req, res) {
   res.json(show)
 }
 
-module.exports.getcandlehalfhour = function (req, res) {
+module.exports.getcandle30 = function (req, res) {
   let result = []
   let count
   Candle.countDocuments({}).exec(async function (err, doc) {
@@ -1043,7 +1043,7 @@ module.exports.getcandlehalfhour = function (req, res) {
   })
 }
 
-module.exports.getcandlehour = function (req, res) {
+module.exports.getcandle60 = function (req, res) {
   let result = []
   let count
   Candle.countDocuments({}).exec(async function (err, doc) {
@@ -1080,7 +1080,7 @@ module.exports.getcandlehour = function (req, res) {
   })
 }
 
-module.exports.getcandleday =function (req, res) {
+module.exports.getcandle1 =function (req, res) {
   let result = []
   let count
   Candle.countDocuments({}).exec(async function (err, doc) {

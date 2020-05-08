@@ -46,7 +46,7 @@ module.exports.candle = function (req, res) {
       console.log(m,n)
       Candle.create({
         open: doc[0].price,
-        height: Math.max.apply(Math, array),
+        hight: Math.max.apply(Math, array),
         low: Math.min.apply(Math, array),
         close: doc[doc.length-1].price,
         volumeMNTY: m,
@@ -96,7 +96,7 @@ module.exports.candle = function (req, res) {
           }
           Candle.create({
             open: doc1.close,
-            height: Math.max.apply(Math, array),
+            hight: Math.max.apply(Math, array),
             low: Math.min.apply(Math, array),
             close: doc[doc.length-1].price,
             volumeMNTY: m,
@@ -121,7 +121,7 @@ module.exports.candle = function (req, res) {
           // console.log('aaaa',doc.close)
           Candle.create({
             open: doc.close,
-            height: doc.close,
+            hight: doc.close,
             low: doc.close,
             close: doc.close,
             volumeMNTY: 0,
@@ -1025,14 +1025,14 @@ module.exports.getcandle30 = function (req, res) {
         if(doc1.length > 1 && result.length < count) {
           for (let i = 0; i < doc1.length; i++) 
           {
-            // console.log('height',doc1[i].volumeMNTY)
-            array.push(doc1[i].height, doc1[i].low)
+            // console.log('hight',doc1[i].volumeMNTY)
+            array.push(doc1[i].hight, doc1[i].low)
             m = m + doc1[i].volumeMNTY
             n = n + doc1[i].volumeNewSD
           }
           console.log(m,n)
           let data = {
-            height : Math.max.apply(Math, array),
+            hight : Math.max.apply(Math, array),
             low : Math.min.apply(Math, array),
             open : doc1[0].open,
             close : doc1[1].close,
@@ -1042,11 +1042,8 @@ module.exports.getcandle30 = function (req, res) {
           }
           result.push(data)
           getCandle(to)
-          // console.log(result)
         } else {
-          console.log('else')
           let show = result
-          console.log('show', show)
           res.json(show)
         }
       })
@@ -1063,6 +1060,7 @@ module.exports.getcandle60 = function (req, res) {
   function getCandle (from) {
     let to = from + 3600
     Candle.countDocuments({}).exec(async function (err, doc) {
+      console.log(doc)
       if (err) return handleError(err)
       let count = Math.floor(doc/4)
       Candle.find({time: {$gte: from, $lt: to}}).exec(function (err, doc1) {
@@ -1070,16 +1068,17 @@ module.exports.getcandle60 = function (req, res) {
         let array = []
         let m = 0
         let n = 0
+        console.log(doc1, doc1.length)
         if(doc1.length > 1 && result.length < count) {
           for (let i = 0; i < doc1.length; i++) 
           {
-            // console.log('height',doc1[i].volumeMNTY)
-            array.push(doc1[i].height, doc1[i].low)
+            // console.log('hight',doc1[i].volumeMNTY)
+            array.push(doc1[i].hight, doc1[i].low)
             m = m + doc1[i].volumeMNTY
             n = n + doc1[i].volumeNewSD
           }
           let data = {
-            height : Math.max.apply(Math, array),
+            hight : Math.max.apply(Math, array),
             low : Math.min.apply(Math, array),
             open : doc1[0].open,
             close : doc1[3].close,
@@ -1088,12 +1087,8 @@ module.exports.getcandle60 = function (req, res) {
             time: doc1[0].time
           }
           result.push(data)
-          getCandle(to)
-          console.log(result)
         } else {
-          console.log('else')
           let show = result
-          console.log('show', show)
           res.json(show)
         }
       })
@@ -1102,6 +1097,7 @@ module.exports.getcandle60 = function (req, res) {
   Candle.findOne({}).sort({time: 1}).exec(function (err, doc) {
     if (err) return handleError(err)
     getCandle(doc.time)
+    console.log(doc.time)
   })
 }
 
@@ -1122,12 +1118,12 @@ module.exports.getcandle1 = async function (req, res) {
           console.log(doc1.length)
           for (let i = 0; i < doc1.length; i++) 
           {
-            array.push(doc1[i].height, doc1[i].low)
+            array.push(doc1[i].hight, doc1[i].low)
             m = m + doc1[i].volumeMNTY
             n = n + doc1[i].volumeNewSD
           }
           let data = {
-            height : Math.max.apply(Math, array),
+            hight : Math.max.apply(Math, array),
             low : Math.min.apply(Math, array),
             open : doc1[0].open,
             volumeMNTY: m,
@@ -1137,11 +1133,21 @@ module.exports.getcandle1 = async function (req, res) {
           }
           result.push(data)
           getCandle(to)
-          console.log(result)
+        } else if (doc1.length == 0) {
+          let past = result[length-1].close
+          let data = {
+            hight : result[length-1].close,
+            low : result[length-1].close,
+            open : result[length-1].close,
+            volumeMNTY: 0,
+            volumeNewSD: 0,
+            close : result[length-1].close,
+            time: doc1[0].time
+          }
+          result.push(data)
+          getCandle(to)
         } else {
-          console.log('else')
           let show = result
-          console.log('show', show)
           res.json(show)
         }
       })

@@ -1129,7 +1129,7 @@ module.exports.getcandle1 = async function (req, res) {
             volumeMNTY: m,
             volumeNewSD: n,
             close : doc1[95].close,
-            time: doc1[0].time
+            time: from
           }
           result.push(data)
           getCandle(to)
@@ -1142,7 +1142,7 @@ module.exports.getcandle1 = async function (req, res) {
             volumeMNTY: 0,
             volumeNewSD: 0,
             close : result[result.length-1].close,
-            time: doc1[0].time
+            time: from
           }
           result.push(data)
           getCandle(to)

@@ -125,8 +125,9 @@ module.exports.candle = function (req, res) {
             Trade.findOne().sort({filledTime: -1}).exec(function (err, doc1) {
               // console.log(end, doc.time)
               if (err) return handleError(err);
+              console.log('aa', end, doc1.time)
               if (end + 900 < doc1.time) {
-                console.log('aa', end, doc1.time)
+                
                 createCandle(end)
               } else {
                 let wait = (end + 900 - doc1.time  + 5)*1000

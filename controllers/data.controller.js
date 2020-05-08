@@ -184,7 +184,6 @@ module.exports.trade = async function (req, res) {
     console.log(i)
     web3.eth.getBlock(i, true, function (err, result) { //31945638 
       if (err) return handleError(err);
-      console.log(result.timestamp)
       Trade.create({status: 'false', number: i, time: result.timestamp}, function (err) {
         if (err) return handleError(err);
       });
@@ -1014,53 +1013,81 @@ module.exports.getcandle30 = function (req, res) {
     if (err) return handleError(err)
     count = Math.floor(doc/4)
   })
-  function getCandle (from) {
-    let to = from + 1800
-    Candle.find({time: {$gte: from, $lt: to}}).exec(function (err, doc1) {
-      if (err) return handleError(err)
+  Candle.find({}).sort({time:1}).exec(function (err, doc) {
+    if (err) return handleError(err)
+    for(i = 0; i < count; i+=2) {
       let array = []
       let m = 0
       let n = 0
-      if(doc1.length > 1 && result.length < count) {
-        for (let i = 0; i < doc1.length; i++) 
-        {
-          array.push(doc1[i].hight, doc1[i].low)
-          m = m + doc1[i].volumeMNTY
-          n = n + doc1[i].volumeNewSD
-        }
-        let data = {
-          hight : Math.max.apply(Math, array),
-          low : Math.min.apply(Math, array),
-          open : doc1[0].open,
-          close : doc1[1].close,
-          volumeMNTY: m,
-          volumeNewSD: n,
-          time: doc1[0].time
-        }
-        result.push(data)
-        getCandle(to)
-      } else if (doc1.length == 0 && result.length < count) {
-        let data = {
-          hight : result[result.length-1].close,
-          low : result[result.length-1].close,
-          open : result[result.length-1].close,
-          volumeMNTY: 0,
-          volumeNewSD: 0,
-          close : result[result.length-1].close,
-          time: from
-        }
-        result.push(data)
-        getCandle(to)
-      } else {
-        let show = result
-        res.json(show)
+      for(j = i; j <= i+1; j++) {
+        array.push(doc[j].hight, doc[j].low)
+        m = m + doc[j].volumeMNTY
+        n = n + doc[j].volumeNewSD
       }
-    })
-  }  
-  Candle.findOne({}).sort({time: 1}).exec(function (err, doc) {
-    if (err) return handleError(err)
-    getCandle(doc.time)
+      let data = {
+        hight : Math.max.apply(Math, array),
+        low : Math.min.apply(Math, array),
+        open : doc[j].open,
+        close : doc[j+1].close,
+        volumeMNTY: m,
+        volumeNewSD: n,
+        time: doc[j].time,
+        count: count
+      }    
+      result.push(data)
+      if (i+2 == count) console.log('re',result.length)
+    }
   })
+  
+
+
+  // function getCandle (from) {
+  //   let to = from + 1800
+  //   Candle.find({time: {$gte: from, $lt: to}}).exec(function (err, doc1) {
+  //     if (err) return handleError(err)
+  //     let array = []
+  //     let m = 0
+  //     let n = 0
+  //     if(doc1.length > 1 && result.length < count) {
+  //       for (let i = 0; i < doc1.length; i++) 
+  //       {
+  //         array.push(doc1[i].hight, doc1[i].low)
+  //         m = m + doc1[i].volumeMNTY
+  //         n = n + doc1[i].volumeNewSD
+  //       }
+  //       let data = {
+  //         hight : Math.max.apply(Math, array),
+  //         low : Math.min.apply(Math, array),
+  //         open : doc1[0].open,
+  //         close : doc1[1].close,
+  //         volumeMNTY: m,
+  //         volumeNewSD: n,
+  //         time: doc1[0].time
+  //       }
+  //       result.push(data)
+  //       getCandle(to)
+  //     } else if (doc1.length == 0 && result.length < count) {
+  //       let data = {
+  //         hight : result[result.length-1].close,
+  //         low : result[result.length-1].close,
+  //         open : result[result.length-1].close,
+  //         volumeMNTY: 0,
+  //         volumeNewSD: 0,
+  //         close : result[result.length-1].close,
+  //         time: from
+  //       }
+  //       result.push(data)
+  //       getCandle(to)
+  //     } else {
+  //       let show = result
+  //       res.json(show)
+  //     }
+  //   })
+  // }  
+  // Candle.findOne({}).sort({time: 1}).exec(function (err, doc) {
+  //   if (err) return handleError(err)
+  //   getCandle(doc.time)
+  // })
 }
 
 module.exports.getcandle60 = function (req, res) {

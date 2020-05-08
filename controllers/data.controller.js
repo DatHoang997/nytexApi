@@ -301,7 +301,6 @@ module.exports.trade = async function (req, res) {
           for (let n = 0; n < doc.length; n++) {
             Seigniorage.methods.getOrder(1, doc[n].orderID).call(undefined,i-6, function (error, result1) {
               if (err) return handleError(err);
-              // console.log(weiToMNTY(result.want)) parseFloat(doc.wantAmount.slice(0,-5))
               if (result1!=null && result1.maker  == burn) {
                 Trade.findOneAndUpdate({orderID: doc[n].orderID}, {$set: {status: 'filled', filledTime: result.timestamp}}, {useFindAndModify: false}, function (err, doc) {
                   if (err) return handleError(err);
@@ -1010,39 +1009,52 @@ module.exports.getcandle = async function (req, res) {
 
 module.exports.getcandle30 = function (req, res) {
   let result = []
+  let count
+  Candle.countDocuments({}).exec(async function (err, doc) {
+    if (err) return handleError(err)
+    count = Math.floor(doc/4)
+  })
   function getCandle (from) {
     let to = from + 1800
-    Candle.countDocuments({}).exec(async function (err, doc) {
+    Candle.find({time: {$gte: from, $lt: to}}).exec(function (err, doc1) {
       if (err) return handleError(err)
-      let count = Math.floor(doc/2)
-      Candle.find({time: {$gte: from, $lt: to}}).exec(function (err, doc1) {
-        if (err) return handleError(err)
-        let array = []
-        let m = 0
-        let n = 0
-        if(doc1.length > 1 && result.length < count) {
-          for (let i = 0; i < doc1.length; i++) 
-          {
-            array.push(doc1[i].hight, doc1[i].low)
-            m = m + doc1[i].volumeMNTY
-            n = n + doc1[i].volumeNewSD
-          }
-          let data = {
-            hight : Math.max.apply(Math, array),
-            low : Math.min.apply(Math, array),
-            open : doc1[0].open,
-            close : doc1[1].close,
-            volumeMNTY: m,
-            volumeNewSD: n,
-            time: doc1[0].time
-          }
-          result.push(data)
-          getCandle(to)
-        } else {
-          let show = result
-          res.json(show)
+      let array = []
+      let m = 0
+      let n = 0
+      if(doc1.length > 1 && result.length < count) {
+        for (let i = 0; i < doc1.length; i++) 
+        {
+          array.push(doc1[i].hight, doc1[i].low)
+          m = m + doc1[i].volumeMNTY
+          n = n + doc1[i].volumeNewSD
         }
-      })
+        let data = {
+          hight : Math.max.apply(Math, array),
+          low : Math.min.apply(Math, array),
+          open : doc1[0].open,
+          close : doc1[1].close,
+          volumeMNTY: m,
+          volumeNewSD: n,
+          time: doc1[0].time
+        }
+        result.push(data)
+        getCandle(to)
+      } else if (doc1.length == 0 && result.length < count) {
+        let data = {
+          hight : result[result.length-1].close,
+          low : result[result.length-1].close,
+          open : result[result.length-1].close,
+          volumeMNTY: 0,
+          volumeNewSD: 0,
+          close : result[result.length-1].close,
+          time: from
+        }
+        result.push(data)
+        getCandle(to)
+      } else {
+        let show = result
+        res.json(show)
+      }
     })
   }  
   Candle.findOne({}).sort({time: 1}).exec(function (err, doc) {
@@ -1053,38 +1065,51 @@ module.exports.getcandle30 = function (req, res) {
 
 module.exports.getcandle60 = function (req, res) {
   let result = []
+  let count
+  Candle.countDocuments({}).exec(async function (err, doc) {
+    if (err) return handleError(err)
+    count = Math.floor(doc/4)
+  })
   function getCandle (from) {
     let to = from + 3600
-    Candle.countDocuments({}).exec(async function (err, doc) {
+    Candle.find({time: {$gte: from, $lt: to}}).exec(function (err, doc1) {
       if (err) return handleError(err)
-      let count = Math.floor(doc/4)
-      Candle.find({time: {$gte: from, $lt: to}}).exec(function (err, doc1) {
-        if (err) return handleError(err)
-        let array = []
-        let m = 0
-        let n = 0
-        if(doc1.length > 1 && result.length < count) {
-          for (let i = 0; i < doc1.length; i++) 
-          {
-            array.push(doc1[i].hight, doc1[i].low)
-            m = m + doc1[i].volumeMNTY
-            n = n + doc1[i].volumeNewSD
-          }
-          let data = {
-            hight : Math.max.apply(Math, array),
-            low : Math.min.apply(Math, array),
-            open : doc1[0].open,
-            close : doc1[3].close,
-            volumeMNTY: m,
-            volumeNewSD: n,
-            time: doc1[0].time
-          }
-          result.push(data)
-        } else {
-          let show = result
-          res.json(show)
+      let array = []
+      let m = 0
+      let n = 0
+      if(doc1.length > 1 && result.length < count) {
+        for (let i = 0; i < doc1.length; i++) 
+        {
+          array.push(doc1[i].hight, doc1[i].low)
+          m = m + doc1[i].volumeMNTY
+          n = n + doc1[i].volumeNewSD
         }
-      })
+        let data = {
+          hight : Math.max.apply(Math, array),
+          low : Math.min.apply(Math, array),
+          open : doc1[0].open,
+          close : doc1[3].close,
+          volumeMNTY: m,
+          volumeNewSD: n,
+          time: doc1[0].time
+        }
+        result.push(data)
+      } else if (doc1.length == 0 && result.length < count) {
+        let data = {
+          hight : result[result.length-1].close,
+          low : result[result.length-1].close,
+          open : result[result.length-1].close,
+          volumeMNTY: 0,
+          volumeNewSD: 0,
+          close : result[result.length-1].close,
+          time: from
+        }
+        result.push(data)
+        getCandle(to)
+      } else {
+        let show = result
+        res.json(show)
+      }
     })
   }  
   Candle.findOne({}).sort({time: 1}).exec(function (err, doc) {

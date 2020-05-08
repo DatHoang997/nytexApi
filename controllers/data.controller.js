@@ -33,8 +33,14 @@ module.exports.candle = function (req, res) {
       {
         array.push(doc[i].price)
         if (doc[i].to == volatileTokenAddress) {
+          console.log(doc[i].haveAmount,)
           m = m + parseFloat(doc[i].haveAmount.slice(0,-5))
           n = n + parseFloat(doc[i].wantAmount.slice(0,-6))
+          console.log(doc[i].haveAmount)
+        }
+        if (m==0 && doc[i].to == stableTokenAddress) {
+          m = m + parseFloat(doc[i].wantAmount.slice(0,-5))
+          n = n + parseFloat(doc[i].haveAmount.slice(0,-6))
         }
       }
       console.log(m,n)
@@ -76,16 +82,17 @@ module.exports.candle = function (req, res) {
           for (let i = 0; i < doc.length; i++) 
           {
             array.push(doc[i].price)
-            if (doc[i].to == stableTokenAddress) {
+            if (doc[i].to == volatileTokenAddress) {
               console.log(doc[i].haveAmount,)
+              m = m + parseFloat(doc[i].haveAmount.slice(0,-5))
+              n = n + parseFloat(doc[i].wantAmount.slice(0,-6))
+              console.log(doc[i].haveAmount)
+            }
+            if (m==0 && doc[i].to == stableTokenAddress) {
               m = m + parseFloat(doc[i].wantAmount.slice(0,-5))
               n = n + parseFloat(doc[i].haveAmount.slice(0,-6))
-              console.log(doc[i].haveAmount)
-              if (m==0) {
-                m = m + parseFloat(doc[i].haveAmount.slice(0,-5))
-                n = n + parseFloat(doc[i].wantAmount.slice(0,-6))
-              }
             }
+            console.log(m,n)
           }
           Candle.create({
             open: doc1.close,

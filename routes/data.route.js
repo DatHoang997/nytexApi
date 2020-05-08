@@ -50,16 +50,11 @@ router.get('/candle', controller.candle)
 
 router.get('/getcandle', controller.getcandle)
 
-router.get('/getcandle30', controller.getcandle30)
+router.get('/get-candle-half-hour', controller.getcandle30)
 
-router.get('/getcandle60', controller.getcandle60)
+router.get('/get-candle-hour', controller.getcandle60)
 
-router.get('/getcandle1', controller.getcandle1)
+router.get('/get-candle-day', controller.getcandle1)
 
-router.get('/subscribe', controller.subscribe)
-
-router.get('/fixdb', controller.fixdb)
-
-router.get('/fixdb1', controller.fixdb1)
 
 module.exports = router

@@ -46,7 +46,7 @@ module.exports.candle = function (req, res) {
       console.log(m,n)
       Candle.create({
         open: doc[0].price,
-        hight: Math.max.apply(Math, array),
+        high: Math.max.apply(Math, array),
         low: Math.min.apply(Math, array),
         close: doc[doc.length-1].price,
         volumeMNTY: m,
@@ -96,7 +96,7 @@ module.exports.candle = function (req, res) {
           }
           Candle.create({
             open: doc1.close,
-            hight: Math.max.apply(Math, array),
+            high: Math.max.apply(Math, array),
             low: Math.min.apply(Math, array),
             close: doc[doc.length-1].price,
             volumeMNTY: m,
@@ -121,7 +121,7 @@ module.exports.candle = function (req, res) {
           // console.log('aaaa',doc.close)
           Candle.create({
             open: doc.close,
-            hight: doc.close,
+            high: doc.close,
             low: doc.close,
             close: doc.close,
             volumeMNTY: 0,
@@ -1020,12 +1020,12 @@ module.exports.getcandlehalfhour = function (req, res) {
       let m = 0
       let n = 0
       for(j = i; j <= i+1; j++) {
-        array.push(doc[j].hight, doc[j].low)
+        array.push(doc[j].high, doc[j].low)
         m = m + doc[j].volumeMNTY
         n = n + doc[j].volumeNewSD
       }
       let data = {
-        hight : Math.max.apply(Math, array),
+        high : Math.max.apply(Math, array),
         low : Math.min.apply(Math, array),
         open : doc[j].open,
         close : doc[j+1].close,
@@ -1057,12 +1057,12 @@ module.exports.getcandlehour = function (req, res) {
       let m = 0
       let n = 0
       for(j = i; j <= i+3; j++) {
-        array.push(doc[j].hight, doc[j].low)
+        array.push(doc[j].high, doc[j].low)
         m = m + doc[j].volumeMNTY
         n = n + doc[j].volumeNewSD
       }
       let data = {
-        hight : Math.max.apply(Math, array),
+        high : Math.max.apply(Math, array),
         low : Math.min.apply(Math, array),
         open : doc[j].open,
         close : doc[j+1].close,
@@ -1094,12 +1094,12 @@ module.exports.getcandleday =function (req, res) {
       let m = 0
       let n = 0
       for(j = i; j <= i+97; j++) {
-        array.push(doc[j].hight, doc[j].low)
+        array.push(doc[j].high, doc[j].low)
         m = m + doc[j].volumeMNTY
         n = n + doc[j].volumeNewSD
       }
       let data = {
-        hight : Math.max.apply(Math, array),
+        high : Math.max.apply(Math, array),
         low : Math.min.apply(Math, array),
         open : doc[j].open,
         close : doc[j+1].close,
@@ -1130,37 +1130,4 @@ module.exports.candleclear = async function (req, res) {
 module.exports.filled = async function (req, res) {
   let show = await Trade.find({status: 'filled'}).sort({filledTime: 1})
   res.json(show)
-}
-
-module.exports.subscribe = async function (req, res) {
-  web3.eth.subscribe('newBlockHeaders', function (error, new_block) {
-    console.log(new_block.number)
-  })
-}
-
-module.exports.fixdb = async function (req, res) {
-  Trade.find({to : "0x0000000000000000000000000000000000045678"}, function (err, doc) {
-    for ( let i = 0; i < doc.length; i++)
-      if(doc[i].wantAmount != null) {
-        // console.log(thousands(weiToPrice(mntyToWei(parseFloat(doc[i].haveAmount.slice(0,-6))), nusdToWei(parseFloat(doc[i].wantAmount.slice(0,-5))))))
-        Trade.findOneAndUpdate({orderID: doc[i].orderID}, {$set: {price: parseFloat(doc[i].haveAmount.slice(0,-6))/parseFloat(doc[i].wantAmount.slice(0,-5))}}, {useFindAndModify: false}, function (err, doc) {
-          if (err) return handleError(err);
-        });
-        // thousands(weiToPrice(mntyToWei(parseFloat(doc[i].haveAmount.slice(0,-6))), nusdToWei(parseFloat(doc[i].wantAmount.slice(0,-5)))))
-    }
-  })
-  res.send('da xoa DB')
-}
-module.exports.fixdb1 = async function (req, res) {
-  Trade.find({to : "0x0000000000000000000000000000000000034567"}, function (err, doc) {
-    for ( let i = 0; i < doc.length; i++)
-      if(doc[i].wantAmount != null) {
-        // console.log(thousands(weiToPrice(mntyToWei(parseFloat(doc[i].haveAmount.slice(0,-6))), nusdToWei(parseFloat(doc[i].wantAmount.slice(0,-5))))))
-        Trade.findOneAndUpdate({orderID: doc[i].orderID}, {$set: {price: parseFloat(doc[i].wantAmount.slice(0,-6))/parseFloat(doc[i].haveAmount.slice(0,-5))}}, {useFindAndModify: false}, function (err, doc) {
-          if (err) return handleError(err);
-        });
-        // thousands(weiToPrice(mntyToWei(parseFloat(doc[i].haveAmount.slice(0,-6))), nusdToWei(parseFloat(doc[i].wantAmount.slice(0,-5)))))
-    }
-  })
-  res.send('da xoa DB')
 }

@@ -276,45 +276,45 @@ module.exports.trade = async function (req, res) {
             });
           }
         })
-        Trade.find({to: volatileTokenAddress,  $or: [{ status: 'order' }, { status: 'filling' }]}, function (err, doc) {
-          if (err) return handleError(err);
-          for (let n = 0; n < doc.length; n++) {
-            Seigniorage.methods.getOrder(0, doc[n].orderID).call(undefined, i-6, function (error, result1) {
-              if (err) return handleError(err);
-              if (result1!=null && result1.maker == burn) {
-                Trade.findOneAndUpdate({orderID: doc[n].orderID}, {$set: {status: 'filled', filledTime: result.timestamp}}, {useFindAndModify: false}, function (err, doc) {
-                  if (err) return handleError(err);
-                });
-              } else if (result1!=null && result1.maker != burn && parseFloat(weiToNUSD(result1.want))<parseFloat(doc[0].wantAmount.slice(0,-6))) {
-                Trade.findOneAndUpdate({
-                  orderID: doc[n].orderID}, {
-                    $set: {status: 'filling', wantAmountNow: result1.want}}, {useFindAndModify: false}, function (err, doc) {
-                  if (err) return handleError(err);
-                });
-              }
-            });
-          }
-        });
-        Trade.find({to: stableTokenAddress,  $or: [{status: 'order'}, {status: 'filling'}]}, function (err, doc) {
-          if (err) return handleError(err);
-          for (let n = 0; n < doc.length; n++) {
-            Seigniorage.methods.getOrder(1, doc[n].orderID).call(undefined,i-6, function (error, result1) {
-              if (err) return handleError(err);
-              if (result1!=null && result1.maker  == burn) {
-                Trade.findOneAndUpdate({orderID: doc[n].orderID}, {$set: {status: 'filled', filledTime: result.timestamp}}, {useFindAndModify: false}, function (err, doc) {
-                  if (err) return handleError(err);
-                });
-              } else if (result1!=null && result1.maker != burn && parseFloat(weiToNUSD(result1.want))<parseFloat(doc[0].wantAmount.slice(0,-5))) {
-                Trade.findOneAndUpdate({orderID: doc[n].orderID}, {
-                  $set: {status: 'filling', wantAmountNow: result1.want}}, {useFindAndModify: false}, function (err, doc) {
-                  if (err) return handleError(err);
-                });
-              }
-            });
-          }
-        }); 
-      }
-    });
+    //     Trade.find({to: volatileTokenAddress,  $or: [{ status: 'order' }, { status: 'filling' }]}, function (err, doc) {
+    //       if (err) return handleError(err);
+    //       for (let n = 0; n < doc.length; n++) {
+    //         Seigniorage.methods.getOrder(0, doc[n].orderID).call(undefined, i-6, function (error, result1) {
+    //           if (err) return handleError(err);
+    //           if (result1!=null && result1.maker == burn) {
+    //             Trade.findOneAndUpdate({orderID: doc[n].orderID}, {$set: {status: 'filled', filledTime: result.timestamp}}, {useFindAndModify: false}, function (err, doc) {
+    //               if (err) return handleError(err);
+    //             });
+    //           } else if (result1!=null && result1.maker != burn && parseFloat(weiToNUSD(result1.want))<parseFloat(doc[0].wantAmount.slice(0,-6))) {
+    //             Trade.findOneAndUpdate({
+    //               orderID: doc[n].orderID}, {
+    //                 $set: {status: 'filling', wantAmountNow: result1.want}}, {useFindAndModify: false}, function (err, doc) {
+    //               if (err) return handleError(err);
+    //             });
+    //           }
+    //         });
+    //       }
+    //     });
+    //     Trade.find({to: stableTokenAddress,  $or: [{status: 'order'}, {status: 'filling'}]}, function (err, doc) {
+    //       if (err) return handleError(err);
+    //       for (let n = 0; n < doc.length; n++) {
+    //         Seigniorage.methods.getOrder(1, doc[n].orderID).call(undefined,i-6, function (error, result1) {
+    //           if (err) return handleError(err);
+    //           if (result1!=null && result1.maker  == burn) {
+    //             Trade.findOneAndUpdate({orderID: doc[n].orderID}, {$set: {status: 'filled', filledTime: result.timestamp}}, {useFindAndModify: false}, function (err, doc) {
+    //               if (err) return handleError(err);
+    //             });
+    //           } else if (result1!=null && result1.maker != burn && parseFloat(weiToNUSD(result1.want))<parseFloat(doc[0].wantAmount.slice(0,-5))) {
+    //             Trade.findOneAndUpdate({orderID: doc[n].orderID}, {
+    //               $set: {status: 'filling', wantAmountNow: result1.want}}, {useFindAndModify: false}, function (err, doc) {
+    //               if (err) return handleError(err);
+    //             });
+    //           }
+    //         });
+    //       }
+    //     }); 
+    //   }
+    // });
   }
 
   web3.eth.subscribe('newBlockHeaders', function (error, new_block) {

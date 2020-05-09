@@ -1167,7 +1167,7 @@ module.exports.filled = async function (req, res) {
 }
 
 module.exports.dup = async function (req, res) {
-  db.myCollection.find({}, {orderID:1}).sort({_id:1}).forEach(function(doc){
-    db.myCollection.remove({_id:{$gt:doc._id}, orderID:doc.orderID});
+  Trade.find({}, {orderID:1}).sort({_id:1}).forEach(function(doc){
+    Trade.remove({_id:{$gt:doc._id}, orderID:doc.orderID});
   })
 }

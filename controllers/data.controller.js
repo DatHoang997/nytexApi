@@ -179,7 +179,7 @@ module.exports.trade = async function (req, res) {
   let array = []
   console.log('start')
 
-  let cursor = 28588000 //33068795
+  let cursor =33068795  //28588000
   async function scanBlock(i) {
     console.log(i)
     Trade.create({status: 'false', number: i}, function (err) {
@@ -201,7 +201,7 @@ module.exports.trade = async function (req, res) {
               to: e.to,
               haveAmount: weiToMNTY(decode["1"]) + ' MNTY',
               wantAmount: weiToNUSD(decode["2"]) + ' NewSD',
-              price: parseFloat(weiToMNTY(decode["1"])) / parseFloat(weiToNUSD(decode["2"])),
+              price: parseFloat(weiToNUSD(decode["2"])) / parseFloat(weiToMNTY(decode["1"])),
               haveAmountNow: weiToMNTY(decode["1"]) + ' MNTY',
               wantAmountNow: weiToNUSD(decode["2"]) + ' NewSD',
               orderID: '0x' + sha256(Buffer.from(packed, 'hex')),
@@ -220,7 +220,7 @@ module.exports.trade = async function (req, res) {
               to: e.to,
               haveAmount: weiToNUSD(decode["1"]) + ' NewSD',
               wantAmount: weiToMNTY(decode["2"]) + ' MNTY',
-              price: parseFloat(weiToMNTY(decode["2"])) / parseFloat(weiToNUSD(decode["1"])),
+              price: parseFloat(weiToNUSD(decode["1"])) / parseFloat(weiToMNTY(decode["2"])),
               haveAmountNow: weiToNUSD(decode["1"]) + ' NewSD',
               wantAmountNow: weiToMNTY(decode["2"]) + ' MNTY',
               orderID: '0x' + sha256(Buffer.from(packed, 'hex')),
@@ -239,7 +239,7 @@ module.exports.trade = async function (req, res) {
               to: e.to,
               haveAmount: weiToMNTY(decode["1"]) + ' MNTY',
               wantAmount: weiToNUSD(decode["2"]) + ' NewSD',
-              price: parseFloat(weiToMNTY(decode["1"])) / parseFloat(weiToNUSD(decode["2"])),
+              price: parseFloat(weiToNUSD(decode["2"])) / parseFloat(weiToMNTY(decode["1"])),
               haveAmountNow: weiToMNTY(decode["1"]) + ' MNTY',
               wantAmountNow: weiToNUSD(decode["2"]) + ' NewSD',
               orderID: '0x' + sha256(Buffer.from(packed, 'hex')),
@@ -258,7 +258,7 @@ module.exports.trade = async function (req, res) {
               to: e.to,
               haveAmount: weiToNUSD(decode["1"]) + ' NewSD',
               wantAmount: weiToMNTY(decode["2"]) + ' MNTY',
-              price: parseFloat(weiToMNTY(decode["2"])) / parseFloat(weiToNUSD(decode["1"])),
+              price: parseFloat(weiToNUSD(decode["1"])) / parseFloat(weiToMNTY(decode["2"])),
               haveAmountNow: weiToNUSD(decode["1"]) + ' NewSD',
               wantAmountNow: weiToMNTY(decode["2"]) + ' MNTY',
               orderID: '0x' + sha256(Buffer.from(packed, 'hex')),
@@ -276,39 +276,42 @@ module.exports.trade = async function (req, res) {
             });
           }
         })
-        Trade.find({$or: [{ status: 'order' }, { status: 'filled' }]}, function (err, doc) {
-          if (err) return handleError(err)
-          for (let j = 0; j < doc.length; j++) {
-            if (doc[j].to == stableTokenAddress) {
-              Seigniorage.methods.getOrder(1, doc[j].orderID).call(undefined,i-6, function (error, result1) {
-                if (err) return handleError(err);
-                if (result1!=null && result1.maker  == burn) {
-                  Trade.findOneAndUpdate({orderID: doc[j].orderID}, {$set: {status: 'filled', filledTime: result.timestamp}}, {useFindAndModify: false}, function (err, doc) {
-                    if (err) return handleError(err);
-                  });
-                } else if (result1!=null && result1.maker != burn && parseFloat(weiToNUSD(result1.want))<parseFloat(doc[0].wantAmount.slice(0,-5))) {
-                  Trade.findOneAndUpdate({orderID: doc[j].orderID}, {
-                    $set: {status: 'filling', wantAmountNow: result1.want}}, {useFindAndModify: false}, function (err, doc) {
-                    if (err) return handleError(err);
-                  });
-                }
-              });
-            } else {
-              Seigniorage.methods.getOrder(0, doc[j].orderID).call(undefined, i-6, function (error, result1) {
-                if (err) return handleError(err);
-                if (result1!=null && result1.maker == burn) {
-                  Trade.findOneAndUpdate({orderID: doc[j].orderID}, {$set: {status: 'filled', filledTime: result.timestamp}}, {useFindAndModify: false}, function (err, doc) {
-                    if (err) return handleError(err);
-                  });
-                } else if (result1!=null && result1.maker != burn && parseFloat(weiToNUSD(result1.want))<parseFloat(doc[0].wantAmount.slice(0,-6))) {
-                  Trade.findOneAndUpdate({orderID: doc[j].orderID}, {$set: {status: 'filling', wantAmountNow: result1.want}}, {useFindAndModify: false}, function (err, doc) {
-                    if (err) return handleError(err);
-                  });
-                }
-              });
+        if(i%10 == 0) {
+          console.log('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAa')
+          Trade.find({$or: [{ status: 'order' }, { status: 'filling' }]}, function (err, doc) {
+            if (err) return handleError(err)
+            for (let j = 0; j < doc.length; j++) {
+              if (doc[j].to == stableTokenAddress) {
+                Seigniorage.methods.getOrder(1, doc[j].orderID).call(undefined,i-6, function (error, result1) {
+                  if (err) return handleError(err);
+                  if (result1!=null && result1.maker  == burn) {
+                    Trade.findOneAndUpdate({orderID: doc[j].orderID}, {$set: {status: 'filled', filledTime: result.timestamp}}, {useFindAndModify: false}, function (err, doc) {
+                      if (err) return handleError(err);
+                    });
+                  } else if (result1!=null && result1.maker != burn && parseFloat(weiToNUSD(result1.want))<parseFloat(doc[0].wantAmount.slice(0,-5))) {
+                    Trade.findOneAndUpdate({orderID: doc[j].orderID}, {
+                      $set: {status: 'filling', wantAmountNow: result1.want}}, {useFindAndModify: false}, function (err, doc) {
+                      if (err) return handleError(err);
+                    });
+                  }
+                });
+              } else {
+                Seigniorage.methods.getOrder(0, doc[j].orderID).call(undefined, i-6, function (error, result1) {
+                  if (err) return handleError(err);
+                  if (result1!=null && result1.maker == burn) {
+                    Trade.findOneAndUpdate({orderID: doc[j].orderID}, {$set: {status: 'filled', filledTime: result.timestamp}}, {useFindAndModify: false}, function (err, doc) {
+                      if (err) return handleError(err);
+                    });
+                  } else if (result1!=null && result1.maker != burn && parseFloat(weiToNUSD(result1.want))<parseFloat(doc[0].wantAmount.slice(0,-6))) {
+                    Trade.findOneAndUpdate({orderID: doc[j].orderID}, {$set: {status: 'filling', wantAmountNow: result1.want}}, {useFindAndModify: false}, function (err, doc) {
+                      if (err) return handleError(err);
+                    });
+                  }
+                });
+              }
             }
-          }
-        })
+          })
+        }
           
         //   for (let n = 0; n < doc.length; n++) {
         //     Seigniorage.methods.getOrder(0, doc[n].orderID).call(undefined, i-6, function (error, result1) {
@@ -357,9 +360,11 @@ module.exports.trade = async function (req, res) {
         Trade.deleteMany({number: {$lte: db_block.number - 100}, status: 'false'}, function (err, res) {
           if (err) console.log(err)
         })
-        console.log('New block', current_new_block, new_block.number, scanning_old_blocks)
+        console.log('New block', db_block.number, new_block.number, scanning_old_blocks)
         if (db_block.number < new_block.number - 7) {
+          console.log('<7')
           if (scanning_old_blocks == 1) {
+            console.log('beginNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN')
             Trade.deleteMany({number: {$gte: db_block.number - 10}}, function (err, res) {
               if (err) console.log(err)
               scanOldBlock()
@@ -367,7 +372,7 @@ module.exports.trade = async function (req, res) {
             })
           } else scanning_old_blocks++
         } else {
-          console.log('else')
+          // console.log('else')
           scanning_old_blocks = 1
           await scanBlock(new_block.number - 6)
         }
@@ -384,8 +389,7 @@ module.exports.trade = async function (req, res) {
         let _from_block = Math.max(db_block.number, cursor)
         let _to_block = Math.min(current_new_block - 6, db_block.number + 5)
         // console.log('db ' , db_block.number, 'new ' , current_new_block, 'from ' , _from_block,'to ' , _to_block)
-        for (let i = _from_block + 1; i <= _to_block; i++) 
-        array.push(i)
+        for (let i = _from_block + 1; i <= _to_block; i++) array.push(i)
         processArray(array)
       }
     })
@@ -1167,8 +1171,36 @@ module.exports.filled = async function (req, res) {
 }
 
 module.exports.dup = async function (req, res) {
-  Trade.find({}, {orderID:1}).sort({_id:1}).forEach(function(doc){
-    Trade.remove({_id:{$gt:doc._id}, orderID:doc.orderID});
-  })
+  var duplicates = [];
+    
+    Trade.aggregate([
+      { $match: { 
+        orderID: { "$ne": '' }  // discard selection criteria
+      }},
+      { $group: { 
+        _id: { orderID: "$orderID"}, // can be grouped on multiple properties 
+        dups: { "$addToSet": "$_id" }, 
+        count: { "$sum": 1 } 
+      }}, 
+      { $match: { 
+        count: { "$gt": 1 }    // Duplicates considered as count greater than one
+      }}
+    ],
+    {allowDiskUse: true}       // For faster processing if set is larger
+    ),function(){
+    forEach(function(doc) {
+        doc.dups.shift();      // First element skipped for deleting
+        doc.dups.forEach( function(dupId){ 
+            duplicates.push(dupId);   // Getting all duplicate ids
+            }
+        )    
+    })
+  }
+    
+    // If you want to Check all "_id" which you are deleting else print statement not needed
+    printjson(duplicates);     
+    
+    // Remove all duplicates in one go    
+    db.collectionName.remove({_id:{$in:duplicates}})  
   res.send('da xoa DB')
 }

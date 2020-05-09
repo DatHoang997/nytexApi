@@ -182,11 +182,11 @@ module.exports.trade = async function (req, res) {
   let cursor = 28588000 //33068795
   async function scanBlock(i) {
     console.log(i)
+    Trade.create({status: 'false', number: i}, function (err) {
+      if (err) return handleError(err);
+    });
     web3.eth.getBlock(i, true, function (err, result) { //31945638 
       if (err) return handleError(err);
-      Trade.create({status: 'false', number: i, time: result.timestamp}, function (err) {
-        if (err) return handleError(err);
-      });
       // console.log(result)
       if (result.transactions != null) {
         result.transactions.forEach(function (e) {
@@ -201,7 +201,7 @@ module.exports.trade = async function (req, res) {
               to: e.to,
               haveAmount: weiToMNTY(decode["1"]) + ' MNTY',
               wantAmount: weiToNUSD(decode["2"]) + ' NewSD',
-              price: parseFloat(weiToNUSD(decode["2"])) / parseFloat(weiToMNTY(decode["1"])),
+              price: parseFloat(weiToMNTY(decode["1"])) / parseFloat(weiToNUSD(decode["2"])),
               haveAmountNow: weiToMNTY(decode["1"]) + ' MNTY',
               wantAmountNow: weiToNUSD(decode["2"]) + ' NewSD',
               orderID: '0x' + sha256(Buffer.from(packed, 'hex')),
@@ -220,7 +220,7 @@ module.exports.trade = async function (req, res) {
               to: e.to,
               haveAmount: weiToNUSD(decode["1"]) + ' NewSD',
               wantAmount: weiToMNTY(decode["2"]) + ' MNTY',
-              price: parseFloat(weiToNUSD(decode["1"])) / parseFloat(weiToMNTY(decode["2"])),
+              price: parseFloat(weiToMNTY(decode["2"])) / parseFloat(weiToNUSD(decode["1"])),
               haveAmountNow: weiToNUSD(decode["1"]) + ' NewSD',
               wantAmountNow: weiToMNTY(decode["2"]) + ' MNTY',
               orderID: '0x' + sha256(Buffer.from(packed, 'hex')),
@@ -239,7 +239,7 @@ module.exports.trade = async function (req, res) {
               to: e.to,
               haveAmount: weiToMNTY(decode["1"]) + ' MNTY',
               wantAmount: weiToNUSD(decode["2"]) + ' NewSD',
-              price: parseFloat(weiToNUSD(decode["2"])) / parseFloat(weiToMNTY(decode["1"])),
+              price: parseFloat(weiToMNTY(decode["1"])) / parseFloat(weiToNUSD(decode["2"])),
               haveAmountNow: weiToMNTY(decode["1"]) + ' MNTY',
               wantAmountNow: weiToNUSD(decode["2"]) + ' NewSD',
               orderID: '0x' + sha256(Buffer.from(packed, 'hex')),
@@ -258,7 +258,7 @@ module.exports.trade = async function (req, res) {
               to: e.to,
               haveAmount: weiToNUSD(decode["1"]) + ' NewSD',
               wantAmount: weiToMNTY(decode["2"]) + ' MNTY',
-              price: parseFloat(weiToNUSD(decode["1"])) / parseFloat(weiToMNTY(decode["2"])),
+              price: parseFloat(weiToMNTY(decode["2"])) / parseFloat(weiToNUSD(decode["1"])),
               haveAmountNow: weiToNUSD(decode["1"]) + ' NewSD',
               wantAmountNow: weiToMNTY(decode["2"]) + ' MNTY',
               orderID: '0x' + sha256(Buffer.from(packed, 'hex')),
@@ -276,8 +276,40 @@ module.exports.trade = async function (req, res) {
             });
           }
         })
-        // Trade.find({to: volatileTokenAddress,  $or: [{ status: 'order' }, { status: 'filling' }]}, function (err, doc) {
-        //   if (err) return handleError(err);
+        Trade.find({$or: [{ status: 'order' }, { status: 'filled' }]}, function (err, doc) {
+          if (err) return handleError(err)
+          for (let j = 0; j < doc.length; j++) {
+            if (doc[j].to == stableTokenAddress) {
+              Seigniorage.methods.getOrder(1, doc[j].orderID).call(undefined,i-6, function (error, result1) {
+                if (err) return handleError(err);
+                if (result1!=null && result1.maker  == burn) {
+                  Trade.findOneAndUpdate({orderID: doc[i].orderID}, {$set: {status: 'filled', filledTime: result.timestamp}}, {useFindAndModify: false}, function (err, doc) {
+                    if (err) return handleError(err);
+                  });
+                } else if (result1!=null && result1.maker != burn && parseFloat(weiToNUSD(result1.want))<parseFloat(doc[0].wantAmount.slice(0,-5))) {
+                  Trade.findOneAndUpdate({orderID: doc[j].orderID}, {
+                    $set: {status: 'filling', wantAmountNow: result1.want}}, {useFindAndModify: false}, function (err, doc) {
+                    if (err) return handleError(err);
+                  });
+                }
+              });
+            } else {
+              Seigniorage.methods.getOrder(0, doc[j].orderID).call(undefined, i-6, function (error, result1) {
+                if (err) return handleError(err);
+                if (result1!=null && result1.maker == burn) {
+                  Trade.findOneAndUpdate({orderID: doc[i].orderID}, {$set: {status: 'filled', filledTime: result.timestamp}}, {useFindAndModify: false}, function (err, doc) {
+                    if (err) return handleError(err);
+                  });
+                } else if (result1!=null && result1.maker != burn && parseFloat(weiToNUSD(result1.want))<parseFloat(doc[0].wantAmount.slice(0,-6))) {
+                  Trade.findOneAndUpdate({orderID: doc[j].orderID}, {$set: {status: 'filling', wantAmountNow: result1.want}}, {useFindAndModify: false}, function (err, doc) {
+                    if (err) return handleError(err);
+                  });
+                }
+              });
+            }
+          }
+        })
+          
         //   for (let n = 0; n < doc.length; n++) {
         //     Seigniorage.methods.getOrder(0, doc[n].orderID).call(undefined, i-6, function (error, result1) {
         //       if (err) return handleError(err);
@@ -325,7 +357,7 @@ module.exports.trade = async function (req, res) {
         Trade.deleteMany({number: {$lte: db_block.number - 100}, status: 'false'}, function (err, res) {
           if (err) console.log(err)
         })
-        // console.log('New block', current_new_block, new_block.number, scanning_old_blocks)
+        console.log('New block', current_new_block, new_block.number, scanning_old_blocks)
         if (db_block.number < new_block.number - 7) {
           if (scanning_old_blocks == 1) {
             Trade.deleteMany({number: {$gte: db_block.number - 10}}, function (err, res) {
@@ -375,6 +407,7 @@ module.exports.trade = async function (req, res) {
   // }
   res.send('collecting...')
 }
+
 
 module.exports.block = async function (req, res) {
   let cursor = 26500000
@@ -1131,4 +1164,10 @@ module.exports.candleclear = async function (req, res) {
 module.exports.filled = async function (req, res) {
   let show = await Trade.find({status: 'filled'}).sort({filledTime: 1})
   res.json(show)
+}
+
+module.exports.dup = async function (req, res) {
+  db.myCollection.find({}, {orderID:1}).sort({_id:1}).forEach(function(doc){
+    db.myCollection.remove({_id:{$gt:doc._id}, orderID:doc.orderID});
+  })
 }

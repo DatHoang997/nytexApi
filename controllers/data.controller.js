@@ -297,7 +297,7 @@ module.exports.trade = async function (req, res) {
               Seigniorage.methods.getOrder(0, doc[j].orderID).call(undefined, i-6, function (error, result1) {
                 if (err) return handleError(err);
                 if (result1!=null && result1.maker == burn) {
-                  Trade.findOneAndUpdate({orderID: doc[i].orderID}, {$set: {status: 'filled', filledTime: result.timestamp}}, {useFindAndModify: false}, function (err, doc) {
+                  Trade.findOneAndUpdate({orderID: doc[j].orderID}, {$set: {status: 'filled', filledTime: result.timestamp}}, {useFindAndModify: false}, function (err, doc) {
                     if (err) return handleError(err);
                   });
                 } else if (result1!=null && result1.maker != burn && parseFloat(weiToNUSD(result1.want))<parseFloat(doc[0].wantAmount.slice(0,-6))) {
@@ -1170,4 +1170,5 @@ module.exports.dup = async function (req, res) {
   Trade.find({}, {orderID:1}).sort({_id:1}).forEach(function(doc){
     Trade.remove({_id:{$gt:doc._id}, orderID:doc.orderID});
   })
+  res.send('da xoa DB')
 }

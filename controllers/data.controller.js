@@ -179,7 +179,7 @@ module.exports.trade = async function (req, res) {
   let array = []
   console.log('start')
 
-  let cursor =33068795  //28588000
+  let cursor = 28588000   //33068795
   async function scanBlock(i) {
     console.log(i)
     Trade.create({status: 'false', number: i}, function (err) {
@@ -277,7 +277,7 @@ module.exports.trade = async function (req, res) {
           }
         })
         if(i%10 == 0) {
-          console.log('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAa')
+          // console.log('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAa')
           Trade.find({$or: [{ status: 'order' }, { status: 'filling' }]}, function (err, doc) {
             if (err) return handleError(err)
             for (let j = 0; j < doc.length; j++) {
@@ -360,9 +360,9 @@ module.exports.trade = async function (req, res) {
         Trade.deleteMany({number: {$lte: db_block.number - 100}, status: 'false'}, function (err, res) {
           if (err) console.log(err)
         })
-        console.log('New block', db_block.number, new_block.number, scanning_old_blocks)
+        // console.log('New block', db_block.number, new_block.number, scanning_old_blocks)
         if (db_block.number < new_block.number - 7) {
-          console.log('<7')
+          // console.log('<7')
           if (scanning_old_blocks == 1) {
             console.log('beginNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN')
             Trade.deleteMany({number: {$gte: db_block.number - 10}}, function (err, res) {
@@ -1046,35 +1046,47 @@ module.exports.getcandle = async function (req, res) {
 module.exports.getcandle30 = function (req, res) {
   let result = []
   let count
+  let num
   Candle.countDocuments({}).exec(async function (err, doc) {
     if (err) return handleError(err)
     count = Math.floor(doc/2)
+    num = doc
   })
+  // console.log(count)
   Candle.find({}).sort({time:1}).exec(function (err, doc) {
     if (err) return handleError(err)
-    for(i = 0; i < count; i+=2) {
+    // console.log(count, num)
+    for(i = 0; i < 11; i+=2) {
+      console.log('i',i)
       let array = []
       let m = 0
       let n = 0
       for(j = i; j <= i+1; j++) {
-        array.push(doc[j].high, doc[j].low)
-        m = m + doc[j].volumeMNTY
-        n = n + doc[j].volumeNewSD
+        // array.push(doc[j-2].high, doc[j-2].low)
+        // m = m + doc[j].volumeMNTY
+        // n = n + doc[j].volumeNewSD
+        console.log(j)
+
+        
       }
-      let data = {
-        high : Math.max.apply(Math, array),
-        low : Math.min.apply(Math, array),
-        open : doc[j].open,
-        close : doc[j+1].close,
-        volumeMNTY: m,
-        volumeNewSD: n,
-        time: doc[j].time,
-        count: count
-      }    
-      result.push(data)
-      if (i+2 >=count) {
+      // if(j = 129) {
+      //   console.log(num-1)
+      //   console.log('last',j)
+      // }
+      // let data = {
+      //   high : Math.max.apply(Math, array),
+      //   low : Math.min.apply(Math, array),
+      //   open : doc[j].open,
+      //   close : doc[j].close,
+      //   volumeMNTY: m,
+      //   volumeNewSD: n,
+      //   time: doc[j].time,
+      //   count: count
+      // }    
+      // result.push(data)
+      if (i+2 >=num) {
         let show = result
-        res.json(show)
+        // res.json(show)
       }
     }
   })

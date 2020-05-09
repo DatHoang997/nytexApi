@@ -1168,7 +1168,7 @@ module.exports.getcandle1 =function (req, res) {
 }
 
 module.exports.tradeclear = async function (req, res) {
-  Trade.deleteMany({number: 19477112,}, function (err, res) {if (err) console.log(err)})
+  Trade.deleteMany({}, function (err, res) {if (err) console.log(err)})
   res.send('da xoa DB')
 }
 

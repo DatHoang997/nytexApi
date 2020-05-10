@@ -104,15 +104,13 @@ module.exports.candle = function (req, res) {
             time: end
           }, function (err) {
             if (err) return handleError(err);
-            Trade.findOne().sort({time: -1}).exec(function (err, doc) {
-              if (err) return handleError(err);
-              if (end + 900 < doc.time) createCandle(end)
-              else {
-                let wait = (end + 900 - doc.time + 5)*1000
-                console.log('waitfirs',wait)
-                setTimeout(function() {createCandle(end); }, wait)
-              }
-            })
+            let doc = parseInt(Date.now().toString().slice(0,-3))
+            if (end + 900 < doc) createCandle(end)
+            else {
+              let wait = (end + 900 - doc + 5)*1000
+              console.log('waitfirs',wait)
+              setTimeout(function() {createCandle(end); }, wait)
+            }
           })
         })
       } else {
@@ -129,18 +127,14 @@ module.exports.candle = function (req, res) {
             time: end
           }, function (err) {
             if (err) return handleError(err);
-            Trade.findOne().sort({time: -1}).exec(function (err, doc1) {
-              // console.log(end, doc.time)
-              if (err) return handleError(err);
-              console.log('aa', end + 900 , doc1.time )
-              if (end + 900 < doc1.time) {
-                createCandle(end)
-              } else {
-                let wait = (end + 900 - doc1.time + 5)*1000
-                console.log('wait2',wait)
-                setTimeout(function() {createCandle(end)}, wait)
-              }
-            })    
+            let doc = parseInt(Date.now().toString().slice(0,-3))
+            if (end + 900 < doc1) {
+              createCandle(end)
+            } else {
+              let wait = (end + 900 - doc1 + 5)*1000
+              console.log('wait2',wait)
+              setTimeout(function() {createCandle(end)}, wait)
+            }   
           })
         })
       }
@@ -182,14 +176,14 @@ module.exports.trade = async function (req, res) {
   let cursor = 28588000   //33068795
   async function scanBlock(i) {
     // console.log(i)
+    Trade.create({status: 'false', number: i, }, function (err) {
+      if (err) return handleError(err);
+      console.log('save',i)
+    });
     web3.eth.getBlock(i, true, function (err, result) { //31945638 
       if (err) return handleError(err);
-      console.log('in',i)
       // console.log(result)
-      Trade.create({status: 'false', number: i, time:result.timestamp}, function (err) {
-        if (err) return handleError(err);
-        console.log('save',i)
-      });
+      
       if (result.transactions != null) {
         result.transactions.forEach(function (e) {
           let id = e.input.slice(2, 10);

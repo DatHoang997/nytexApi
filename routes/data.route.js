@@ -56,7 +56,5 @@ router.get('/get-candle-hour', controller.getcandle60)
 
 router.get('/get-candle-day', controller.getcandle1)
 
-router.get('/dup', controller.dup)
-
 
 module.exports = router

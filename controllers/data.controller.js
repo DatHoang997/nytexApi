@@ -395,21 +395,21 @@ module.exports.trade = async function (req, res) {
       }
     })
   }
-  async function processArray(array) {
-    // map array to promises
-    const promises = array.map(scanBlock);
-    // wait until all promises are resolved
-    await Promise.all(promises);
-    // console.log('Done!');
-    scanOldBlock()
-  }
   // async function processArray(array) {
-  //   for (const i of array) {
-  //     await scanBlock(i);
-  //   }
+  //   // map array to promises
+  //   const promises = array.map(scanBlock);
+  //   // wait until all promises are resolved
+  //   await Promise.all(promises);
   //   // console.log('Done!');
   //   scanOldBlock()
   // }
+  async function processArray(array) {
+    for (const i of array) {
+      await scanBlock(i);
+    }
+    // console.log('Done!');
+    scanOldBlock()
+  }
   res.send('collecting...')
 }
 

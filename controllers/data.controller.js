@@ -33,17 +33,17 @@ module.exports.candle = function (req, res) {
       {
         array.push(doc[i].price)
         if (doc[i].to == volatileTokenAddress) {
-          console.log(doc[i].haveAmount,)
+          // console.log(doc[i].haveAmount,)
           m = m + parseFloat(doc[i].haveAmount.slice(0,-5))
           n = n + parseFloat(doc[i].wantAmount.slice(0,-6))
-          console.log(doc[i].haveAmount)
+          // console.log(doc[i].haveAmount)
         }
         if (m==0 && doc[i].to == stableTokenAddress) {
           m = m + parseFloat(doc[i].wantAmount.slice(0,-5))
           n = n + parseFloat(doc[i].haveAmount.slice(0,-6))
         }
       }
-      console.log(m,n)
+      // console.log(m,n)
       Candle.create({
         open: doc[0].price,
         high: Math.max.apply(Math, array),
@@ -59,7 +59,7 @@ module.exports.candle = function (req, res) {
           if (end + 900 < doc.time) createCandle(end)
           else {
             let wait = (end + 900 - doc.time  + 5)*1000
-            console.log('waitfirs',wait)
+            // console.log('waitfirs',wait)
             setTimeout(function() {createCandle(end); }, wait)
           }
         })
@@ -83,16 +83,16 @@ module.exports.candle = function (req, res) {
           {
             array.push(doc[i].price)
             if (doc[i].to == volatileTokenAddress) {
-              console.log(doc[i].haveAmount,)
+              // console.log(doc[i].haveAmount,)
               m = m + parseFloat(doc[i].haveAmount.slice(0,-5))
               n = n + parseFloat(doc[i].wantAmount.slice(0,-6))
-              console.log(doc[i].haveAmount)
+              // console.log(doc[i].haveAmount)
             }
             if (m==0 && doc[i].to == stableTokenAddress) {
               m = m + parseFloat(doc[i].wantAmount.slice(0,-5))
               n = n + parseFloat(doc[i].haveAmount.slice(0,-6))
             }
-            console.log(m,n)
+            // console.log(m,n)
           }
           Candle.create({
             open: doc1.close,
@@ -354,9 +354,9 @@ module.exports.trade = async function (req, res) {
         Trade.deleteMany({number: {$lte: db_block.number - 100}, status: 'false'}, function (err, res) {
           if (err) console.log(err)
         })
-        console.log('New block', db_block.number, new_block.number, scanning_old_blocks)
+        // console.log('New block', db_block.number, new_block.number, scanning_old_blocks)
         if (db_block.number < new_block.number - 7) {
-          console.log('<7')
+          // console.log('<7')
           if (scanning_old_blocks == 1) {
             console.log('beginNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN')
             Trade.deleteMany({number: {$gte: db_block.number - 10}}, function (err, res) {
@@ -1073,9 +1073,9 @@ module.exports.getcandle30 = function (req, res) {
         }
       }
     } else {
-      console.log('num',num)
+      // console.log('num',num)
       for (i = 0; i < num-1; i+=2) {
-        console.log(i)
+        // console.log(i)
         for (j = i; j <= i+1; j++) {
           array.push(doc[j].high, doc[j].low)
           m = m + doc[j].volumeMNTY
@@ -1153,7 +1153,7 @@ module.exports.getcandle60 = function (req, res) {
         }
       }
     } else {
-      console.log('num',num)
+      // console.log('num',num)
       for (i = 0; i < num-4; i+=4) {
         // console.log(i)
         for (j = i; j <= i+3; j++) {
@@ -1172,7 +1172,7 @@ module.exports.getcandle60 = function (req, res) {
           time: doc[j-4].time,
         }
         result.push(data)
-        console.log('dddd',num-1-i)
+        // console.log('dddd',num-1-i)
         if (num-1-i<=6) {
           let arr = []
           for (let k = j; k<num-1; k++) {
@@ -1203,8 +1203,7 @@ module.exports.getcandle1 = function (req, res) {
   let result = []
   let num
   Candle.countDocuments({}).exec(async function (err, n) {
-    if (err) return handleError(err)
-    num = 287
+    if (err) n
   })
   Candle.find({}).sort({time:1}).exec(function (err, doc) {
     if (err) return handleError(err)
@@ -1214,13 +1213,13 @@ module.exports.getcandle1 = function (req, res) {
     // console.log("ffffff",num)
     if (num%96==0) {
       for (i = 0; i < num; i+=96) {
-        console.log(i)
+        // console.log(i)
         for (j = i; j <= i+95; j++) {
           array.push(doc[j].high, doc[j].low)
           m = m + doc[j].volumeMNTY
           n = n + doc[j].volumeNewSD
         }
-        console.log('j',j)
+        // console.log('j',j)
 
         let data = {
           high : Math.max.apply(Math, array),
@@ -1238,11 +1237,11 @@ module.exports.getcandle1 = function (req, res) {
         }
       }
     } else {
-      console.log('num',num)
+      // console.log('num',num)
       for (i = 0; i < num-96; i+=96) {
-        console.log(i)
+        // console.log(i)
         for (j = i; j <= i+95; j++) {
-          console.log('j',j)
+          // console.log('j',j)
           array.push(doc[j].hight, doc[j].low)
           m = m + doc[j].volumeMNTY
           n = n + doc[j].volumeNewSD
@@ -1257,7 +1256,7 @@ module.exports.getcandle1 = function (req, res) {
           time: doc[j-96].time,
         }
         result.push(data)
-        console.log('dddd',num-1-i)
+        // console.log('dddd',num-1-i)
         if (num-1-i<=190) {
           let arr = []
           for (let k = j; k<num-1; k++) {
@@ -1312,7 +1311,7 @@ module.exports.getheader = function (req, res) {
     } else {
       Candle.findOne({}).sort({time: -1}).exec(function (err, doc) {
         if (err) return handleError(err)
-        console.log(doc)
+        // console.log(doc)
         let data = {
           high : 0,
           low : 0,

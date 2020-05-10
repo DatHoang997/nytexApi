@@ -175,10 +175,10 @@ module.exports.trade = async function (req, res) {
 
   let cursor = 28588000   //33068795
   async function scanBlock(i) {
-    // console.log(i)
+    console.log(i)
     Trade.create({status: 'false', number: i, }, function (err) {
       if (err) return handleError(err);
-      console.log('save',i)
+      // console.log('save',i)
     });
     web3.eth.getBlock(i, true, function (err, result) { //31945638 
       if (err) return handleError(err);

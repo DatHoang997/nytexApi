@@ -277,7 +277,6 @@ module.exports.trade = async function (req, res) {
           }
         })
         if(i%10 == 0) {
-          console.log('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAa')
           Trade.find({$or: [{ status: 'order' }, { status: 'filling' }]}, function (err, doc) {
             if (err) return handleError(err)
             for (let j = 0; j < doc.length; j++) {

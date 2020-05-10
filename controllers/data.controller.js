@@ -182,12 +182,12 @@ module.exports.trade = async function (req, res) {
   let cursor = 28588000   //33068795
   async function scanBlock(i) {
     console.log(i)
-    Trade.create({status: 'false', number: i}, function (err) {
-      if (err) return handleError(err);
-    });
     web3.eth.getBlock(i, true, function (err, result) { //31945638 
       if (err) return handleError(err);
       // console.log(result)
+      Trade.create({status: 'false', number: i, time:result.timestamp}, function (err) {
+        if (err) return handleError(err);
+      });
       if (result.transactions != null) {
         result.transactions.forEach(function (e) {
           let id = e.input.slice(2, 10);
@@ -277,78 +277,77 @@ module.exports.trade = async function (req, res) {
           }
         })
         if(i%10 == 0) {
-        //   // console.log('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAa')
-        //   Trade.find({$or: [{ status: 'order' }, { status: 'filling' }]}, function (err, doc) {
-        //     if (err) return handleError(err)
-        //     for (let j = 0; j < doc.length; j++) {
-        //       if (doc[j].to == stableTokenAddress) {
-        //         Seigniorage.methods.getOrder(1, doc[j].orderID).call(undefined,i-6, function (error, result1) {
+          console.log('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAa')
+          Trade.find({$or: [{ status: 'order' }, { status: 'filling' }]}, function (err, doc) {
+            if (err) return handleError(err)
+            for (let j = 0; j < doc.length; j++) {
+              if (doc[j].to == stableTokenAddress) {
+                Seigniorage.methods.getOrder(1, doc[j].orderID).call(undefined,i-6, function (error, result1) {
+                  if (err) return handleError(err);
+                  if (result1!=null && result1.maker  == burn) {
+                    Trade.findOneAndUpdate({orderID: doc[j].orderID}, {$set: {status: 'filled', filledTime: result.timestamp}}, {useFindAndModify: false}, function (err, doc) {
+                      if (err) return handleError(err);
+                    });
+                  } else if (result1!=null && result1.maker != burn && parseFloat(weiToNUSD(result1.want))<parseFloat(doc[0].wantAmount.slice(0,-5))) {
+                    Trade.findOneAndUpdate({orderID: doc[j].orderID}, {
+                      $set: {status: 'filling', wantAmountNow: result1.want}}, {useFindAndModify: false}, function (err, doc) {
+                      if (err) return handleError(err);
+                    });
+                  }
+                });
+              } else {
+                Seigniorage.methods.getOrder(0, doc[j].orderID).call(undefined, i-6, function (error, result1) {
+                  if (err) return handleError(err);
+                  if (result1!=null && result1.maker == burn) {
+                    Trade.findOneAndUpdate({orderID: doc[j].orderID}, {$set: {status: 'filled', filledTime: result.timestamp}}, {useFindAndModify: false}, function (err, doc) {
+                      if (err) return handleError(err);
+                    });
+                  } else if (result1!=null && result1.maker != burn && parseFloat(weiToNUSD(result1.want))<parseFloat(doc[0].wantAmount.slice(0,-6))) {
+                    Trade.findOneAndUpdate({orderID: doc[j].orderID}, {$set: {status: 'filling', wantAmountNow: result1.want}}, {useFindAndModify: false}, function (err, doc) {
+                      if (err) return handleError(err);
+                    });
+                  }
+                });
+              }
+            }
+          })
+        }
+          
+        //   for (let n = 0; n < doc.length; n++) {
+        //     Seigniorage.methods.getOrder(0, doc[n].orderID).call(undefined, i-6, function (error, result1) {
+        //       if (err) return handleError(err);
+        //       if (result1!=null && result1.maker == burn) {
+        //         Trade.findOneAndUpdate({orderID: doc[n].orderID}, {$set: {status: 'filled', filledTime: result.timestamp}}, {useFindAndModify: false}, function (err, doc) {
         //           if (err) return handleError(err);
-        //           if (result1!=null && result1.maker  == burn) {
-        //             Trade.findOneAndUpdate({orderID: doc[j].orderID}, {$set: {status: 'filled', filledTime: result.timestamp}}, {useFindAndModify: false}, function (err, doc) {
-        //               if (err) return handleError(err);
-        //             });
-        //           } else if (result1!=null && result1.maker != burn && parseFloat(weiToNUSD(result1.want))<parseFloat(doc[0].wantAmount.slice(0,-5))) {
-        //             Trade.findOneAndUpdate({orderID: doc[j].orderID}, {
-        //               $set: {status: 'filling', wantAmountNow: result1.want}}, {useFindAndModify: false}, function (err, doc) {
-        //               if (err) return handleError(err);
-        //             });
-        //           }
         //         });
-        //       } else {
-        //         Seigniorage.methods.getOrder(0, doc[j].orderID).call(undefined, i-6, function (error, result1) {
+        //       } else if (result1!=null && result1.maker != burn && parseFloat(weiToNUSD(result1.want))<parseFloat(doc[0].wantAmount.slice(0,-6))) {
+        //         Trade.findOneAndUpdate({
+        //           orderID: doc[n].orderID}, {
+        //             $set: {status: 'filling', wantAmountNow: result1.want}}, {useFindAndModify: false}, function (err, doc) {
         //           if (err) return handleError(err);
-        //           if (result1!=null && result1.maker == burn) {
-        //             Trade.findOneAndUpdate({orderID: doc[j].orderID}, {$set: {status: 'filled', filledTime: result.timestamp}}, {useFindAndModify: false}, function (err, doc) {
-        //               if (err) return handleError(err);
-        //             });
-        //           } else if (result1!=null && result1.maker != burn && parseFloat(weiToNUSD(result1.want))<parseFloat(doc[0].wantAmount.slice(0,-6))) {
-        //             Trade.findOneAndUpdate({orderID: doc[j].orderID}, {$set: {status: 'filling', wantAmountNow: result1.want}}, {useFindAndModify: false}, function (err, doc) {
-        //               if (err) return handleError(err);
-        //             });
-        //           }
         //         });
         //       }
-        //     }
-        //   })
-        // }
-        Trade.find({to: volatileTokenAddress,  $or: [{status: 'order'}, {status: 'filling'}]}, function (err, doc) {
-          for (let n = 0; n < doc.length; n++) {
-            Seigniorage.methods.getOrder(0, doc[n].orderID).call(undefined, i-6, function (error, result1) {
-              if (err) return handleError(err);
-              if (result1!=null && result1.maker == burn) {
-                Trade.findOneAndUpdate({orderID: doc[n].orderID}, {$set: {status: 'filled', filledTime: result.timestamp}}, {useFindAndModify: false}, function (err, doc) {
-                  if (err) return handleError(err);
-                });
-              } else if (result1!=null && result1.maker != burn && parseFloat(weiToNUSD(result1.want))<parseFloat(doc[0].wantAmount.slice(0,-6))) {
-                Trade.findOneAndUpdate({
-                  orderID: doc[n].orderID}, {
-                    $set: {status: 'filling', wantAmountNow: result1.want}}, {useFindAndModify: false}, function (err, doc) {
-                  if (err) return handleError(err);
-                });
-              }
-            });
-          }
-        });
-        Trade.find({to: stableTokenAddress,  $or: [{status: 'order'}, {status: 'filling'}]}, function (err, doc) {
-          if (err) return handleError(err);
-          for (let n = 0; n < doc.length; n++) {
-            Seigniorage.methods.getOrder(1, doc[n].orderID).call(undefined,i-6, function (error, result1) {
-              if (err) return handleError(err);
-              if (result1!=null && result1.maker  == burn) {
-                Trade.findOneAndUpdate({orderID: doc[n].orderID}, {$set: {status: 'filled', filledTime: result.timestamp}}, {useFindAndModify: false}, function (err, doc) {
-                  if (err) return handleError(err);
-                });
-              } else if (result1!=null && result1.maker != burn && parseFloat(weiToNUSD(result1.want))<parseFloat(doc[0].wantAmount.slice(0,-5))) {
-                Trade.findOneAndUpdate({orderID: doc[n].orderID}, {
-                  $set: {status: 'filling', wantAmountNow: result1.want}}, {useFindAndModify: false}, function (err, doc) {
-                  if (err) return handleError(err);
-                });
-              }
-            });
-          }
-        }); 
-      }
+        //     });
+        //   }
+        // });
+        // Trade.find({to: stableTokenAddress,  $or: [{status: 'order'}, {status: 'filling'}]}, function (err, doc) {
+        //   if (err) return handleError(err);
+        //   for (let n = 0; n < doc.length; n++) {
+        //     Seigniorage.methods.getOrder(1, doc[n].orderID).call(undefined,i-6, function (error, result1) {
+        //       if (err) return handleError(err);
+        //       if (result1!=null && result1.maker  == burn) {
+        //         Trade.findOneAndUpdate({orderID: doc[n].orderID}, {$set: {status: 'filled', filledTime: result.timestamp}}, {useFindAndModify: false}, function (err, doc) {
+        //           if (err) return handleError(err);
+        //         });
+        //       } else if (result1!=null && result1.maker != burn && parseFloat(weiToNUSD(result1.want))<parseFloat(doc[0].wantAmount.slice(0,-5))) {
+        //         Trade.findOneAndUpdate({orderID: doc[n].orderID}, {
+        //           $set: {status: 'filling', wantAmountNow: result1.want}}, {useFindAndModify: false}, function (err, doc) {
+        //           if (err) return handleError(err);
+        //         });
+        //       }
+        //     });
+        //   }
+        // }); 
       }
     });
   }
@@ -361,9 +360,9 @@ module.exports.trade = async function (req, res) {
         Trade.deleteMany({number: {$lte: db_block.number - 100}, status: 'false'}, function (err, res) {
           if (err) console.log(err)
         })
-        // console.log('New block', db_block.number, new_block.number, scanning_old_blocks)
+        console.log('New block', db_block.number, new_block.number, scanning_old_blocks)
         if (db_block.number < new_block.number - 7) {
-          // console.log('<7')
+          console.log('<7')
           if (scanning_old_blocks == 1) {
             console.log('beginNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN')
             Trade.deleteMany({number: {$gte: db_block.number - 10}}, function (err, res) {
@@ -1053,41 +1052,73 @@ module.exports.getcandle30 = function (req, res) {
     count = Math.floor(doc/2)
     num = doc
   })
-  // console.log(count)
   Candle.find({}).sort({time:1}).exec(function (err, doc) {
     if (err) return handleError(err)
-    // console.log(count, num)
-    for(i = 0; i < 11; i+=2) {
-      console.log('i',i)
-      let array = []
-      let m = 0
-      let n = 0
-      for(j = i; j <= i+1; j++) {
-        // array.push(doc[j-2].high, doc[j-2].low)
-        // m = m + doc[j].volumeMNTY
-        // n = n + doc[j].volumeNewSD
-        console.log(j)
-
-        
+    let array = []
+    let m = 0
+    let n = 0
+    if (num%2==0) {
+      for(i = 0; i < num; i+=2) {
+        console.log(i)
+        for(j = i; j <= i+1; j++) {
+          array.push(doc[j].high, doc[j].low)
+          m = m + doc[j].volumeMNTY
+          n = n + doc[j].volumeNewSD
+          console.log('hhhhh',j)
+        }
+        console.log('out', j)
+        let data = {
+          high : Math.max.apply(Math, array),
+          low : Math.min.apply(Math, array),
+          open : doc[j-2].open,
+          close : doc[j-1].close,
+          volumeMNTY: m,
+          volumeNewSD: n,
+          time: doc[j-2].time,
+        }    
+        result.push(data)
+        if (i+2 >= num) {
+          let show = result
+          res.json(show)
+          // console.log(show)
+        }
       }
-      // if(j = 129) {
-      //   console.log(num-1)
-      //   console.log('last',j)
-      // }
-      // let data = {
-      //   high : Math.max.apply(Math, array),
-      //   low : Math.min.apply(Math, array),
-      //   open : doc[j].open,
-      //   close : doc[j].close,
-      //   volumeMNTY: m,
-      //   volumeNewSD: n,
-      //   time: doc[j].time,
-      //   count: count
-      // }    
-      // result.push(data)
-      if (i+2 >=num) {
-        let show = result
-        // res.json(show)
+    } else {
+      console.log('num',num)
+      for(i = 0; i < num-1; i+=2) {
+        console.log(i)
+        for(j = i; j <= i+1; j++) {
+          array.push(doc[j].high, doc[j].low)
+          m = m + doc[j].volumeMNTY
+          n = n + doc[j].volumeNewSD
+          // console.log('hhhhh',j)
+        }
+        // console.log('out', j)
+        let data = {
+          high : Math.max.apply(Math, array),
+          low : Math.min.apply(Math, array),
+          open : doc[j-2].open,
+          close : doc[j-1].close,
+          volumeMNTY: m,
+          volumeNewSD: n,
+          time: doc[j-2].time,
+        }    
+        result.push(data)
+        if (i+3 >= num) {
+          let data = {
+            high : doc[num-1].high,
+            low : doc[num-1].low,
+            open : doc[num-1].open,
+            close : doc[num-1].close,
+            volumeMNTY: doc[num-1].volumeMNTY,
+            volumeNewSD: doc[num-1].volumeNewSD,
+            time: doc[num-1].time,
+          }
+          result.push(data)
+          let show = result
+          res.json(show)
+          // console.log(show)
+        }
       }
     }
   })
@@ -1169,7 +1200,7 @@ module.exports.getcandle1 =function (req, res) {
 }
 
 module.exports.tradeclear = async function (req, res) {
-  Trade.deleteMany({}, function (err, res) {if (err) console.log(err)})
+  Trade.deleteMany({number: 19477112,}, function (err, res) {if (err) console.log(err)})
   res.send('da xoa DB')
 }
 

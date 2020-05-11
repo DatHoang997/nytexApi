@@ -1313,13 +1313,12 @@ module.exports.getheader = function (req, res) {
             // console.log('iiiiiiiiiiii',doc1[i].to)
             if (doc1[i].to == volatileTokenAddress) {
               // console.log(doc[i].haveAmount,)
-              m = m + parseFloat(doc[i].haveAmount.slice(0,-5))
-              n = n + parseFloat(doc[i].wantAmount.slice(0,-6))
+              m = m + parseFloat(doc1[i].haveAmount.slice(0,-5))
+              n = n + parseFloat(doc1[i].wantAmount.slice(0,-6))
               // console.log(doc[i].haveAmount)
-            }
-            if (m==0 && doc[i].to == stableTokenAddress) {
-              m = m + parseFloat(doc[i].wantAmount.slice(0,-5))
-              n = n + parseFloat(doc[i].haveAmount.slice(0,-6))
+            } else {
+              m = m + parseFloat(doc1[i].wantAmount.slice(0,-5))
+              n = n + parseFloat(doc1[i].haveAmount.slice(0,-6))
             }
             array.push(doc1[i].price)
           }

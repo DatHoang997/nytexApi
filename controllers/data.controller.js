@@ -265,8 +265,7 @@ module.exports.trade = async function (req, res) {
                       if (err) return handleError(err);
                     });
                   } else if (result1!=null && result1.maker != burn && parseFloat(weiToNUSD(result1.want))<parseFloat(doc[0].wantAmount.slice(0,-5))) {
-                    Trade.findOneAndUpdate({orderID: doc[j].orderID}, {
-                      $set: {status: 'filling', wantAmountNow: result1.want}}, {useFindAndModify: false}, function (err, doc) {
+                    Trade.findOneAndUpdate({orderID: doc[j].orderID}, {$set: {status: 'filling', wantAmountNow: result1.want}}, {useFindAndModify: false}, function (err, doc) {
                       if (err) return handleError(err);
                     });
                   }
@@ -1001,233 +1000,236 @@ module.exports.getlastestfill = async function (req, res) {
 }
 
 module.exports.getcandle = async function (req, res) {
-  let show = await Candle.find({}).sort({time: 1})
-  res.json(show)
-}
-
-module.exports.getcandle30 = function (req, res) {
-  let result = []
-  let num
-  Candle.countDocuments({}).exec(async function (err, n) {
-    if (err) return handleError(err)
-    num = n
-  })
-  Candle.find({}).sort({time:1}).exec(function (err, doc) {
-    if (err) return handleError(err)
-    let array = []
-    let m = 0
-    let n = 0
-    if (num%2==0) {
-      for (i = 0; i < num; i+=2) {
-        for (j = i; j <= i+1; j++) {
-          array.push(doc[j].high, doc[j].low)
-          m = m + doc[j].volumeMNTY
-          n = n + doc[j].volumeNewSD
-        }
-        let data = {
-          high : Math.max.apply(Math, array),
-          low : Math.min.apply(Math, array),
-          open : doc[j-2].open,
-          close : doc[j-1].close,
-          volumeMNTY: m,
-          volumeNewSD: n,
-          time: doc[j-2].time,
-        }
-        result.push(data)
-        if (i+2 >= num) {
-          let show = result
-          res.json(show)
-        }
-      }
-    } else {
-      for (i = 0; i < num-1; i+=2) {
-        for (j = i; j <= i+1; j++) {
-          array.push(doc[j].high, doc[j].low)
-          m = m + doc[j].volumeMNTY
-          n = n + doc[j].volumeNewSD
-        }
-        let data = {
-          high : Math.max.apply(Math, array),
-          low : Math.min.apply(Math, array),
-          open : doc[j-2].open,
-          close : doc[j-1].close,
-          volumeMNTY: m,
-          volumeNewSD: n,
-          time: doc[j-2].time,
-        }
-        result.push(data)
-        if (i+3 >= num) {
-          let data = {
-            high : doc[num-1].high,
-            low : doc[num-1].low,
-            open : doc[num-1].open,
-            close : doc[num-1].close,
-            volumeMNTY: doc[num-1].volumeMNTY,
-            volumeNewSD: doc[num-1].volumeNewSD,
-            time: doc[num-1].time,
+  const queryObject = url.parse(req.url, true).query;
+  let type = queryObject.type
+  switch (type) {
+    case '15m':
+      let show = await Candle.find({}).sort({time: 1})
+      res.json(show)
+      break;
+    case '30m':
+      let result = []
+      let num
+      Candle.countDocuments({}).exec(async function (err, n) {
+        if (err) return handleError(err)
+        num = n
+      })
+      Candle.find({}).sort({time:1}).exec(function (err, doc) {
+        if (err) return handleError(err)
+        let array = []
+        let m = 0
+        let n = 0
+        if (num%2==0) {
+          for (i = 0; i < num; i+=2) {
+            for (j = i; j <= i+1; j++) {
+              array.push(doc[j].high, doc[j].low)
+              m = m + doc[j].volumeMNTY
+              n = n + doc[j].volumeNewSD
+            }
+            let data = {
+              high : Math.max.apply(Math, array),
+              low : Math.min.apply(Math, array),
+              open : doc[j-2].open,
+              close : doc[j-1].close,
+              volumeMNTY: m,
+              volumeNewSD: n,
+              time: doc[j-2].time,
+            }
+            result.push(data)
+            if (i+2 >= num) {
+              let show = result
+              res.json(show)
+            }
           }
-          result.push(data)
-          let show = result
-          res.json(show)
-        }
-      }
-    }
-  })
-}
-
-module.exports.getcandle60 = function (req, res) {
-  let result = []
-  let num
-  Candle.countDocuments({}).exec(async function (err, n) {
-    if (err) return handleError(err)
-    num = n
-  })
-  Candle.find({}).sort({time:1}).exec(function (err, doc) {
-    if (err) return handleError(err)
-    if (num%4==0) {
-      let array = []
-      let m = 0
-      let n = 0
-      for (i = 0; i < num; i+=4) {
-        for (j = i; j <= i+3; j++) {
-          array.push(doc[j].high, doc[j].low)
-          m = m + doc[j].volumeMNTY
-          n = n + doc[j].volumeNewSD
-        }
-        let data = {
-          high : Math.max.apply(Math, array),
-          low : Math.min.apply(Math, array),
-          open : doc[j-4].open,
-          close : doc[j-1].close,
-          volumeMNTY: m,
-          volumeNewSD: n,
-          time: doc[j-4].time,
-        }
-        result.push(data)
-        if (i+4 >= num) {
-          let show = result
-          res.json(show)
-        }
-      }
-    } else {
-      let array = []
-      let m = 0
-      let n = 0
-      for (i = 0; i < num-4; i+=4) {
-        for (j = i; j <= i+3; j++) {
-          array.push(doc[j].high, doc[j].low)
-          m = m + doc[j].volumeMNTY
-          n = n + doc[j].volumeNewSD
-        }
-        let data = {
-          high : Math.max.apply(Math, array),
-          low : Math.min.apply(Math, array),
-          open : doc[j-4].open,
-          close : doc[j-1].close,
-          volumeMNTY: m,
-          volumeNewSD: n,
-          time: doc[j-4].time,
-        }
-        result.push(data)
-        if (num-1-i<=6) {
-          let arr = []
-          for (let k = j; k<num-1; k++) {
-            arr.push(doc[k].high, doc[k].low)
-            m = m + doc[k].volumeMNTY
-            n = n + doc[k].volumeNewSD
+        } else {
+          for (i = 0; i < num-1; i+=2) {
+            for (j = i; j <= i+1; j++) {
+              array.push(doc[j].high, doc[j].low)
+              m = m + doc[j].volumeMNTY
+              n = n + doc[j].volumeNewSD
+            }
+            let data = {
+              high : Math.max.apply(Math, array),
+              low : Math.min.apply(Math, array),
+              open : doc[j-2].open,
+              close : doc[j-1].close,
+              volumeMNTY: m,
+              volumeNewSD: n,
+              time: doc[j-2].time,
+            }
+            result.push(data)
+            if (i+3 >= num) {
+              let data = {
+                high : doc[num-1].high,
+                low : doc[num-1].low,
+                open : doc[num-1].open,
+                close : doc[num-1].close,
+                volumeMNTY: doc[num-1].volumeMNTY,
+                volumeNewSD: doc[num-1].volumeNewSD,
+                time: doc[num-1].time,
+              }
+              result.push(data)
+              let show = result
+              res.json(show)
+            }
           }
-          let data = {
-            high : Math.max.apply(Math, arr),
-            low : Math.min.apply(Math, arr),
-            open : doc[j].open,
-            close : doc[num-1].close,
-            volumeMNTY: m,
-            volumeNewSD: n,
-            time: doc[j].time,
+        }
+      })
+      break;
+    case '1h':
+      let result = []
+      let num
+      Candle.countDocuments({}).exec(async function (err, n) {
+        if (err) return handleError(err)
+        num = n
+      })
+      Candle.find({}).sort({time:1}).exec(function (err, doc) {
+        if (err) return handleError(err)
+        if (num%4==0) {
+          let array = []
+          let m = 0
+          let n = 0
+          for (i = 0; i < num; i+=4) {
+            for (j = i; j <= i+3; j++) {
+              array.push(doc[j].high, doc[j].low)
+              m = m + doc[j].volumeMNTY
+              n = n + doc[j].volumeNewSD
+            }
+            let data = {
+              high : Math.max.apply(Math, array),
+              low : Math.min.apply(Math, array),
+              open : doc[j-4].open,
+              close : doc[j-1].close,
+              volumeMNTY: m,
+              volumeNewSD: n,
+              time: doc[j-4].time,
+            }
+            result.push(data)
+            if (i+4 >= num) {
+              let show = result
+              res.json(show)
+            }
           }
-          result.push(data)
-          let show = result
-          res.json(show)
-        }
-      }
-    }
-  })
-}
-
-module.exports.getcandle1 = function (req, res) {
-  let result = []
-  let num
-  Candle.countDocuments({}).exec(async function (err, n) {
-    if (err) return handleError(err)
-    num = n
-  })
-  Candle.find({}).sort({time:1}).exec(function (err, doc) {
-    if (err) return handleError(err)
-    let array = []
-    let m = 0
-    let n = 0
-    if (num%96==0) {
-      for (i = 0; i < num; i+=96) {
-        for (j = i; j <= i+95; j++) {
-          array.push(doc[j].high, doc[j].low)
-          m = m + doc[j].volumeMNTY
-          n = n + doc[j].volumeNewSD
-        }
-        let data = {
-          high : Math.max.apply(Math, array),
-          low : Math.min.apply(Math, array),
-          open : doc[j-96].open,
-          close : doc[j-1].close,
-          volumeMNTY: m,
-          volumeNewSD: n,
-          time: doc[j-96].time,
-        }
-        result.push(data)
-        if (i+96 >= num) {
-          let show = result
-          res.json(show)
-        }
-      }
-    } else {
-      for (i = 0; i < num-96; i+=96) {
-        for (j = i; j <= i+95; j++) {
-          array.push(doc[j].high, doc[j].low)
-          m = m + doc[j].volumeMNTY
-          n = n + doc[j].volumeNewSD
-        }
-        let data = {
-          high : Math.max.apply(Math, array),
-          low : Math.min.apply(Math, array),
-          open : doc[j-96].open,
-          close : doc[j-1].close,
-          volumeMNTY: m,
-          volumeNewSD: n,
-          time: doc[j-96].time,
-        }
-        result.push(data)
-        if (num-1-i<=190) {
-          let arr = []
-          for (let k = j; k<num-1; k++) {
-            arr.push(doc[k].high, doc[k].low)
-            m = m + doc[k].volumeMNTY
-            n = n + doc[k].volumeNewSD
+        } else {
+          let array = []
+          let m = 0
+          let n = 0
+          for (i = 0; i < num-4; i+=4) {
+            for (j = i; j <= i+3; j++) {
+              array.push(doc[j].high, doc[j].low)
+              m = m + doc[j].volumeMNTY
+              n = n + doc[j].volumeNewSD
+            }
+            let data = {
+              high : Math.max.apply(Math, array),
+              low : Math.min.apply(Math, array),
+              open : doc[j-4].open,
+              close : doc[j-1].close,
+              volumeMNTY: m,
+              volumeNewSD: n,
+              time: doc[j-4].time,
+            }
+            result.push(data)
+            if (num-1-i<=6) {
+              let arr = []
+              for (let k = j; k<num-1; k++) {
+                arr.push(doc[k].high, doc[k].low)
+                m = m + doc[k].volumeMNTY
+                n = n + doc[k].volumeNewSD
+              }
+              let data = {
+                high : Math.max.apply(Math, arr),
+                low : Math.min.apply(Math, arr),
+                open : doc[j].open,
+                close : doc[num-1].close,
+                volumeMNTY: m,
+                volumeNewSD: n,
+                time: doc[j].time,
+              }
+              result.push(data)
+              let show = result
+              res.json(show)
+            }
           }
-          let data = {
-            high : Math.max.apply(Math, arr),
-            low : Math.min.apply(Math, arr),
-            open : doc[j].open,
-            close : doc[num-1].close,
-            volumeMNTY: m,
-            volumeNewSD: n,
-            time: doc[j].time,
-          }
-          result.push(data)
-          let show = result
-          res.json(show)
         }
-      }
-    }
-  })
+      })
+      break;
+    case '1d':
+      let result = []
+      let num
+      Candle.countDocuments({}).exec(async function (err, n) {
+        if (err) return handleError(err)
+        num = n
+      })
+      Candle.find({}).sort({time:1}).exec(function (err, doc) {
+        if (err) return handleError(err)
+        let array = []
+        let m = 0
+        let n = 0
+        if (num%96==0) {
+          for (i = 0; i < num; i+=96) {
+            for (j = i; j <= i+95; j++) {
+              array.push(doc[j].high, doc[j].low)
+              m = m + doc[j].volumeMNTY
+              n = n + doc[j].volumeNewSD
+            }
+            let data = {
+              high : Math.max.apply(Math, array),
+              low : Math.min.apply(Math, array),
+              open : doc[j-96].open,
+              close : doc[j-1].close,
+              volumeMNTY: m,
+              volumeNewSD: n,
+              time: doc[j-96].time,
+            }
+            result.push(data)
+            if (i+96 >= num) {
+              let show = result
+              res.json(show)
+            }
+          }
+        } else {
+          for (i = 0; i < num-96; i+=96) {
+            for (j = i; j <= i+95; j++) {
+              array.push(doc[j].high, doc[j].low)
+              m = m + doc[j].volumeMNTY
+              n = n + doc[j].volumeNewSD
+            }
+            let data = {
+              high : Math.max.apply(Math, array),
+              low : Math.min.apply(Math, array),
+              open : doc[j-96].open,
+              close : doc[j-1].close,
+              volumeMNTY: m,
+              volumeNewSD: n,
+              time: doc[j-96].time,
+            }
+            result.push(data)
+            if (num-1-i<=190) {
+              let arr = []
+              for (let k = j; k<num-1; k++) {
+                arr.push(doc[k].high, doc[k].low)
+                m = m + doc[k].volumeMNTY
+                n = n + doc[k].volumeNewSD
+              }
+              let data = {
+                high : Math.max.apply(Math, arr),
+                low : Math.min.apply(Math, arr),
+                open : doc[j].open,
+                close : doc[num-1].close,
+                volumeMNTY: m,
+                volumeNewSD: n,
+                time: doc[j].time,
+              }
+              result.push(data)
+              let show = result
+              res.json(show)
+            }
+          }
+        }
+      })
+      break;
+  }
 }
 
 module.exports.getheader = function (req, res) {

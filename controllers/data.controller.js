@@ -1321,7 +1321,7 @@ module.exports.getheader = function (req, res) {
             filled : price,
             volumeMNTY: m,
             volumeNewSD: n,
-            change: fill-first,
+            change: price-doc2.price,
           }
           result.push(data)
           let show = result

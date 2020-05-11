@@ -165,7 +165,6 @@ module.exports.trade = async function (req, res) {
       if (err) console.log(err)
     })
     web3.eth.getBlock(i, true, function (err, result) { //31945638
-      console.log(result)
       if (err) console.log(err)
       if (result.transactions != null) {
         result.transactions.forEach(function (e) {
@@ -254,7 +253,7 @@ module.exports.trade = async function (req, res) {
           }
         })
         if(i%10 == 0) {
-          Trade.find({$or: [{ status: 'order' }, { status: 'filling' }]}, function (err, doc) {
+          Trade.find({$or: [{status: 'order'}, {status: 'filling'}]}, function (err, doc) {
             if (err) console.log(err)
             for (let j = 0; j < doc.length; j++) {
               if (doc[j].to == stableTokenAddress) {
@@ -825,7 +824,7 @@ module.exports.block = async function (req, res) {
             event: {
               param1: 'previousOwner: ' + eventparam[0],
               param2: 'newOwner: ' + eventparam[1]
-            },
+            }
           }
           resolve(data)
         } else {
@@ -851,8 +850,7 @@ module.exports.block = async function (req, res) {
               indexed: false,
               name: 'value',
               type: 'uint256'
-            }
-          ], result['0'].raw.data, result['0'].raw.topics)
+            }], result['0'].raw.data, result['0'].raw.topics)
           let data = {
             status: true,
             number: result['0'].blockNumber,

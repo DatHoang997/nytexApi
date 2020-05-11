@@ -1257,6 +1257,7 @@ module.exports.getheader = function (req, res) {
   let t = parseInt(Date.now().toString().slice(0,-3))
   Trade.findOne({status: 'filled'}).sort({filledTime: -1}).exec(function (err, doc) {
     if (err) console.log(err)
+    console.log(doc)
     price = doc.price
     if(t-86399 < doc.filledTime < t+1) {
       Trade.find({status: 'filled', filledTime: {$gte: t-86400, $lte: t}}).sort({filledTime: 1}).exec(function (err, doc1) {

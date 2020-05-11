@@ -195,7 +195,7 @@ module.exports.trade = async function (req, res) {
               to: e.to,
               haveAmount: weiToNUSD(decode["1"]) + ' NewSD',
               wantAmount: weiToMNTY(decode["2"]) + ' MNTY',
-              price: thousands(weiToPrice(parseInt(decode["2"]),parseInt(decode["1"]))),
+              price: thousands(weiToPrice(parseInt(decode["1"]),parseInt(decode["2"]))),
               haveAmountNow: weiToNUSD(decode["1"]) + ' NewSD',
               wantAmountNow: weiToMNTY(decode["2"]) + ' MNTY',
               orderID: '0x' + sha256(Buffer.from(packed, 'hex')),

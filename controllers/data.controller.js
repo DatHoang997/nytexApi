@@ -1134,7 +1134,7 @@ module.exports.getcandle60 = function (req, res) {
           array.push(doc[j].hight, doc[j].low)
           m = m + doc[j].volumeMNTY
           n = n + doc[j].volumeNewSD
-          console.log(j, doc[j].high, doc[j].low)
+          console.log(j, array)
 
         }
         // console.log('j',j)
@@ -1167,7 +1167,7 @@ module.exports.getcandle60 = function (req, res) {
           array.push(doc[j].hight, doc[j].low)
           m = m + doc[j].volumeMNTY
           n = n + doc[j].volumeNewSD
-          console.log('j',j, doc[j].high, doc[j].low)
+          console.log('j',j, array)
         }
         console.log(Math.max.apply(Math, array))
         let data = {

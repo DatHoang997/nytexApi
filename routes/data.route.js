@@ -50,12 +50,6 @@ router.get('/candle', controller.candle)
 
 router.get('/get-candle', controller.getcandle)
 
-router.get('/get-candle-half-hour', controller.getcandle30)
-
-router.get('/get-candle-hour', controller.getcandle60)
-
-router.get('/get-candle-day', controller.getcandle1)
-
 router.get('/get-header', controller.getheader)
 
 router.get('/a', controller.a)

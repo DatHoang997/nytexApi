@@ -1013,7 +1013,6 @@ module.exports.getcandle = async function (req, res) {
       break;
     }
     case '30m': {
-      let result = []
       let num
       Candle.countDocuments({}).exec(async function (err, n) {
         if (err) return handleError(err)
@@ -1021,11 +1020,11 @@ module.exports.getcandle = async function (req, res) {
       })
       Candle.find({}).sort({time:1}).exec(function (err, doc) {
         if (err) return handleError(err)
-        let array = []
-        let m = 0
-        let n = 0
         if (num%2==0) {
           for (i = 0; i < num; i+=2) {
+            let array = []
+            let m = 0
+            let n = 0
             for (j = i; j <= i+1; j++) {
               array.push(doc[j].high, doc[j].low)
               m = m + doc[j].volumeMNTY
@@ -1048,6 +1047,9 @@ module.exports.getcandle = async function (req, res) {
           }
         } else {
           for (i = 0; i < num-1; i+=2) {
+            let array = []
+            let m = 0
+            let n = 0
             for (j = i; j <= i+1; j++) {
               array.push(doc[j].high, doc[j].low)
               m = m + doc[j].volumeMNTY
@@ -1083,9 +1085,6 @@ module.exports.getcandle = async function (req, res) {
       break;
     }
     case '1h': {
-      result = []
-      m = 0
-      n = 0
       Candle.countDocuments({}).exec(async function (err, n) {
         if (err) return handleError(err)
         num = n
@@ -1094,6 +1093,9 @@ module.exports.getcandle = async function (req, res) {
         if (err) return handleError(err)
         if (num%4==0) {
           for (i = 0; i < num; i+=4) {
+            let array = []
+            let m = 0
+            let n = 0
             for (j = i; j <= i+3; j++) {
               array.push(doc[j].high, doc[j].low)
               m = m + doc[j].volumeMNTY
@@ -1118,6 +1120,9 @@ module.exports.getcandle = async function (req, res) {
         } else {
           if(num>4) {
             for (i = 0; i < num-4; i+=4) {
+              let array = []
+              let m = 0
+              let n = 0
               for (j = i; j <= i+3; j++) {
                 array.push(doc[j].high, doc[j].low)
                 m = m + doc[j].volumeMNTY
@@ -1164,9 +1169,6 @@ module.exports.getcandle = async function (req, res) {
       break;
     }
     case '1d': {
-      result = []
-      m = 0
-      n = 0
       Candle.countDocuments({}).exec(async function (err, n) {
         if (err) return handleError(err)
         num = n
@@ -1175,6 +1177,9 @@ module.exports.getcandle = async function (req, res) {
         if (err) return handleError(err)
         if (num%96==0) {
           for (i = 0; i < num; i+=96) {
+            let array = []
+            let m = 0
+            let n = 0
             for (j = i; j <= i+95; j++) {
               array.push(doc[j].high, doc[j].low)
               m = m + doc[j].volumeMNTY
@@ -1198,6 +1203,9 @@ module.exports.getcandle = async function (req, res) {
         } else {
           if (num > 96) {
             for (i = 0; i < num-96; i+=96) {
+              let array = []
+              let m = 0
+              let n = 0
               for (j = i; j <= i+95; j++) {
                 array.push(doc[j].high, doc[j].low)
                 m = m + doc[j].volumeMNTY

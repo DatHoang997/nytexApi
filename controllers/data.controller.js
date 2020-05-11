@@ -1013,6 +1013,9 @@ module.exports.getcandle = async function (req, res) {
       break;
     }
     case '30m': {
+      result = []
+      m = 0
+      n = 0
       Candle.countDocuments({}).exec(async function (err, n) {
         if (err) return handleError(err)
         num = n
@@ -1078,6 +1081,9 @@ module.exports.getcandle = async function (req, res) {
       break;
     }
     case '1h': {
+      result = []
+      m = 0
+      n = 0
       Candle.countDocuments({}).exec(async function (err, n) {
         if (err) return handleError(err)
         num = n
@@ -1154,6 +1160,9 @@ module.exports.getcandle = async function (req, res) {
       break;
     }
     case '1d': {
+      result = []
+      m = 0
+      n = 0
       Candle.countDocuments({}).exec(async function (err, n) {
         if (err) return handleError(err)
         num = n

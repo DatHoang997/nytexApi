@@ -52,5 +52,7 @@ router.get('/get-candle', controller.getcandle)
 
 router.get('/get-header', controller.getheader)
 
+router.get('/a', controller.a)
+
 
 module.exports = router

@@ -158,7 +158,7 @@ module.exports.trade = async function (req, res) {
   let array = []
   console.log('start')
 
-  let cursor = 28588000   //33068795
+  let cursor = 33068795 //28588000   //33068795
   async function scanBlock(i) {
     console.log(i)
     Trade.create({status: 'false', number: i, }, function (err) {
@@ -173,21 +173,19 @@ module.exports.trade = async function (req, res) {
           if (id === "7ca3c7c7" && e.to == volatileTokenAddress) { //depositAndTrade(bytes32,uint256,uint256,bytes32) trade(bytes32,uint256,uint256,bytes32) id === "37a7113d" ||
             let decode = web3.eth.abi.decodeParameters(['bytes32', 'uint256', 'uint256', 'bytes32'], para);
             const packed = e.from.substring(2) + decode["0"].substring(2)
+            console.log(thousands(weiToPrice(parseInt(decode["1"]),parseInt(decode["2"]))))
             Trade.create({
               status: 'order',
               address: e.from,
               to: e.to,
               haveAmount: weiToMNTY(decode["1"]) + ' MNTY',
               wantAmount: weiToNUSD(decode["2"]) + ' NewSD',
-              price: parseFloat(weiToNUSD(decode["2"])) / parseFloat(weiToMNTY(decode["1"])),
-              haveAmountNow: weiToMNTY(decode["1"]) + ' MNTY',
+              price: thousands(weiToPrice(parseInt(decode["1"]),parseInt(decode["2"]))),
               wantAmountNow: weiToNUSD(decode["2"]) + ' NewSD',
               orderID: '0x' + sha256(Buffer.from(packed, 'hex')),
               number: result.number,
               time: result.timestamp,
               filledTime: 0
-            }, function (err) {
-              if (err) return handleError(err);
             });
           } else if (id === "7ca3c7c7" && e.to == stableTokenAddress) {
             let decode = web3.eth.abi.decodeParameters(['bytes32', 'uint256', 'uint256', 'bytes32'], para);
@@ -198,15 +196,13 @@ module.exports.trade = async function (req, res) {
               to: e.to,
               haveAmount: weiToNUSD(decode["1"]) + ' NewSD',
               wantAmount: weiToMNTY(decode["2"]) + ' MNTY',
-              price: parseFloat(weiToNUSD(decode["1"])) / parseFloat(weiToMNTY(decode["2"])),
+              price: thousands(weiToPrice(parseInt(decode["2"]),parseInt(decode["1"]))),
               haveAmountNow: weiToNUSD(decode["1"]) + ' NewSD',
               wantAmountNow: weiToMNTY(decode["2"]) + ' MNTY',
               orderID: '0x' + sha256(Buffer.from(packed, 'hex')),
               number: result.number,
               time: result.timestamp,
               filledTime: 0
-            }, function (err) {
-              if (err) return handleError(err);
             });
           } else if (id === "37a7113d" && e.to == volatileTokenAddress) { //depositAndTrade(bytes32,uint256,uint256,bytes32) trade(bytes32,uint256,uint256,bytes32) id === "37a7113d" ||
             let decode = web3.eth.abi.decodeParameters(['bytes32', 'uint256', 'uint256', 'bytes32'], para);
@@ -217,7 +213,7 @@ module.exports.trade = async function (req, res) {
               to: e.to,
               haveAmount: weiToMNTY(decode["1"]) + ' MNTY',
               wantAmount: weiToNUSD(decode["2"]) + ' NewSD',
-              price: parseFloat(weiToNUSD(decode["2"])) / parseFloat(weiToMNTY(decode["1"])),
+              price: thousands(weiToPrice(parseInt(decode["1"]),parseInt(decode["2"]))),
               haveAmountNow: weiToMNTY(decode["1"]) + ' MNTY',
               wantAmountNow: weiToNUSD(decode["2"]) + ' NewSD',
               orderID: '0x' + sha256(Buffer.from(packed, 'hex')),
@@ -236,7 +232,7 @@ module.exports.trade = async function (req, res) {
               to: e.to,
               haveAmount: weiToNUSD(decode["1"]) + ' NewSD',
               wantAmount: weiToMNTY(decode["2"]) + ' MNTY',
-              price: parseFloat(weiToNUSD(decode["1"])) / parseFloat(weiToMNTY(decode["2"])),
+              price: thousands(weiToPrice(parseInt(decode["2"]),parseInt(decode["1"]))),
               haveAmountNow: weiToNUSD(decode["1"]) + ' NewSD',
               wantAmountNow: weiToMNTY(decode["2"]) + ' MNTY',
               orderID: '0x' + sha256(Buffer.from(packed, 'hex')),
@@ -259,7 +255,7 @@ module.exports.trade = async function (req, res) {
             for (let j = 0; j < doc.length; j++) {
               if (doc[j].to == stableTokenAddress) {
                 Seigniorage.methods.getOrder(1, doc[j].orderID).call(undefined,i-6, function (error, result1) {
-                  if (err) return handleError(err);
+                  if (error) return handleError(err);
                   if (result1!=null && result1.maker  == burn) {
                     Trade.findOneAndUpdate({orderID: doc[j].orderID}, {$set: {status: 'filled', filledTime: result.timestamp}}, {useFindAndModify: false}, function (err, doc) {
                       if (err) return handleError(err);
@@ -277,10 +273,13 @@ module.exports.trade = async function (req, res) {
                     Trade.findOneAndUpdate({orderID: doc[j].orderID}, {$set: {status: 'filled', filledTime: result.timestamp}}, {useFindAndModify: false}, function (err, doc) {
                       if (err) return handleError(err);
                     });
-                  } else if (result1!=null && result1.maker != burn && parseFloat(weiToNUSD(result1.want))<parseFloat(doc[0].wantAmount.slice(0,-6))) {
+                  } else if (result1!=null && result1.maker != burn && parseFloat(weiToMNTY(result1.want))<parseFloat(doc[0].wantAmount.slice(0,-6))) {
                     Trade.findOneAndUpdate({orderID: doc[j].orderID}, {$set: {status: 'filling', wantAmountNow: result1.want}}, {useFindAndModify: false}, function (err, doc) {
                       if (err) return handleError(err);
                     });
+                  }
+                  if (result1!=null && result1.maker == burn) {
+
                   }
                 });
               }
@@ -371,6 +370,7 @@ module.exports.trade = async function (req, res) {
     await Promise.all(promises);
     scanOldBlock()
   }
+  res.send('collecting...')
 }
 
 
@@ -998,6 +998,9 @@ module.exports.getcandle = async function (req, res) {
   let type = queryObject.type
   let result = []
   let num
+  let array = []
+  let m = 0
+  let n = 0
   switch (type) {
     default : {
       let show = await Candle.find({}).sort({time: 1})
@@ -1016,9 +1019,6 @@ module.exports.getcandle = async function (req, res) {
       })
       Candle.find({}).sort({time:1}).exec(function (err, doc) {
         if (err) return handleError(err)
-        let array = []
-        let m = 0
-        let n = 0
         if (num%2==0) {
           for (i = 0; i < num; i+=2) {
             for (j = i; j <= i+1; j++) {
@@ -1085,9 +1085,6 @@ module.exports.getcandle = async function (req, res) {
       Candle.find({}).sort({time:1}).exec(function (err, doc) {
         if (err) return handleError(err)
         if (num%4==0) {
-          let array = []
-          let m = 0
-          let n = 0
           for (i = 0; i < num; i+=4) {
             for (j = i; j <= i+3; j++) {
               array.push(doc[j].high, doc[j].low)
@@ -1166,9 +1163,6 @@ module.exports.getcandle = async function (req, res) {
       })
       Candle.find({}).sort({time:1}).exec(function (err, doc) {
         if (err) return handleError(err)
-        let array = []
-        let m = 0
-        let n = 0
         if (num%96==0) {
           for (i = 0; i < num; i+=96) {
             for (j = i; j <= i+95; j++) {
@@ -1309,4 +1303,11 @@ module.exports.candleclear = async function (req, res) {
 module.exports.filled = async function (req, res) {
   let show = await Trade.findOne({status: 'filled'}).sort({filledTime: -1})
   res.json(show)
+}
+
+module.exports.a = async function (req, res) {
+  Seigniorage.methods.getOrder(0, "0x3bd46534015997468cf64275b7774d740841abfc71e2b3a6df09e8e05a335736").call(undefined,33068825, function (error, result1) {
+    console.log(result1)
+    if (error) return handleError(err);
+  });
 }

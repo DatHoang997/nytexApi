@@ -1013,15 +1013,17 @@ module.exports.getcandle = async function (req, res) {
       break;
     }
     case '30m': {
-      result = []
-      m = 0
-      n = 0
+      let result = []
+      let num
       Candle.countDocuments({}).exec(async function (err, n) {
         if (err) return handleError(err)
         num = n
       })
       Candle.find({}).sort({time:1}).exec(function (err, doc) {
         if (err) return handleError(err)
+        let array = []
+        let m = 0
+        let n = 0
         if (num%2==0) {
           for (i = 0; i < num; i+=2) {
             for (j = i; j <= i+1; j++) {
@@ -1110,6 +1112,7 @@ module.exports.getcandle = async function (req, res) {
             if (i+4 >= num) {
               let show = result
               res.json(show)
+              result =[]
             }
           }
         } else {
@@ -1149,6 +1152,7 @@ module.exports.getcandle = async function (req, res) {
                 result.push(data)
                 let show = result
                 res.json(show)
+                result =[]
               }
             }
           } else {
@@ -1194,12 +1198,10 @@ module.exports.getcandle = async function (req, res) {
         } else {
           if (num > 96) {
             for (i = 0; i < num-96; i+=96) {
-              console.log(i)
               for (j = i; j <= i+95; j++) {
                 array.push(doc[j].high, doc[j].low)
                 m = m + doc[j].volumeMNTY
                 n = n + doc[j].volumeNewSD
-                console.log(j)
               }
               let data = {
                 high : Math.max.apply(Math, array),

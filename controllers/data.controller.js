@@ -173,7 +173,6 @@ module.exports.trade = async function (req, res) {
           if (id === "7ca3c7c7" && e.to == volatileTokenAddress) { //depositAndTrade(bytes32,uint256,uint256,bytes32) trade(bytes32,uint256,uint256,bytes32) id === "37a7113d" ||
             let decode = web3.eth.abi.decodeParameters(['bytes32', 'uint256', 'uint256', 'bytes32'], para)
             const packed = e.from.substring(2) + decode["0"].substring(2)
-            console.log(thousands(weiToPrice(parseInt(decode["1"]),parseInt(decode["2"]))))
             Trade.create({
               status: 'order',
               address: e.from,

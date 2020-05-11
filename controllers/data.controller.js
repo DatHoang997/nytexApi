@@ -1122,11 +1122,11 @@ module.exports.getcandle60 = function (req, res) {
   })
   Candle.find({}).sort({time:1}).exec(function (err, doc) {
     if (err) return handleError(err)
-    let array = []
-    let m = 0
-    let n = 0
     // console.log("ffffff",num)
     if (num%4==0) {
+      let array = []
+      let m = 0
+      let n = 0
       for (i = 0; i < num; i+=4) {
         // console.log(i)
         for (j = i; j <= i+3; j++) {
@@ -1156,6 +1156,9 @@ module.exports.getcandle60 = function (req, res) {
         }
       }
     } else {
+      let array = []
+      let m = 0
+      let n = 0
       // console.log('num',num)
       for (i = 0; i < num-4; i+=4) {
         // console.log(i)
@@ -1164,9 +1167,9 @@ module.exports.getcandle60 = function (req, res) {
           array.push(doc[j].hight, doc[j].low)
           m = m + doc[j].volumeMNTY
           n = n + doc[j].volumeNewSD
-          console.log(j, doc[j].high, doc[j].low)
+          console.log('j',j, doc[j].high, doc[j].low)
         }
-        // console.log(doc[j].hight, doc[j].low)
+        console.log(Math.max.apply(Math, array))
         let data = {
           high : Math.max.apply(Math, array),
           low : Math.min.apply(Math, array),

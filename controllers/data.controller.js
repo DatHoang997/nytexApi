@@ -1310,7 +1310,7 @@ module.exports.getheader = function (req, res) {
         Trade.findOne({status: 'filled', filledTime: {$lte: t-86400}}).sort({filledTime: -1}).exec(function (err, doc2) {
           if (err) return handleError(err)
           for (let i = 0; i< doc1.length; i++) {
-            array.push(doc[i].price)
+            array.push(doc1[i].price)
             m = m + parseFloat(doc1[i].wantAmount.slice(0,-5))
             n = n + parseFloat(doc1[i].haveAmount.slice(0,-6))
           }

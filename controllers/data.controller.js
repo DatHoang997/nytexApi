@@ -999,6 +999,11 @@ module.exports.getcandle = async function (req, res) {
   let result = []
   let num
   switch (type) {
+    default : {
+      let show = await Candle.find({}).sort({time: 1})
+      res.json(show)
+      break;
+    }
     case '15m': {
       let show = await Candle.find({}).sort({time: 1})
       res.json(show)

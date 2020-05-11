@@ -1247,7 +1247,7 @@ module.exports.getcandle1 = function (req, res) {
           array.push(doc[j].hight, doc[j].low)
           m = m + doc[j].volumeMNTY
           n = n + doc[j].volumeNewSD
-          console.log(j,doc[j].volumeMNTY,doc[j].volumeMNTY),
+          console.log(j,doc[j].volumeMNTY,doc[j].volumeMNTY)
         }
         let data = {
           high : Math.max.apply(Math, array),

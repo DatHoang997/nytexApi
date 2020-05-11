@@ -1107,9 +1107,6 @@ module.exports.getcandle = async function (req, res) {
             }
           }
         } else {
-          let array = []
-          let m = 0
-          let n = 0
           if(num>4) {
             for (i = 0; i < num-4; i+=4) {
               for (j = i; j <= i+3; j++) {

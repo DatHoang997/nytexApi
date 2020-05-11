@@ -1323,8 +1323,7 @@ module.exports.getheader = function (req, res) {
             volumeNewSD: n,
             change: price-doc2.price,
           }
-          result.push(data)
-          let show = result
+          let show = data
           res.json(show)
         })
       })

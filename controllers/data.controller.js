@@ -1077,13 +1077,13 @@ module.exports.getcandle = async function (req, res) {
       })
       break;
     case '1h':
-      let result = []
-      let num
       Candle.countDocuments({}).exec(async function (err, n) {
         if (err) return handleError(err)
         num = n
       })
       Candle.find({}).sort({time:1}).exec(function (err, doc) {
+        let result = []
+        let num
         if (err) return handleError(err)
         if (num%4==0) {
           let array = []
@@ -1155,8 +1155,6 @@ module.exports.getcandle = async function (req, res) {
       })
       break;
     case '1d':
-      let result = []
-      let num
       Candle.countDocuments({}).exec(async function (err, n) {
         if (err) return handleError(err)
         num = n

@@ -1118,7 +1118,7 @@ module.exports.getcandle60 = function (req, res) {
   let num
   Candle.countDocuments({}).exec(async function (err, n) {
     if (err) return handleError(err)
-    num = doc
+    num = n
   })
   Candle.find({}).sort({time:1}).exec(function (err, doc) {
     if (err) return handleError(err)
@@ -1203,7 +1203,8 @@ module.exports.getcandle1 = function (req, res) {
   let result = []
   let num
   Candle.countDocuments({}).exec(async function (err, n) {
-    if (err) n
+    if (err) return handleError(err)
+    num = n
   })
   Candle.find({}).sort({time:1}).exec(function (err, doc) {
     if (err) return handleError(err)

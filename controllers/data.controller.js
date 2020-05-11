@@ -1158,7 +1158,7 @@ module.exports.getcandle60 = function (req, res) {
         // console.log(i)
         for (j = i; j <= i+3; j++) {
           // console.log('j',j)
-          array.push(doc[j].hight, doc[j].low)
+          array.push(doc[j].high, doc[j].low)
           m = m + doc[j].volumeMNTY
           n = n + doc[j].volumeNewSD
         }
@@ -1244,12 +1244,11 @@ module.exports.getcandle1 = function (req, res) {
         // console.log(i)
         for (j = i; j <= i+95; j++) {
           // console.log('j',j)
-          array.push(doc[j].hight, doc[j].low)
+          array.push(doc[j].high, doc[j].low)
           m = m + doc[j].volumeMNTY
           n = n + doc[j].volumeNewSD
         }
-        console.log(j,array)
-
+        // console.log(j,array)
         let data = {
           high : Math.max.apply(Math, array),
           low : Math.min.apply(Math, array),

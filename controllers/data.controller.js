@@ -1311,8 +1311,7 @@ module.exports.getheader = function (req, res) {
           if (err) return handleError(err)
           for (let i = 0; i< doc1.length; i++) {
             // console.log('iiiiiiiiiiii',doc1[i].to)
-            array.push(doc1[i].price)
-            if (doc[i].to == volatileTokenAddress) {
+            if (doc1[i].to == volatileTokenAddress) {
               // console.log(doc[i].haveAmount,)
               m = m + parseFloat(doc[i].haveAmount.slice(0,-5))
               n = n + parseFloat(doc[i].wantAmount.slice(0,-6))
@@ -1322,6 +1321,7 @@ module.exports.getheader = function (req, res) {
               m = m + parseFloat(doc[i].wantAmount.slice(0,-5))
               n = n + parseFloat(doc[i].haveAmount.slice(0,-6))
             }
+            array.push(doc1[i].price)
           }
           let data = {
             high : Math.max.apply(Math, array),

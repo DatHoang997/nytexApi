@@ -1313,6 +1313,7 @@ module.exports.getheader = function (req, res) {
             array.push(doc1[i].price)
             m = m + parseFloat(doc1[i].wantAmount.slice(0,-5))
             n = n + parseFloat(doc1[i].haveAmount.slice(0,-6))
+            console.log(doc1[i].wantAmount.slice(0,-5),doc1[i].haveAmount.slice(0,-6) )
           }
           let data = {
             high : Math.max.apply(Math, array),

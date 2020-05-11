@@ -374,7 +374,6 @@ module.exports.trade = async function (req, res) {
   res.send('collecting...')
 }
 
-
 module.exports.block = async function (req, res) {
   let cursor = 26500000
   scanBlock = async (_from_block, _to_block) => {

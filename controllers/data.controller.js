@@ -1162,7 +1162,7 @@ module.exports.getcandle60 = function (req, res) {
           m = m + doc[j].volumeMNTY
           n = n + doc[j].volumeNewSD
         }
-        console.log(j,array)
+        console.log(doc[j].high, doc[j].low)
         let data = {
           high : Math.max.apply(Math, array),
           low : Math.min.apply(Math, array),

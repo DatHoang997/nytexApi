@@ -634,8 +634,7 @@ module.exports.block = async function (req, res) {
               'indexed': false,
               'name': '_data',
               'type': 'bytes'
-            }
-          ], result['0'].raw.data, result['0'].raw.topics)
+            }], result['0'].raw.data, result['0'].raw.topics)
           web3.eth.getBlock(result['0'].blockNumber, async function (error, result1) {
             if (!error) {
               let data = {
@@ -671,8 +670,7 @@ module.exports.block = async function (req, res) {
               indexed: true,
               name: 'newOwner',
               type: 'address'
-            }
-          ], result['0'].raw.data, result['0'].raw.topics)
+            }], result['0'].raw.data, result['0'].raw.topics)
           let data = {
             status: true,
             number: result['0'].blockNumber,
@@ -706,8 +704,7 @@ module.exports.block = async function (req, res) {
               indexed: false,
               name: 'value',
               type: 'uint256'
-            }
-          ], result['0'].raw.data, result['0'].raw.topics)
+            }], result['0'].raw.data, result['0'].raw.topics)
           let data = {
             status: true,
             number: result['0'].blockNumber,
@@ -784,8 +781,7 @@ module.exports.block = async function (req, res) {
               'indexed': false,
               'name': '_data',
               'type': 'bytes'
-            }
-          ], result['0'].raw.data, result['0'].raw.topics)
+            }], result['0'].raw.data, result['0'].raw.topics)
           web3.eth.getBlock(result['0'].blockNumber, async function (error, result1) {
             if (!error) {
               let data = {
@@ -821,8 +817,7 @@ module.exports.block = async function (req, res) {
               indexed: true,
               name: 'newOwner',
               type: 'address'
-            }
-          ], result['0'].raw.data, result['0'].raw.topics)
+            }], result['0'].raw.data, result['0'].raw.topics)
           let data = {
             status: true,
             number: result['0'].blockNumber,
@@ -875,24 +870,23 @@ module.exports.block = async function (req, res) {
       })
     })
 
-    Promise.all([e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15])
-      .then(data => {
-        if (data[0] == null && data[1] == null && data[2] == null && data[3] == null && data[4] == null && data[5] == null && data[6] == null && data[7] == null && data[8] == null && data[9] == null && data[10] == null && data[11] == null && data[12] == null && data[13] == null && data[14] == null) {
-          Data.create({status: false,number: _to_block}, function (err) {
-            if (err) return handleError(err);
-          });
-        } else {
-          for (let i = 0; i <= data.length - 1; i++) {
-            if (data[i] != null) {
-              Data.create(data[i], function (err) {
-                if (err) return handleError(err);
-              });
-            }
+    Promise.all([e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15]).then(data => {
+      if (data[0] == null && data[1] == null && data[2] == null && data[3] == null && data[4] == null && data[5] == null && data[6] == null && data[7] == null && data[8] == null && data[9] == null && data[10] == null && data[11] == null && data[12] == null && data[13] == null && data[14] == null) {
+        Data.create({status: false,number: _to_block}, function (err) {
+          if (err) return handleError(err);
+        });
+      } else {
+        for (let i = 0; i <= data.length - 1; i++) {
+          if (data[i] != null) {
+            Data.create(data[i], function (err) {
+              if (err) return handleError(err);
+            });
           }
         }
-      }, reason => {
-        console.log(reason)
-      });
+      }
+    }, reason => {
+      console.log(reason)
+    });
   }
 
   web3.eth.subscribe('newBlockHeaders', function (error, new_block) {
@@ -1005,11 +999,12 @@ module.exports.getcandle = async function (req, res) {
   let result = []
   let num
   switch (type) {
-    case '15m':
+    case '15m': {
       let show = await Candle.find({}).sort({time: 1})
       res.json(show)
       break;
-    case '30m':
+    }
+    case '30m': {
       Candle.countDocuments({}).exec(async function (err, n) {
         if (err) return handleError(err)
         num = n
@@ -1076,7 +1071,8 @@ module.exports.getcandle = async function (req, res) {
         }
       })
       break;
-    case '1h':
+    }
+    case '1h': {
       Candle.countDocuments({}).exec(async function (err, n) {
         if (err) return handleError(err)
         num = n
@@ -1157,7 +1153,8 @@ module.exports.getcandle = async function (req, res) {
         }
       })
       break;
-    case '1d':
+    }
+    case '1d': {
       Candle.countDocuments({}).exec(async function (err, n) {
         if (err) return handleError(err)
         num = n
@@ -1237,6 +1234,7 @@ module.exports.getcandle = async function (req, res) {
         }
       })
     }
+  }
 }
 
 module.exports.getheader = function (req, res) {

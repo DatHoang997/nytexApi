@@ -170,7 +170,7 @@ module.exports.trade = async function (req, res) {
         result.transactions.forEach(function (e) {
           let id = e.input.slice(2, 10)
           let para = '0x' + e.input.slice(10)
-          if (id === "7ca3c7c7" && e.to == volatileTokenAddress) { //depositAndTrade(bytes32,uint256,uint256,bytes32) trade(bytes32,uint256,uint256,bytes32) id === "37a7113d" ||
+          if (id === "7ca3c7c7" && e.to == volatileTokenAddress) { //SELL depositAndTrade(bytes32,uint256,uint256,bytes32) trade(bytes32,uint256,uint256,bytes32) id === "37a7113d" ||
             let decode = web3.eth.abi.decodeParameters(['bytes32', 'uint256', 'uint256', 'bytes32'], para)
             const packed = e.from.substring(2) + decode["0"].substring(2)
             console.log(111111111111111111111)
@@ -187,7 +187,7 @@ module.exports.trade = async function (req, res) {
               time: result.timestamp,
               filledTime: 0
             })
-          } else if (id === "7ca3c7c7" && e.to == stableTokenAddress) {
+          } else if (id === "7ca3c7c7" && e.to == stableTokenAddress) { // BUY
             let decode = web3.eth.abi.decodeParameters(['bytes32', 'uint256', 'uint256', 'bytes32'], para)
             const packed = e.from.substring(2) + decode["0"].substring(2)
             console.log(22222222222222222222222)
@@ -197,7 +197,7 @@ module.exports.trade = async function (req, res) {
               to: e.to,
               haveAmount: weiToNUSD(decode["1"]) + ' NewSD',
               wantAmount: weiToMNTY(decode["2"]) + ' MNTY',
-              price: thousands(weiToPrice(parseInt(decode["1"]),parseInt(decode["2"]))),
+              price: thousands(weiToPrice(parseInt(decode["2"]),parseInt(decode["1"]))),
               haveAmountNow: weiToNUSD(decode["1"]) + ' NewSD',
               wantAmountNow: weiToMNTY(decode["2"]) + ' MNTY',
               orderID: '0x' + sha256(Buffer.from(packed, 'hex')),

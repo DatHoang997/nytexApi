@@ -252,40 +252,38 @@ module.exports.trade = async function (req, res) {
             })
           }
         })
-        if(i%10 == 0) {
-          Trade.find({$or: [{status: 'order'}, {status: 'filling'}]}, function (err, doc) {
-            if (err) console.log(err)
-            for (let j = 0; j < doc.length; j++) {
-              if (doc[j].to == stableTokenAddress) {
-                Seigniorage.methods.getOrder(1, doc[j].orderID).call(undefined,i-6, function (error, result1) {
-                  if (err) console.log(err)
-                  if (result1!=null && result1.maker  == burn) {
-                    Trade.findOneAndUpdate({orderID: doc[j].orderID}, {$set: {status: 'filled', filledTime: result.timestamp}}, {useFindAndModify: false}, function (err, doc) {
-                      if (err) console.log(err)
-                    })
-                  } else if (result1!=null && result1.maker != burn && parseFloat(weiToNUSD(result1.want))<parseFloat(doc[0].wantAmount.slice(0,-5))) {
-                    Trade.findOneAndUpdate({orderID: doc[j].orderID}, {$set: {status: 'filling', wantAmountNow: result1.want}}, {useFindAndModify: false}, function (err, doc) {
-                      if (err) console.log(err)
-                    })
-                  }
-                });
-              } else {
-                Seigniorage.methods.getOrder(0, doc[j].orderID).call(undefined, i-6, function (error, result1) {
-                  if (err) console.log(err)
-                  if (result1!=null && result1.maker == burn) {
-                    Trade.findOneAndUpdate({orderID: doc[j].orderID}, {$set: {status: 'filled', filledTime: result.timestamp}}, {useFindAndModify: false}, function (err, doc) {
-                      if (err) console.log(err)
-                    })
-                  } else if (result1!=null && result1.maker != burn && parseFloat(weiToMNTY(result1.want))<parseFloat(doc[0].wantAmount.slice(0,-6))) {
-                    Trade.findOneAndUpdate({orderID: doc[j].orderID}, {$set: {status: 'filling', wantAmountNow: result1.want}}, {useFindAndModify: false}, function (err, doc) {
-                      if (err) console.log(err)
-                    })
-                  }
-                })
-              }
+        Trade.find({$or: [{status: 'order'}, {status: 'filling'}]}, function (err, doc) {
+          if (err) console.log(err)
+          for (let j = 0; j < doc.length; j++) {
+            if (doc[j].to == stableTokenAddress) {
+              Seigniorage.methods.getOrder(1, doc[j].orderID).call(undefined,i-6, function (error, result1) {
+                if (err) console.log(err)
+                if (result1!=null && result1.maker  == burn) {
+                  Trade.findOneAndUpdate({orderID: doc[j].orderID}, {$set: {status: 'filled', filledTime: result.timestamp}}, {useFindAndModify: false}, function (err, doc) {
+                    if (err) console.log(err)
+                  })
+                } else if (result1!=null && result1.maker != burn && parseFloat(weiToNUSD(result1.want))<parseFloat(doc[0].wantAmount.slice(0,-5))) {
+                  Trade.findOneAndUpdate({orderID: doc[j].orderID}, {$set: {status: 'filling', wantAmountNow: result1.want}}, {useFindAndModify: false}, function (err, doc) {
+                    if (err) console.log(err)
+                  })
+                }
+              });
+            } else {
+              Seigniorage.methods.getOrder(0, doc[j].orderID).call(undefined, i-6, function (error, result1) {
+                if (err) console.log(err)
+                if (result1!=null && result1.maker == burn) {
+                  Trade.findOneAndUpdate({orderID: doc[j].orderID}, {$set: {status: 'filled', filledTime: result.timestamp}}, {useFindAndModify: false}, function (err, doc) {
+                    if (err) console.log(err)
+                  })
+                } else if (result1!=null && result1.maker != burn && parseFloat(weiToMNTY(result1.want))<parseFloat(doc[0].wantAmount.slice(0,-6))) {
+                  Trade.findOneAndUpdate({orderID: doc[j].orderID}, {$set: {status: 'filling', wantAmountNow: result1.want}}, {useFindAndModify: false}, function (err, doc) {
+                    if (err) console.log(err)
+                  })
+                }
+              })
             }
-          })
-        }
+          }
+        })
 
         //   for (let n = 0; n < doc.length; n++) {
         //     Seigniorage.methods.getOrder(0, doc[n].orderID).call(undefined, i-6, function (error, result1) {

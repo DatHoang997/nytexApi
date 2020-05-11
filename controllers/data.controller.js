@@ -1311,9 +1311,16 @@ module.exports.getheader = function (req, res) {
           if (err) return handleError(err)
           for (let i = 0; i< doc1.length; i++) {
             array.push(doc1[i].price)
-            m = m + parseFloat(doc1[i].wantAmount.slice(0,-5))
-            n = n + parseFloat(doc1[i].haveAmount.slice(0,-6))
-            console.log(doc1[i].number,doc1[i].wantAmount.slice(0,-5),doc1[i].haveAmount.slice(0,-6) )
+            if (doc[i].to == volatileTokenAddress) {
+              // console.log(doc[i].haveAmount,)
+              m = m + parseFloat(doc[i].haveAmount.slice(0,-5))
+              n = n + parseFloat(doc[i].wantAmount.slice(0,-6))
+              // console.log(doc[i].haveAmount)
+            }
+            if (m==0 && doc[i].to == stableTokenAddress) {
+              m = m + parseFloat(doc[i].wantAmount.slice(0,-5))
+              n = n + parseFloat(doc[i].haveAmount.slice(0,-6))
+            }
           }
           let data = {
             high : Math.max.apply(Math, array),

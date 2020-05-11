@@ -1276,15 +1276,20 @@ module.exports.getcandle30 = function (req, res) {
         if (i+2 >= num) {
           let show = result
           res.json(show)
+          // console.log(show)
         }
       }
     } else {
+      // console.log('num',num)
       for (i = 0; i < num-1; i+=2) {
+        // console.log(i)
         for (j = i; j <= i+1; j++) {
           array.push(doc[j].high, doc[j].low)
           m = m + doc[j].volumeMNTY
           n = n + doc[j].volumeNewSD
+          // console.log('hhhhh',j)
         }
+        // console.log('out', j)
         let data = {
           high : Math.max.apply(Math, array),
           low : Math.min.apply(Math, array),
@@ -1308,6 +1313,7 @@ module.exports.getcandle30 = function (req, res) {
           result.push(data)
           let show = result
           res.json(show)
+          // console.log(show)
         }
       }
     }
@@ -1323,16 +1329,23 @@ module.exports.getcandle60 = function (req, res) {
   })
   Candle.find({}).sort({time:1}).exec(function (err, doc) {
     if (err) return handleError(err)
+    // console.log("ffffff",num)
     if (num%4==0) {
       let array = []
       let m = 0
       let n = 0
       for (i = 0; i < num; i+=4) {
+        // console.log(i)
         for (j = i; j <= i+3; j++) {
+          // console.log('j',j)
           array.push(doc[j].high, doc[j].low)
           m = m + doc[j].volumeMNTY
           n = n + doc[j].volumeNewSD
+          console.log(j, array)
+
         }
+        // console.log('j',j)
+
         let data = {
           high : Math.max.apply(Math, array),
           low : Math.min.apply(Math, array),
@@ -1346,18 +1359,24 @@ module.exports.getcandle60 = function (req, res) {
         if (i+4 >= num) {
           let show = result
           res.json(show)
+          // console.log(show)
         }
       }
     } else {
       let array = []
       let m = 0
       let n = 0
+      // console.log('num',num)
       for (i = 0; i < num-4; i+=4) {
+        // console.log(i)
         for (j = i; j <= i+3; j++) {
+          // console.log('j',j)
           array.push(doc[j].high, doc[j].low)
           m = m + doc[j].volumeMNTY
           n = n + doc[j].volumeNewSD
+          console.log('j',j, array)
         }
+        console.log(Math.max.apply(Math, array))
         let data = {
           high : Math.max.apply(Math, array),
           low : Math.min.apply(Math, array),
@@ -1368,12 +1387,14 @@ module.exports.getcandle60 = function (req, res) {
           time: doc[j-4].time,
         }
         result.push(data)
+        // console.log('dddd',num-1-i)
         if (num-1-i<=6) {
           let arr = []
           for (let k = j; k<num-1; k++) {
             arr.push(doc[k].high, doc[k].low)
             m = m + doc[k].volumeMNTY
             n = n + doc[k].volumeNewSD
+            console.log(j, doc[j].high, doc[j].low)
           }
           let data = {
             high : Math.max.apply(Math, arr),
@@ -1387,6 +1408,7 @@ module.exports.getcandle60 = function (req, res) {
           result.push(data)
           let show = result
           res.json(show)
+          // console.log(show)
         }
       }
     }
@@ -1405,13 +1427,18 @@ module.exports.getcandle1 = function (req, res) {
     let array = []
     let m = 0
     let n = 0
+    // console.log("ffffff",num)
     if (num%96==0) {
       for (i = 0; i < num; i+=96) {
+        // console.log(i)
         for (j = i; j <= i+95; j++) {
           array.push(doc[j].high, doc[j].low)
           m = m + doc[j].volumeMNTY
           n = n + doc[j].volumeNewSD
+          console.log(j, doc[j].high, doc[j].low)
         }
+        // console.log('j',j)
+
         let data = {
           high : Math.max.apply(Math, array),
           low : Math.min.apply(Math, array),
@@ -1428,12 +1455,17 @@ module.exports.getcandle1 = function (req, res) {
         }
       }
     } else {
+      // console.log('num',num)
       for (i = 0; i < num-96; i+=96) {
+        // console.log(i)
         for (j = i; j <= i+95; j++) {
+          // console.log('j',j)
           array.push(doc[j].high, doc[j].low)
           m = m + doc[j].volumeMNTY
           n = n + doc[j].volumeNewSD
+          console.log(j, doc[j].high, doc[j].low)
         }
+        // console.log(j,array)
         let data = {
           high : Math.max.apply(Math, array),
           low : Math.min.apply(Math, array),
@@ -1444,6 +1476,7 @@ module.exports.getcandle1 = function (req, res) {
           time: doc[j-96].time,
         }
         result.push(data)
+        // console.log('dddd',num-1-i)
         if (num-1-i<=190) {
           let arr = []
           for (let k = j; k<num-1; k++) {
@@ -1463,6 +1496,7 @@ module.exports.getcandle1 = function (req, res) {
           result.push(data)
           let show = result
           res.json(show)
+          // console.log(show)
         }
       }
     }

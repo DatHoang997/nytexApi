@@ -1131,11 +1131,14 @@ module.exports.getcandle60 = function (req, res) {
         // console.log(i)
         for (j = i; j <= i+3; j++) {
           // console.log('j',j)
-          array.push(doc[j].high, doc[j].low)
+          array.push(doc[j].hight, doc[j].low)
           m = m + doc[j].volumeMNTY
           n = n + doc[j].volumeNewSD
+          console.log(j, doc[j].high, doc[j].low)
+
         }
         // console.log('j',j)
+
         let data = {
           high : Math.max.apply(Math, array),
           low : Math.min.apply(Math, array),
@@ -1158,11 +1161,12 @@ module.exports.getcandle60 = function (req, res) {
         // console.log(i)
         for (j = i; j <= i+3; j++) {
           // console.log('j',j)
-          array.push(doc[j].high, doc[j].low)
+          array.push(doc[j].hight, doc[j].low)
           m = m + doc[j].volumeMNTY
           n = n + doc[j].volumeNewSD
+          console.log(j, doc[j].high, doc[j].low)
         }
-        console.log(doc[j].high, doc[j].low)
+        // console.log(doc[j].hight, doc[j].low)
         let data = {
           high : Math.max.apply(Math, array),
           low : Math.min.apply(Math, array),
@@ -1180,6 +1184,7 @@ module.exports.getcandle60 = function (req, res) {
             arr.push(doc[k].high, doc[k].low)
             m = m + doc[k].volumeMNTY
             n = n + doc[k].volumeNewSD
+            console.log(j, doc[j].high, doc[j].low)
           }
           let data = {
             high : Math.max.apply(Math, arr),
@@ -1220,6 +1225,7 @@ module.exports.getcandle1 = function (req, res) {
           array.push(doc[j].high, doc[j].low)
           m = m + doc[j].volumeMNTY
           n = n + doc[j].volumeNewSD
+          console.log(j, doc[j].high, doc[j].low)
         }
         // console.log('j',j)
 
@@ -1247,6 +1253,7 @@ module.exports.getcandle1 = function (req, res) {
           array.push(doc[j].high, doc[j].low)
           m = m + doc[j].volumeMNTY
           n = n + doc[j].volumeNewSD
+          console.log(j, doc[j].high, doc[j].low)
         }
         // console.log(j,array)
         let data = {

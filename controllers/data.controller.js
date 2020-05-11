@@ -1297,49 +1297,55 @@ module.exports.getcandle1 = function (req, res) {
 }
 
 module.exports.getheader = function (req, res) {
+  let array = []
+  let m = 0
+  let n = 0
   let t = parseInt(Date.now().toString().slice(0,-3))
-  Candle.find({status: 'filled', filledTime: {$gte: t-86400, $lte: t}}).exec(function (err, doc) {
+  Trade.findOne({status: 'filled'}).sort({filledTime: -1}).exec(function (err, doc) {
     if (err) return handleError(err)
-    let array = []
-    let m = 0
-    let n = 0
-    if (doc.length > 0) {
-      for (let i = 0; i< doc.length; i++) {
-        array.push(doc[i].high, doc[i].low)
-        m = m + doc[i].volumeMNTY
-        n = n + doc[i].volumeNewSD
-      }
-      let data = {
-        high : Math.max.apply(Math, array),
-        low : Math.min.apply(Math, array),
-        open : doc[0].open,
-        close : doc[doc.length-1].close,
-        volumeMNTY: m,
-        volumeNewSD: n,
-        time: doc[i].time,
-      }
-      result.push(data)
-      let show = result
-      res.json(show)
-    } else {
-      Candle.findOne({}).sort({time: -1}).exec(function (err, doc) {
+    price = doc.price
+    if(t-86399 < doc.filledTime < t+1) {
+      Trade.find({status: 'filled', filledTime: {$gte: t-86400, $lte: t}}).sort({filledTime: 1}).exec(function (err, doc1) {
         if (err) return handleError(err)
-        // console.log(doc)
-        let data = {
-          high : 0,
-          low : 0,
-          open : doc.open,
-          close : doc.close,
-          volumeMNTY: 0,
-          volumeNewSD: 0,
-          time: doc.time,
-        }
-        let show = data
-        res.json(show)
+        Trade.findOne({status: 'filled', filledTime: {$lte: t-86400}}).sort({filledTime: -1}).exec(function (err, doc2) {
+          if (err) return handleError(err)
+          for (let i = 0; i< doc1.length; i++) {
+            array.push(doc[i].price)
+            m = m + parseFloat(doc1[i].wantAmount.slice(0,-5))
+            n = n + parseFloat(doc1[i].haveAmount.slice(0,-6))
+          }
+          let data = {
+            high : Math.max.apply(Math, array),
+            low : Math.min.apply(Math, array),
+            open : doc2.price,
+            filled : price,
+            volumeMNTY: m,
+            volumeNewSD: n,
+            change: fill-first,
+          }
+          result.push(data)
+          let show = result
+          res.json(show)
+        })
       })
+    } else {
+      if (err) return handleError(err)
+      // console.log(doc)
+      let data = {
+        high : 0,
+        low : 0,
+        open : price,
+        filled : price,
+        volumeMNTY: 0,
+        volumeNewSD: 0,
+        change: 0
+      }
+      let show = data
+      res.json(show)
     }
   })
 }
+
 
 module.exports.tradeclear = async function (req, res) {
   let clear = await Trade.deleteMany({}, function (err, res) {if (err) console.log(err)})
@@ -1352,6 +1358,6 @@ module.exports.candleclear = async function (req, res) {
 }
 
 module.exports.filled = async function (req, res) {
-  let show = await Trade.find({status: 'filled'}).sort({filledTime: 1})
+  let show = await Trade.findOne({status: 'filled'}).sort({filledTime: -1})
   res.json(show)
 }

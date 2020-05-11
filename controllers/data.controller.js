@@ -173,7 +173,7 @@ module.exports.trade = async function (req, res) {
           if (id === "7ca3c7c7" && e.to == volatileTokenAddress) { //SELL depositAndTrade(bytes32,uint256,uint256,bytes32) trade(bytes32,uint256,uint256,bytes32) id === "37a7113d" ||
             let decode = web3.eth.abi.decodeParameters(['bytes32', 'uint256', 'uint256', 'bytes32'], para)
             const packed = e.from.substring(2) + decode["0"].substring(2)
-            console.log(111111111111111111111)
+            console.log('SELLLLLLLLLLLLLLLLLLL')
             Trade.create({
               status: 'order',
               address: e.from,
@@ -190,7 +190,7 @@ module.exports.trade = async function (req, res) {
           } else if (id === "7ca3c7c7" && e.to == stableTokenAddress) { // BUY
             let decode = web3.eth.abi.decodeParameters(['bytes32', 'uint256', 'uint256', 'bytes32'], para)
             const packed = e.from.substring(2) + decode["0"].substring(2)
-            console.log(22222222222222222222222)
+            console.log('BUYYYYYYYYYYYYYYYYYYYY')
             Trade.create({
               status: 'order',
               address: e.from,
@@ -208,7 +208,7 @@ module.exports.trade = async function (req, res) {
           } else if (id === "37a7113d" && e.to == volatileTokenAddress) { //depositAndTrade(bytes32,uint256,uint256,bytes32) trade(bytes32,uint256,uint256,bytes32) id === "37a7113d" ||
             let decode = web3.eth.abi.decodeParameters(['bytes32', 'uint256', 'uint256', 'bytes32'], para)
             const packed = e.from.substring(2) + decode["0"].substring(2)
-            console.log(333333333333333333)
+            console.log('DEPOSIT&SELLLLLLLLLLLLL')
             Trade.create({
               status: 'order',
               address: e.from,
@@ -228,7 +228,7 @@ module.exports.trade = async function (req, res) {
           } else if (id === "37a7113d" && e.to == stableTokenAddress) {
             let decode = web3.eth.abi.decodeParameters(['bytes32', 'uint256', 'uint256', 'bytes32'], para)
             const packed = e.from.substring(2) + decode["0"].substring(2)
-            console.log(44444444444444444444)
+            console.log('DEPOSIT&BUYYYYYYYYYYYYY')
             Trade.create({
               status: 'order',
               address: e.from,

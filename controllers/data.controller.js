@@ -25,7 +25,6 @@ module.exports.candle = function (req, res) {
     end = begin + 900
     Trade.find({status: 'filled', filledTime: {$gte: begin, $lt: end}}).exec(function (err, doc) {
       if (err) console.log(err)
-      console.log(begin,end)
       let array = []
       let m = 0
       let n = 0
@@ -41,7 +40,6 @@ module.exports.candle = function (req, res) {
           n = n + parseFloat(doc[i].haveAmount.slice(0,-6))
         }
       }
-      console.log(array)
       Candle.create({
         open: doc[0].price,
         high: Math.max.apply(Math, array),
@@ -86,11 +84,6 @@ module.exports.candle = function (req, res) {
               n = n + parseFloat(doc[i].haveAmount.slice(0,-6))
             }
           }
-          console.log(begin,end)
-          console.log(array)
-          console.log('high:', Math.max.apply(Math, array))
-          console.log('low:' ,Math.min.apply(Math, array))
-          console.log(doc, 'close', doc[doc.length-1].price)
           Candle.create({
             open: doc1.close,
             high: Math.max.apply(Math, array),
@@ -165,13 +158,13 @@ module.exports.trade = async function (req, res) {
   let array = []
   console.log('start')
 
-  let cursor = 33118783 //28588000   //33068795 //33118783
+  let cursor = 28588000 //28588000   //33068795 //33118783
     async function scanBlock(i) {
     console.log(i)
     Trade.create({status: 'false', number: i, }, function (err) {
       if (err) console.log(err)
     })
-    web3.eth.getBlock(i, true, function (err, result) { //31945638
+    web3.eth.getBlock(33118784, true, function (err, result) { //31945638
       if (err) console.log(err)
       if (result.transactions != null) {
         result.transactions.forEach(function (e) {
@@ -187,7 +180,7 @@ module.exports.trade = async function (req, res) {
               to: e.to,
               haveAmount: weiToMNTY(decode["1"]) + ' MNTY',
               wantAmount: weiToNUSD(decode["2"]) + ' NewSD',
-              price: thousands(weiToPrice(parseInt(decode["1"]),parseInt(decode["2"]))),
+              price: thousands(weiToPrice(decode["1"],decode["2"])),
               wantAmountNow: weiToNUSD(decode["2"]) + ' NewSD',
               orderID: '0x' + sha256(Buffer.from(packed, 'hex')),
               number: result.number,
@@ -204,7 +197,7 @@ module.exports.trade = async function (req, res) {
               to: e.to,
               haveAmount: weiToNUSD(decode["1"]) + ' NewSD',
               wantAmount: weiToMNTY(decode["2"]) + ' MNTY',
-              price: thousands(weiToPrice(parseInt(decode["2"]),parseInt(decode["1"]))),
+              price: thousands(weiToPrice(decode["2"],decode["1"])),
               haveAmountNow: weiToNUSD(decode["1"]) + ' NewSD',
               wantAmountNow: weiToMNTY(decode["2"]) + ' MNTY',
               orderID: '0x' + sha256(Buffer.from(packed, 'hex')),
@@ -214,34 +207,26 @@ module.exports.trade = async function (req, res) {
             })
           } else if (id === "37a7113d" && e.to == volatileTokenAddress) { //depositAndTrade(bytes32,uint256,uint256,bytes32) trade(bytes32,uint256,uint256,bytes32) id === "37a7113d" ||
             let decode = web3.eth.abi.decodeParameters(['bytes32', 'uint256', 'uint256', 'bytes32'], para)
-            console.log(decode["1"],decode["2"])
-            console.log('i',i)
             const packed = e.from.substring(2) + decode["0"].substring(2)
             console.log('DEPOSIT&SELLLLLLLLLLLLL')
-            let a = thousands(weiToPrice(parseInt(decode["1"]),parseInt(decode["2"])))
-            console.log('end')
-            
             Trade.create({
               status: 'order',
               address: e.from,
               to: e.to,
               haveAmount: weiToMNTY(decode["1"]) + ' MNTY',
               wantAmount: weiToNUSD(decode["2"]) + ' NewSD',
-              price: thousands(weiToPrice(parseInt(decode["1"]),parseInt(decode["2"]))),
+              price: thousands(weiToPrice(decode["1"],decode["2"])),
               haveAmountNow: weiToMNTY(decode["1"]) + ' MNTY',
               wantAmountNow: weiToNUSD(decode["2"]) + ' NewSD',
               orderID: '0x' + sha256(Buffer.from(packed, 'hex')),
               number: result.number,
               time: result.timestamp,
               filledTime: 0
-            }, function (err) {
-              if (err) console.log(err)
             })
           } else if (id === "37a7113d" && e.to == stableTokenAddress) {
             let decode = web3.eth.abi.decodeParameters(['bytes32', 'uint256', 'uint256', 'bytes32'], para)
             const packed = e.from.substring(2) + decode["0"].substring(2)
             console.log('DEPOSIT&BUYYYYYYYYYYYYY')
-            console.log(thousands(weiToPrice(parseInt(decode["2"]),parseInt(decode["1"]))))
             Trade.create({
               status: 'order',
               address: e.from,
@@ -255,8 +240,6 @@ module.exports.trade = async function (req, res) {
               number: result.number,
               time: result.timestamp,
               filledTime: 0
-            }, function (err) {
-              if (err) console.log(err)
             })
           } else if (id == "43271d79") { //cancel(bool, ID bytes32)
             let decode = web3.eth.abi.decodeParameters(['bool', 'bytes32'], para)
@@ -379,7 +362,7 @@ module.exports.trade = async function (req, res) {
     const promises = array.map(scanBlock)
     // wait until all promises are resolved
     await Promise.all(promises);
-    scanOldBlock()
+    // scanOldBlock()
   }
   res.send('collecting...')
 }

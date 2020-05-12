@@ -1266,11 +1266,11 @@ module.exports.getheader = function (req, res) {
   let m = 0
   let n = 0
   let t = parseInt(Date.now().toString().slice(0,-3))
-  Trade.findOne({status: 'filled'}).sort({filledTime: -1}).exec(function (err, doc) {
+  Trade.find({status: 'filled'}).sort({filledTime: -1}).limit(10).exec(function (err, doc) {
     if (err) console.log(err)
-    console.log(doc)
-    price = doc.price
-    if(t-86399 < doc.filledTime < t+1) {
+    console.log(doc[9])
+    price = doc[9].price
+    if(t-86399 < doc[9].filledTime < t+1) {
       Trade.find({status: 'filled', filledTime: {$gte: t-86400, $lte: t}}).sort({filledTime: 1}).exec(function (err, doc1) {
         if (err) console.log(err)
         Trade.findOne({status: 'filled', filledTime: {$lte: t-86400}}).sort({filledTime: -1}).exec(function (err, doc2) {

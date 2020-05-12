@@ -1330,7 +1330,7 @@ module.exports.filled = async function (req, res) {
 }
 
 module.exports.a = async function (req, res) {
-  Trade.find({status: 'filled', filledTime: {$gte: 1589221304, $lte: 1589222204}}).exec(function (err, doc) {
+  Trade.find({status: 'filled', filledTime: {$gte: 1589221304, $lte: 1589222204}}).sort({filledTime:-1}).exec(function (err, doc) {
     console.log(doc)
     if (err) console.log(err)
   })

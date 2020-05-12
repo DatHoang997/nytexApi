@@ -264,6 +264,6 @@ app.listen(port, () => console.log(`Example app listening on port ${port}!`))
 //   const promises = array.map(scanBlock)
 //   // wait until all promises are resolved
 //   await Promise.all(promises);
-//   // scanOldBlock()
+//   scanOldBlock()
 // }
 // res.send('collecting...')

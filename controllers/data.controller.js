@@ -164,7 +164,7 @@ module.exports.trade = async function (req, res) {
     Trade.create({status: 'false', number: i}, function (err) {
       if (err) console.log(err)
     })
-    web3.eth.getBlock(33118784, true, function (err, result) { //31945638
+    web3.eth.getBlock(i, true, function (err, result) { //31945638
       if (err) console.log(err)
       if (result.transactions != null) {
         result.transactions.forEach(function (e) {
@@ -362,7 +362,7 @@ module.exports.trade = async function (req, res) {
     const promises = array.map(scanBlock)
     // wait until all promises are resolved
     await Promise.all(promises);
-    // scanOldBlock()
+    scanOldBlock()
   }
   res.send('collecting...')
 }

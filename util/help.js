@@ -144,7 +144,6 @@ function truncateShift(a, n) {
 
 function weiToPrice(mnty, nusd) {
     const price = div(web3.utils.toBN(decShift(nusd, 18)), web3.utils.toBN(mnty))
-    console.log('price', price)
     return price.toString()
 }
 

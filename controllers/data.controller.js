@@ -153,24 +153,32 @@ module.exports.candle = function (req, res) {
 }
 
 
-module.exports.trade = async function (req, res) {
+module.exports.trade = function (req, res) {
   let scanning_old_blocks = 1
   let array = []
+  let time
   console.log('start')
 
   let cursor = 28588000 //28588000   //33068795 //33118783
-    async function scanBlock(i) {
+    function scanBlock(i) {
     console.log(i)
     Trade.create({status: 'false', number: i}, function (err) {
       if (err) console.log(err)
     })
     web3.eth.getBlock(i, true, function (err, result) { //31945638
       if (err) console.log(err)
+      time = result.timestamp
       if (result.transactions != null) {
         result.transactions.forEach(function (e) {
           let id = e.input.slice(2, 10)
           let para = '0x' + e.input.slice(10)
-          if (id === "7ca3c7c7" && e.to == volatileTokenAddress) { //SELL depositAndTrade(bytes32,uint256,uint256,bytes32) trade(bytes32,uint256,uint256,bytes32) id === "37a7113d" ||
+          if (id == "43271d79") { //cancel(bool, ID bytes32)
+            let decode = web3.eth.abi.decodeParameters(['bool', 'bytes32'], para)
+            Trade.findOneAndUpdate({orderID: decode["1"]}, {$set: {status: 'canceled'}}, {useFindAndModify: false}, function (err, doc) {
+              console.log(doc.orderID)
+              if (err) console.log(err)
+            })
+          } else if (id === "7ca3c7c7" && e.to == volatileTokenAddress) { //SELL depositAndTrade(bytes32,uint256,uint256,bytes32) trade(bytes32,uint256,uint256,bytes32) id === "37a7113d" ||
             let decode = web3.eth.abi.decodeParameters(['bytes32', 'uint256', 'uint256', 'bytes32'], para)
             const packed = e.from.substring(2) + decode["0"].substring(2)
             console.log('SELLLLLLLLLLLLLLLLLLL')
@@ -241,45 +249,9 @@ module.exports.trade = async function (req, res) {
               time: result.timestamp,
               filledTime: 0
             })
-          } else if (id == "43271d79") { //cancel(bool, ID bytes32)
-            let decode = web3.eth.abi.decodeParameters(['bool', 'bytes32'], para)
-            Trade.findOneAndUpdate({orderID: decode["1"]}, {$set: {status: 'canceled'}}, {useFindAndModify: false}, function (err, doc) {
-              if (err) console.log(err)
-            })
           }
         })
-        Trade.find({$or: [{status: 'order'}, {status: 'filling'}]}, function (err, doc) {
-          if (err) console.log(err)
-          for (let j = 0; j < doc.length; j++) {
-            if (doc[j].to == stableTokenAddress) {
-              Seigniorage.methods.getOrder(1, doc[j].orderID).call(undefined,i-6, function (error, result1) {
-                if (err) console.log(err)
-                if (result1!=null && result1.maker  == burn) {
-                  Trade.findOneAndUpdate({orderID: doc[j].orderID}, {$set: {status: 'filled', filledTime: result.timestamp}}, {useFindAndModify: false}, function (err, doc) {
-                    if (err) console.log(err)
-                  })
-                } else if (result1!=null && result1.maker != burn && parseFloat(weiToNUSD(result1.want))<parseFloat(doc[0].wantAmount.slice(0,-5))) {
-                  Trade.findOneAndUpdate({orderID: doc[j].orderID}, {$set: {status: 'filling', filledTime: result.timestamp-10, wantAmountNow: weiToNUSD(result1.want)}}, {useFindAndModify: false}, function (err, doc) {
-                    if (err) console.log(err)
-                  })
-                }
-              });
-            } else {
-              Seigniorage.methods.getOrder(0, doc[j].orderID).call(undefined, i-6, function (error, result1) {
-                if (err) console.log(err)
-                if (result1!=null && result1.maker == burn) {
-                  Trade.findOneAndUpdate({orderID: doc[j].orderID}, {$set: {status: 'filled', filledTime: result.timestamp-10, wantAmountNow: weiToMNTY(result1.want)}}, {useFindAndModify: false}, function (err, doc) {
-                    if (err) console.log(err)
-                  })
-                } else if (result1!=null && result1.maker != burn && parseFloat(weiToMNTY(result1.want))<parseFloat(doc[0].wantAmount.slice(0,-6))) {
-                  Trade.findOneAndUpdate({orderID: doc[j].orderID}, {$set: {status: 'filling', wantAmountNow: result1.want}}, {useFindAndModify: false}, function (err, doc) {
-                    if (err) console.log(err)
-                  })
-                }
-              })
-            }
-          }
-        })
+
 
         //   for (let n = 0; n < doc.length; n++) {
         //     Seigniorage.methods.getOrder(0, doc[n].orderID).call(undefined, i-6, function (error, result1) {
@@ -319,11 +291,44 @@ module.exports.trade = async function (req, res) {
       }
     })
   }
-
+  function searchFill (i) {
+    Trade.find({$or: [{status: 'order'}, {status: 'filling'}]}, function (err, doc) {
+      if (err) console.log(err)
+      for (let j = 0; j < doc.length; j++) {
+        if (doc[j].to == stableTokenAddress) {
+          Seigniorage.methods.getOrder(1, doc[j].orderID).call(undefined, i, function (error, result1) {
+            if (err) console.log(err)
+            if (result1!=null && result1.maker  == burn) {
+              Trade.findOneAndUpdate({orderID: doc[j].orderID}, {$set: {status: 'filled', filledTime: time}}, {useFindAndModify: false}, function (err, doc) {
+                if (err) console.log(err)
+              })
+            } else if (result1!=null && result1.maker != burn && parseFloat(weiToNUSD(result1.want))<parseFloat(doc[0].wantAmount.slice(0,-5))) {
+              Trade.findOneAndUpdate({orderID: doc[j].orderID}, {$set: {status: 'filling', wantAmountNow: weiToNUSD(result1.want)}}, {useFindAndModify: false}, function (err, doc) {
+                if (err) console.log(err)
+              })
+            }
+          });
+        } else {
+          Seigniorage.methods.getOrder(0, doc[j].orderID).call(undefined, i, function (error, result1) {
+            if (err) console.log(err)
+            if (result1!=null && result1.maker == burn) {
+              Trade.findOneAndUpdate({orderID: doc[j].orderID}, {$set: {status: 'filled', filledTime: time, wantAmountNow: weiToMNTY(result1.want)}}, {useFindAndModify: false}, function (err, doc) {
+                if (err) console.log(err)
+              })
+            } else if (result1!=null && result1.maker != burn && parseFloat(weiToMNTY(result1.want))<parseFloat(doc[0].wantAmount.slice(0,-6))) {
+              Trade.findOneAndUpdate({orderID: doc[j].orderID}, {$set: {status: 'filling', wantAmountNow: weiToMNTY(result1.want)}}, {useFindAndModify: false}, function (err, doc) {
+                if (err) console.log(err)
+              })
+            }
+          })
+        }
+      }
+    })
+  }
   web3.eth.subscribe('newBlockHeaders', function (error, new_block) {
     if (!error) {
       current_new_block = new_block.number
-      Trade.findOne().sort({number: -1}).exec(async function (err, db_block) {
+      Trade.findOne().sort({number: -1}).exec(function (err, db_block) {
         if (db_block == null)  db_block = {number: cursor}
         Trade.deleteMany({number: {$lte: db_block.number - 1000}, status: 'false'}, function (err, res) {
           if (err) console.log(err)
@@ -339,20 +344,22 @@ module.exports.trade = async function (req, res) {
           } else scanning_old_blocks++
         } else {
           scanning_old_blocks = 1
-          await scanBlock(new_block.number - 6)
+          scanBlock(new_block.number - 6)
+          searchFill(new_block.number - 7)
         }
       })
     }
   })
 
-  async function scanOldBlock() {
-    Trade.findOne().sort({number: -1}).exec(async function (err, db_block) {
+  function scanOldBlock() {
+    Trade.findOne().sort({number: -1}).exec(function (err, db_block) {
       if (db_block == null) db_block = {number: cursor}
       array.splice(0, 100)
       if (db_block.number < current_new_block - 7) {
         let _from_block = Math.max(db_block.number, cursor)
-        let _to_block = Math.min(current_new_block - 6, db_block.number + 5)
-        for (let i = _from_block + 1; i <= _to_block; i++) array.push(i)
+        // let _to_block = Math.min(current_new_block - 6, db_block.number + 5)
+        // for (let i = _from_block + 1; i <= _to_block; i++) 
+        array.push(_from_block + 1)
         processArray(array)
       }
     })

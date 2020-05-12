@@ -15,4 +15,4 @@ app.use(bodyParser.urlencoded({ extended: true })); // for parsing application/x
 app.use('/', dataRoute)
 
 app.listen(port, () => console.log(`Example app listening on port ${port}!`))
-setTimeout(console.log('alalalala'),5000)
+console.log('alalalala')

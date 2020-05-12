@@ -1253,7 +1253,7 @@ module.exports.getheader = function (req, res) {
     if (err) console.log(err)
     console.log(doc)
     price = doc.price
-    if(t-86399 < doc.filledTime < t+1) {
+    if(t-86399 < doc.filledTime && doc.filledTime < t+1) {
       Trade.find({status: 'filled', filledTime: {$gte: t-86400, $lte: t}}).sort({filledTime: 1}).exec(function (err, doc1) {
         if (err) console.log(err)
         Trade.findOne({status: 'filled', filledTime: {$lte: t-86400}}).sort({filledTime: -1}).exec(function (err, doc2) {
@@ -1268,17 +1268,37 @@ module.exports.getheader = function (req, res) {
             }
             array.push(doc1[i].price)
           }
-          let data = {
-            high : Math.max.apply(Math, array),
-            low : Math.min.apply(Math, array),
-            open : doc2.price,
-            filled : price,
-            volumeMNTY: m,
-            volumeNewSD: n,
-            change: price-doc2.price,
+          let persent = (price - doc2.price)/doc2.price*100
+          if (price - doc2.price >= 0)
+          {
+            let printPersent = '+' + persent + '%'
+            let data = {
+              high : Math.max.apply(Math, array),
+              low : Math.min.apply(Math, array),
+              open : doc2.price,
+              filled : price,
+              volumeMNTY: m,
+              volumeNewSD: n,
+              change: price-doc2.price,
+              percent: printPersent
+            }
+            let show = data
+            res.json(show)
+          } else {
+            let printPersent = '-' + persent + '%'
+            let data = {
+              high : Math.max.apply(Math, array),
+              low : Math.min.apply(Math, array),
+              open : doc2.price,
+              filled : price,
+              volumeMNTY: m,
+              volumeNewSD: n,
+              change: price-doc2.price,
+              percent: printPersent
+            }
+            let show = data
+            res.json(show)
           }
-          let show = data
-          res.json(show)
         })
       })
     } else {
@@ -1289,7 +1309,8 @@ module.exports.getheader = function (req, res) {
         filled : price,
         volumeMNTY: 0,
         volumeNewSD: 0,
-        change: 0
+        change: 0,
+        percent: 0 + '%'
       }
       let show = data
       res.json(show)

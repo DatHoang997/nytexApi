@@ -90,7 +90,7 @@ module.exports.candle = function (req, res) {
           console.log(array)
           console.log('high:', Math.max.apply(Math, array))
           console.log('low:' ,Math.min.apply(Math, array))
-
+          console.log(doc, 'close', doc[doc.length-1].price)
           Candle.create({
             open: doc1.close,
             high: Math.max.apply(Math, array),

@@ -1325,8 +1325,8 @@ module.exports.getheader = function (req, res) {
 }
 
 module.exports.tradeclear = async function (req, res) {
-  let clear = await Trade.deleteMany({}, function (err, res) {if (err) console.log(err)})
-  res.send('da xoa DB', clear)
+  Trade.deleteMany({}, function (err, res) {if (err) console.log(err)})
+  res.send('da xoa DB')
 }
 
 module.exports.candleclear = async function (req, res) {

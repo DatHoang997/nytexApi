@@ -15,3 +15,4 @@ app.use(bodyParser.urlencoded({ extended: true })); // for parsing application/x
 app.use('/', dataRoute)
 
 app.listen(port, () => console.log(`Example app listening on port ${port}!`))
+console.log('alalalala')

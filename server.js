@@ -31,7 +31,7 @@ app.listen(port, () => console.log(`Example app listening on port ${port}!`))
 //   Trade.create({status: 'false',number: i}, function (err) {
 //     if (err) console.log(err)
 //   })
-//   web3.eth.getBlock(33118784, true, function (err, result) { //31945638
+//   web3.eth.getBlock(i, true, function (err, result) { //31945638
 //     if (err) console.log(err)
 //     if (result.transactions != null) {
 //       result.transactions.forEach(function (e) {

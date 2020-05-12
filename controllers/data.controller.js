@@ -1266,7 +1266,7 @@ module.exports.getheader = function (req, res) {
   let m = 0
   let n = 0
   let t = parseInt(Date.now().toString().slice(0,-3))
-  Trade.find({status: 'filled'}).sort({filledTime: -1}).exec(function (err, doc) {
+  Trade.findOne({status: 'filled'}).sort({filledTime: -1}).exec(function (err, doc) {
     if (err) console.log(err)
     console.log(doc)
     price = doc.price

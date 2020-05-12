@@ -95,7 +95,7 @@ module.exports.candle = function (req, res) {
             open: doc1.close,
             high: Math.max.apply(Math, array),
             low: Math.min.apply(Math, array),
-            close: doc[doc.length-1].price,
+            close: doc[0].price,
             volumeMNTY: m,
             volumeNewSD: n,
             time: end

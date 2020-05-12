@@ -74,6 +74,7 @@ module.exports.candle = function (req, res) {
           let n = 0
           for (let i = 0; i < doc.length; i++)
           {
+            console.log(doc[i].price)
             array.push(doc[i].price)
             if (doc[i].to == volatileTokenAddress) {
               m = m + parseFloat(doc[i].haveAmount.slice(0,-5))
@@ -263,7 +264,7 @@ module.exports.trade = async function (req, res) {
                     if (err) console.log(err)
                   })
                 } else if (result1!=null && result1.maker != burn && parseFloat(weiToNUSD(result1.want))<parseFloat(doc[0].wantAmount.slice(0,-5))) {
-                  Trade.findOneAndUpdate({orderID: doc[j].orderID}, {$set: {status: 'filling', filledTime: result.timestamp-10, wantAmountNow: result1.want}}, {useFindAndModify: false}, function (err, doc) {
+                  Trade.findOneAndUpdate({orderID: doc[j].orderID}, {$set: {status: 'filling', filledTime: result.timestamp-10, wantAmountNow: weiToNUSD(result1.want)}}, {useFindAndModify: false}, function (err, doc) {
                     if (err) console.log(err)
                   })
                 }
@@ -272,7 +273,7 @@ module.exports.trade = async function (req, res) {
               Seigniorage.methods.getOrder(0, doc[j].orderID).call(undefined, i-6, function (error, result1) {
                 if (err) console.log(err)
                 if (result1!=null && result1.maker == burn) {
-                  Trade.findOneAndUpdate({orderID: doc[j].orderID}, {$set: {status: 'filled', filledTime: result.timestamp-10, wantAmountNow: result1.want}}, {useFindAndModify: false}, function (err, doc) {
+                  Trade.findOneAndUpdate({orderID: doc[j].orderID}, {$set: {status: 'filled', filledTime: result.timestamp-10, wantAmountNow: weiToMNTY(result1.want)}}, {useFindAndModify: false}, function (err, doc) {
                     if (err) console.log(err)
                   })
                 } else if (result1!=null && result1.maker != burn && parseFloat(weiToMNTY(result1.want))<parseFloat(doc[0].wantAmount.slice(0,-6))) {

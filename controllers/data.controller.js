@@ -66,7 +66,7 @@ module.exports.candle = function (req, res) {
 
   function createCandle(begin) {
     end = begin + 900
-    Trade.find({status: 'filled', filledTime: {$gte: begin, $lte: end}}).exec(function (err, doc) {
+    Trade.find({status: 'filled', filledTime: {$gte: begin, $lte: end}}).sort({filledTime: -1}).exec(function (err, doc) {
       if (err) console.log(err)
       if (doc[0] != null) {
         Candle.findOne().sort({time: -1}).exec(function (err, doc1) {
@@ -1266,11 +1266,11 @@ module.exports.getheader = function (req, res) {
   let m = 0
   let n = 0
   let t = parseInt(Date.now().toString().slice(0,-3))
-  Trade.find({status: 'filled'}).sort({filledTime: -1}).limit(10).exec(function (err, doc) {
+  Trade.find({status: 'filled'}).sort({filledTime: -1}).exec(function (err, doc) {
     if (err) console.log(err)
-    console.log(doc[9])
-    price = doc[9].price
-    if(t-86399 < doc[9].filledTime < t+1) {
+    console.log(doc)
+    price = doc.price
+    if(t-86399 < doc.filledTime < t+1) {
       Trade.find({status: 'filled', filledTime: {$gte: t-86400, $lte: t}}).sort({filledTime: 1}).exec(function (err, doc1) {
         if (err) console.log(err)
         Trade.findOne({status: 'filled', filledTime: {$lte: t-86400}}).sort({filledTime: -1}).exec(function (err, doc2) {

@@ -1314,7 +1314,7 @@ module.exports.candleclear = async function (req, res) {
 }
 
 module.exports.filled = async function (req, res) {
-  let show = await Trade.findOne({status: 'filled'}).sort({filledTime: -1})
+  let show = await Trade.find({status: 'filled'}).sort({filledTime: -1})
   res.json(show)
 }
 

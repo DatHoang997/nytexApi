@@ -1330,8 +1330,8 @@ module.exports.filled = async function (req, res) {
 }
 
 module.exports.a = async function (req, res) {
-  Seigniorage.methods.getOrder(0, "0x3bd46534015997468cf64275b7774d740841abfc71e2b3a6df09e8e05a335736").call(undefined,33068825, function (error, result1) {
-    console.log(result1)
+  Trade.find({status: 'filled', filledTime: {$gte: begin, $lte: end}}).exec(function (err, doc) {
+    console.log(doc)
     if (err) console.log(err)
   })
 }

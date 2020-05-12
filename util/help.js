@@ -10,6 +10,7 @@ const web3 = require ('web3')
 const BN_ZOOM_BIT = 18;
 
 function thousands(nStr, decimal = 4) {
+    console.log('ssss'.nStr);
     nStr += '';
 	let x = nStr.split('.');
 	let x1 = x[0];
@@ -143,6 +144,8 @@ function truncateShift(a, n) {
 }
 
 function weiToPrice(mnty, nusd) {
+    console.log(web3.utils.toBN(decShift(nusd, 18)));
+    console.log(web3.utils.toBN(mnty));
     const price = div(web3.utils.toBN(decShift(nusd, 18)), web3.utils.toBN(mnty))
     return price.toString()
 }

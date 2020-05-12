@@ -25,6 +25,7 @@ module.exports.candle = function (req, res) {
     end = begin + 900
     Trade.find({status: 'filled', filledTime: {$gte: begin, $lt: end}}).exec(function (err, doc) {
       if (err) console.log(err)
+      console.log(begin,end)
       let array = []
       let m = 0
       let n = 0
@@ -40,6 +41,7 @@ module.exports.candle = function (req, res) {
           n = n + parseFloat(doc[i].haveAmount.slice(0,-6))
         }
       }
+      console.log(array)
       Candle.create({
         open: doc[0].price,
         high: Math.max.apply(Math, array),
@@ -74,7 +76,6 @@ module.exports.candle = function (req, res) {
           let n = 0
           for (let i = 0; i < doc.length; i++)
           {
-            console.log(doc[i].price)
             array.push(doc[i].price)
             if (doc[i].to == volatileTokenAddress) {
               m = m + parseFloat(doc[i].haveAmount.slice(0,-5))
@@ -85,6 +86,11 @@ module.exports.candle = function (req, res) {
               n = n + parseFloat(doc[i].haveAmount.slice(0,-6))
             }
           }
+          console.log(begin,end)
+          console.log(array)
+          console.log('high:', Math.max.apply(Math, array))
+          console.log('low:' ,Math.min.apply(Math, array))
+
           Candle.create({
             open: doc1.close,
             high: Math.max.apply(Math, array),
@@ -159,8 +165,8 @@ module.exports.trade = async function (req, res) {
   let array = []
   console.log('start')
 
-  let cursor = 33068795 //28588000   //33068795
-  async function scanBlock(i) {
+  let cursor = 33118783 //28588000   //33068795 //33118783
+    async function scanBlock(i) {
     console.log(i)
     Trade.create({status: 'false', number: i, }, function (err) {
       if (err) console.log(err)
@@ -208,8 +214,13 @@ module.exports.trade = async function (req, res) {
             })
           } else if (id === "37a7113d" && e.to == volatileTokenAddress) { //depositAndTrade(bytes32,uint256,uint256,bytes32) trade(bytes32,uint256,uint256,bytes32) id === "37a7113d" ||
             let decode = web3.eth.abi.decodeParameters(['bytes32', 'uint256', 'uint256', 'bytes32'], para)
+            console.log(decode["1"],decode["2"])
+            console.log('i',i)
             const packed = e.from.substring(2) + decode["0"].substring(2)
             console.log('DEPOSIT&SELLLLLLLLLLLLL')
+            let a = thousands(weiToPrice(parseInt(decode["1"]),parseInt(decode["2"])))
+            console.log('end')
+            
             Trade.create({
               status: 'order',
               address: e.from,
@@ -230,6 +241,7 @@ module.exports.trade = async function (req, res) {
             let decode = web3.eth.abi.decodeParameters(['bytes32', 'uint256', 'uint256', 'bytes32'], para)
             const packed = e.from.substring(2) + decode["0"].substring(2)
             console.log('DEPOSIT&BUYYYYYYYYYYYYY')
+            console.log(thousands(weiToPrice(parseInt(decode["2"]),parseInt(decode["1"]))))
             Trade.create({
               status: 'order',
               address: e.from,
@@ -330,13 +342,13 @@ module.exports.trade = async function (req, res) {
       current_new_block = new_block.number
       Trade.findOne().sort({number: -1}).exec(async function (err, db_block) {
         if (db_block == null)  db_block = {number: cursor}
-        Trade.deleteMany({number: {$lte: db_block.number - 100}, status: 'false'}, function (err, res) {
+        Trade.deleteMany({number: {$lte: db_block.number - 1000}, status: 'false'}, function (err, res) {
           if (err) console.log(err)
         })
         if (db_block.number < new_block.number - 7) {
           if (scanning_old_blocks == 1) {
             console.log('beginNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN')
-            Trade.deleteMany({number: {$gte: db_block.number - 10}}, function (err, res) {
+            Trade.deleteMany({number: {$gte: db_block.number - 200}}, function (err, res) {
               if (err) console.log(err)
               scanOldBlock()
               scanning_old_blocks++
@@ -1301,7 +1313,6 @@ module.exports.getheader = function (req, res) {
     }
   })
 }
-
 
 module.exports.tradeclear = async function (req, res) {
   let clear = await Trade.deleteMany({}, function (err, res) {if (err) console.log(err)})

@@ -30,7 +30,7 @@ module.exports.candle = function (req, res) {
       let n = 0
       for (let i = 0; i < doc.length; i++)
       {
-        array.push(doc[i].price)
+        array.push(parseFloat(doc[i].price))
         if (doc[i].to == volatileTokenAddress) {
           m = m + parseFloat(doc[i].haveAmount.slice(0,-5))
           n = n + parseFloat(doc[i].wantAmount.slice(0,-6))
@@ -74,7 +74,7 @@ module.exports.candle = function (req, res) {
           let n = 0
           for (let i = 0; i < doc.length; i++)
           {
-            array.push(doc[i].price)
+            array.push(parseFloat(doc[i].price))
             if (doc[i].to == volatileTokenAddress) {
               m = m + parseFloat(doc[i].haveAmount.slice(0,-5))
               n = n + parseFloat(doc[i].wantAmount.slice(0,-6))
@@ -1344,8 +1344,5 @@ module.exports.filled = async function (req, res) {
 }
 
 module.exports.a = async function (req, res) {
-  Trade.find({status: 'filled', filledTime: {$gte: 1589221304, $lte: 1589222204}}).sort({filledTime:-1}).exec(function (err, doc) {
-    console.log(doc)
-    if (err) console.log(err)
-  })
+  Trade.deleteMany({number: {$gte: 28788492}})
 }

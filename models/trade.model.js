@@ -6,7 +6,7 @@ let tradeSchema = new mongoose.Schema({
     to: String,
     haveAmount: String,
     wantAmount: String,
-    price: Number,
+    price: String,
     wantAmountNow: String,
     number: Number,
     orderID : String,

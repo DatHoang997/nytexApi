@@ -30,7 +30,7 @@ module.exports.candle = function (req, res) {
       let n = 0
       for (let i = 0; i < doc.length; i++)
       {
-        array.push(parseFloat(doc[i].price))
+        array.push(parseFloat(doc[i].price.replace(',','')))
         if (doc[i].to == volatileTokenAddress) {
           m = m + parseFloat(doc[i].haveAmount.slice(0,-5))
           n = n + parseFloat(doc[i].wantAmount.slice(0,-6))
@@ -74,7 +74,7 @@ module.exports.candle = function (req, res) {
           let n = 0
           for (let i = 0; i < doc.length; i++)
           {
-            array.push(parseFloat(doc[i].price))
+            array.push(parseFloat(doc[i].price.replace(',','')))
             if (doc[i].to == volatileTokenAddress) {
               m = m + parseFloat(doc[i].haveAmount.slice(0,-5))
               n = n + parseFloat(doc[i].wantAmount.slice(0,-6))

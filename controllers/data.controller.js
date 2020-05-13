@@ -175,7 +175,6 @@ module.exports.trade = function (req, res) {
           if (id == "43271d79") { //cancel(bool, ID bytes32)
             let decode = web3.eth.abi.decodeParameters(['bool', 'bytes32'], para)
             Trade.findOneAndUpdate({orderID: decode["1"]}, {$set: {status: 'canceled'}}, {useFindAndModify: false}, function (err, doc) {
-              console.log(doc.orderID)
               if (err) console.log(err)
             })
           } else if (id === "7ca3c7c7" && e.to == volatileTokenAddress) { //SELL depositAndTrade(bytes32,uint256,uint256,bytes32) trade(bytes32,uint256,uint256,bytes32) id === "37a7113d" ||

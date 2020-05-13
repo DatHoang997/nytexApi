@@ -159,7 +159,7 @@ module.exports.trade = function (req, res) {
   let time
   console.log('start')
 
-  let cursor = 28588000 //28588000   //33068795 //33118783
+  let cursor = 33118783 //28588000   //33068795 //33118783
     function scanBlock(i) {
     console.log(i)
     Trade.create({status: 'false', number: i}, function (err) {
@@ -312,7 +312,7 @@ module.exports.trade = function (req, res) {
           Seigniorage.methods.getOrder(0, doc[j].orderID).call(undefined, i, function (error, result1) {
             if (err) console.log(err)
             if (result1!=null && result1.maker == burn) {
-              Trade.findOneAndUpdate({orderID: doc[j].orderID}, {$set: {status: 'filled', filledTime: time}}, {useFindAndModify: false}, function (err, doc) {
+              Trade.findOneAndUpdate({orderID: doc[j].orderID}, {$set: {status: 'filled', filledTime: time, wantAmountNow: weiToMNTY(result1.want)}}, {useFindAndModify: false}, function (err, doc) {
                 if (err) console.log(err)
               })
             } else if (result1!=null && result1.maker != burn && parseFloat(weiToMNTY(result1.want))<parseFloat(doc[0].wantAmount.slice(0,-6))) {
@@ -357,8 +357,9 @@ module.exports.trade = function (req, res) {
       array.splice(0, 100)
       if (db_block.number < current_new_block - 7) {
         let _from_block = Math.max(db_block.number, cursor)
-        let _to_block = Math.min(current_new_block - 6, db_block.number + 5)
-        for (let i = _from_block + 1; i <= _to_block; i++) array.push(i)
+        // let _to_block = Math.min(current_new_block - 6, db_block.number + 5)
+        // for (let i = _from_block + 1; i <= _to_block; i++)
+        array.push(_from_block + 1)
         processArray(array)
       }
     })
@@ -1324,8 +1325,8 @@ module.exports.getheader = function (req, res) {
 }
 
 module.exports.tradeclear = async function (req, res) {
-  Trade.deleteMany({}, function (err, res) {if (err) console.log(err)})
-  res.send('da xoa DB')
+  let clear = await Trade.deleteMany({}, function (err, res) {if (err) console.log(err)})
+  res.send('da xoa DB', clear)
 }
 
 module.exports.candleclear = async function (req, res) {

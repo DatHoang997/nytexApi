@@ -1344,5 +1344,8 @@ module.exports.filled = async function (req, res) {
 }
 
 module.exports.a = async function (req, res) {
-  Trade.deleteMany({number: {$gte: 28788492}})
+  Trade.deleteMany({number: {$gte: 28788492}}, function (err, res) {
+    if (err) console.log(err)
+  })
+  res.send('da xoa DB')
 }

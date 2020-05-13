@@ -159,7 +159,7 @@ module.exports.trade = function (req, res) {
   let time
   console.log('start')
 
-  let cursor = 27500000 //28588000   //33068795 //33118783
+  let cursor = 26500000 //28588000   //33068795 //33118783
     function scanBlock(i) {
     console.log(i)
     Trade.create({status: 'false', number: i}, function (err) {

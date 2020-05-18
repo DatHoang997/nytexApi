@@ -42,7 +42,7 @@ app.listen(port, () => console.log(`Example app listening on port ${port}!`))
 
 let scanning_old_blocks = 1
 let array = []
-console.log('start')
+console.log('start!!')
 
 let cursor = 28000000 //28588000   //33068795 //33118783
   function scanBlock(i) {

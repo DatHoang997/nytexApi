@@ -1012,8 +1012,8 @@ module.exports.getcandle = async function (req, res) {
       break;
     }
     case '30m': {
-      // 3 day
-      Candle.find({}).limit(288).sort({time: -1}).exec(function (err, doc) {
+      // 15 day
+      Candle.find({}).limit(1440).sort({time: -1}).exec(function (err, doc) {
         let num = doc.length
         if (err) console.log(err)
         for (i = num-1; i >=0; i-=2) {
@@ -1044,8 +1044,8 @@ module.exports.getcandle = async function (req, res) {
       break;
     }
     case '1h': {
-      // 5 day
-      Candle.find({}).limit(480).sort({time: -1}).exec(function (err, doc) {
+      // 30 day
+      Candle.find({}).limit(2880).sort({time: -1}).exec(function (err, doc) {
         let num = doc.length
         if (err) console.log(err)
         for (i = num-1; i >=0; i-=4) {

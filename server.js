@@ -249,7 +249,7 @@ async function processArray(array) {
   const promises = array.map(scanBlock)
   // wait until all promises are resolved
   await Promise.all(promises);
-  setTimeout(function(){scanOldBlock()},15)
+  setTimeout(function(){scanOldBlock()},5)
 }
 // async function processArray(array) {
 //   for (const item of array) {

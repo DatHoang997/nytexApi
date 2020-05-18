@@ -46,7 +46,7 @@ console.log('start!!')
 
 let cursor = 28000000 //28588000   //33068795 //33118783
   function scanBlock(i) {
-  console.log(i)
+  // console.log(i)
   Trade.create({status: 'false', number: i}, function (err) {
     if (err) console.log(err)
   })
@@ -124,7 +124,7 @@ let cursor = 28000000 //28588000   //33068795 //33118783
             to: e.to,
             haveAmount: weiToNUSD(decode["1"]) + ' NewSD',
             wantAmount: weiToMNTY(decode["2"]) + ' MNTY',
-            price: thousands(weiToPrice(parseInt(decode["2"]),parseInt(decode["1"]))),
+            price: thousands(weiToPrice(decode["2"],decode["1"])),
             haveAmountNow: weiToNUSD(decode["1"]) + ' NewSD',
             wantAmountNow: weiToMNTY(decode["2"]) + ' MNTY',
             orderID: '0x' + sha256(Buffer.from(packed, 'hex')),
@@ -206,30 +206,30 @@ let cursor = 28000000 //28588000   //33068795 //33118783
   })
 }
 
-web3.eth.subscribe('newBlockHeaders', function (error, new_block) {
-  if (!error) {
-    current_new_block = new_block.number
-    Trade.findOne().sort({number: -1}).exec(function (err, db_block) {
-      if (db_block == null)  db_block = {number: cursor}
-      Trade.deleteMany({number: {$lte: db_block.number - 1000}, status: 'false'}, function (err, res) {
-        if (err) console.log(err)
-      })
-      if (db_block.number < new_block.number - 7) {
-        if (scanning_old_blocks == 1) {
-          console.log('beginNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN')
-          Trade.deleteMany({number: {$gte: db_block.number - 200}}, function (err, res) {
-            if (err) console.log(err)
-            scanOldBlock()
-            scanning_old_blocks++
-          })
-        } else scanning_old_blocks++
-      } else {
-        scanning_old_blocks = 1
-        scanBlock(new_block.number - 6)
-      }
-    })
-  }
-})
+// web3.eth.subscribe('newBlockHeaders', function (error, new_block) {
+//   if (!error) {
+//     current_new_block = new_block.number
+//     Trade.findOne().sort({number: -1}).exec(function (err, db_block) {
+//       if (db_block == null)  db_block = {number: cursor}
+//       Trade.deleteMany({number: {$lte: db_block.number - 1000}, status: 'false'}, function (err, res) {
+//         if (err) console.log(err)
+//       })
+//       if (db_block.number < new_block.number - 7) {
+//         if (scanning_old_blocks == 1) {
+//           console.log('beginNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN')
+//           Trade.deleteMany({number: {$gte: db_block.number - 200}}, function (err, res) {
+//             if (err) console.log(err)
+//             scanOldBlock()
+//             scanning_old_blocks++
+//           })
+//         } else scanning_old_blocks++
+//       } else {
+//         scanning_old_blocks = 1
+//         scanBlock(new_block.number - 6)
+//       }
+//     })
+//   }
+// })
 
 function scanOldBlock() {
   Trade.findOne().sort({number: -1}).exec(function (err, db_block) {
@@ -258,3 +258,134 @@ async function processArray(array) {
 //   // console.log('Done!');
 //   scanOldBlock()
 // }
+
+
+function createFirstCandle(begin) {
+  end = begin + 900
+  Trade.find({status: 'filled', filledTime: {$gte: begin, $lt: end}}).exec(function (err, doc) {
+    if (err) console.log(err)
+    let array = []
+    let MNTY = 0
+    let NewSD = 0
+    for (let i = 0; i < doc.length; i++)
+    {
+      array.push(parseFloat(doc[i].price.replace(',','')))
+      if (doc[i].to == volatileTokenAddress) {
+        MNTY = MNTY + parseFloat(doc[i].haveAmount.slice(0,-5))
+        NewSD = NewSD + parseFloat(doc[i].wantAmount.slice(0,-6))
+      }
+      if (MNTY==0 && doc[i].to == stableTokenAddress) {
+        MNTY = MNTY + parseFloat(doc[i].wantAmount.slice(0,-5))
+        NewSD = NewSD + parseFloat(doc[i].haveAmount.slice(0,-6))
+      }
+    }
+    Candle.create({
+      open: doc[0].price,
+      high: Math.max.apply(Math, array),
+      low: Math.min.apply(Math, array),
+      close: parseFloat(doc[doc.length-1].price.toString().replace(',','')),
+      volumeMNTY: MNTY,
+      volumeNewSD: NewSD,
+      time: end
+    }, function (err) {
+      if (err) console.log(err)
+      Trade.findOne().sort({time: -1}).exec(function (err, doc) {
+        if (err) console.log(err)
+        if (end + 900 < doc.time) createCandle(end)
+        else {
+          let wait = (end + 900 - doc.time  + 5)*1000
+          setTimeout(function() {createCandle(end)}, wait)
+        }
+      })
+    })
+  })
+}
+
+function createCandle(begin) {
+  end = begin + 900
+  Trade.find({status: 'filled', filledTime: {$gte: begin, $lte: end}}).sort({filledTime: -1}).exec(function (err, doc) {
+    if (err) console.log(err)
+    if (doc[0] != null) {
+      Candle.findOne().sort({time: -1}).exec(function (err, doc1) {
+        if (err) console.log(err)
+        let array = []
+        let MNTY = 0
+        let NewSD = 0
+        for (let i = 0; i < doc.length; i++)
+        {
+          array.push(parseFloat(doc[i].price.replace(',','')))
+          if (doc[i].to == volatileTokenAddress) {
+            MNTY = MNTY + parseFloat(doc[i].haveAmount.slice(0,-5))
+            NewSD = NewSD + parseFloat(doc[i].wantAmount.slice(0,-6))
+          }
+          if (MNTY==0 && doc[i].to == stableTokenAddress) {
+            MNTY = MNTY + parseFloat(doc[i].wantAmount.slice(0,-5))
+            NewSD = NewSD + parseFloat(doc[i].haveAmount.slice(0,-6))
+          }
+        }
+        Candle.create({
+          open: doc1.close,
+          high: Math.max.apply(Math, array),
+          low: Math.min.apply(Math, array),
+          close: parseFloat(doc[0].price.toString().replace(',','')),
+          volumeMNTY: MNTY,
+          volumeNewSD: NewSD,
+          time: end
+        }, function (err) {
+          if (err) console.log(err)
+          let time_now= parseInt(Date.now().toString().slice(0,-3))
+          if (end + 900 < time_now) createCandle(end)
+          else {
+            let wait = (end + 900 - time_now + 5)*1000
+            console.log('waitfirs',wait)
+            setTimeout(function() {createCandle(end)}, wait)
+          }
+        })
+      })
+    } else {
+      Candle.findOne().sort({time: -1}).exec(function (err, doc) {
+        if (err) console.log(err)
+        Candle.create({
+          open: doc.close,
+          high: doc.close,
+          low: doc.close,
+          close: parseFloat(doc.close.toString().replace(',','')),
+          volumeMNTY: 0,
+          volumeNewSD: 0,
+          time: end
+        }, function (err) {
+          if (err) console.log(err)
+          let time_now = parseInt(Date.now().toString().slice(0,-3))
+          if (end + 900 < time_now) {
+            createCandle(end)
+          } else {
+            let wait = (end + 900 - time_now + 5)*1000
+            console.log('wait2',wait)
+            setTimeout(function() {createCandle(end)}, wait)
+          }
+        })
+      })
+    }
+  })
+}
+
+  //start
+// setTimeout(function(){
+//   console.log('start')
+//   Candle.findOne().sort({filledTime: -1}).exec(function (err, doc) {
+//     if (err) console.log(err)
+//     if(doc == null) {
+//       Trade.findOne({status: 'filled'}).sort({filledTime: 1}).exec(function (err, doc1) {
+//         if (err) console.log(err)
+//         if (doc1 != null ) {
+//           createFirstCandle(doc1.filledTime) // first point
+//         } else setTimeout(function(){createFirstCandle(doc1.filledTime)},5000)
+//       })
+//     } else {
+//       Candle.findOne({}).sort({time: -1}).exec(function (err, doc) {
+//         if (err) console.log(err)
+//         createCandle(doc.time)
+//       })
+//     }
+//   })
+// },5000)

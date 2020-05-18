@@ -26,27 +26,27 @@ module.exports.candle = function (req, res) {
     Trade.find({status: 'filled', filledTime: {$gte: begin, $lt: end}}).exec(function (err, doc) {
       if (err) console.log(err)
       let array = []
-      let m = 0
-      let n = 0
+      let MNTY = 0
+      let NewSD = 0
       for (let i = 0; i < doc.length; i++)
       {
         array.push(parseFloat(doc[i].price.replace(',','')))
         if (doc[i].to == volatileTokenAddress) {
-          m = m + parseFloat(doc[i].haveAmount.slice(0,-5))
-          n = n + parseFloat(doc[i].wantAmount.slice(0,-6))
+         MNTY=MNTY+ parseFloat(doc[i].haveAmount.slice(0,-5))
+         NewSD=NewSD+ parseFloat(doc[i].wantAmount.slice(0,-6))
         }
-        if (m==0 && doc[i].to == stableTokenAddress) {
-          m = m + parseFloat(doc[i].wantAmount.slice(0,-5))
-          n = n + parseFloat(doc[i].haveAmount.slice(0,-6))
+        if (MNTY==0 && doc[i].to == stableTokenAddress) {
+         MNTY=MNTY+ parseFloat(doc[i].wantAmount.slice(0,-5))
+         NewSD=NewSD+ parseFloat(doc[i].haveAmount.slice(0,-6))
         }
       }
       Candle.create({
         open: doc[0].price,
         high: Math.max.apply(Math, array),
         low: Math.min.apply(Math, array),
-        close: doc[doc.length-1].price,
-        volumeMNTY: m,
-        volumeNewSD: n,
+        close: parseFloat(doc[doc.length-1].price.toString().replace(',','')),
+        volumeMNTY: MNTY,
+        volumeNewSD: NewSD,
         time: end
       }, function (err) {
         if (err) console.log(err)
@@ -70,34 +70,34 @@ module.exports.candle = function (req, res) {
         Candle.findOne().sort({time: -1}).exec(function (err, doc1) {
           if (err) console.log(err)
           let array = []
-          let m = 0
-          let n = 0
+          let MNTY = 0
+          let NewSD = 0
           for (let i = 0; i < doc.length; i++)
           {
             array.push(parseFloat(doc[i].price.replace(',','')))
             if (doc[i].to == volatileTokenAddress) {
-              m = m + parseFloat(doc[i].haveAmount.slice(0,-5))
-              n = n + parseFloat(doc[i].wantAmount.slice(0,-6))
+             MNTY = MNTY + parseFloat(doc[i].haveAmount.slice(0,-5))
+             NewSD = NewSD + parseFloat(doc[i].wantAmount.slice(0,-6))
             }
-            if (m==0 && doc[i].to == stableTokenAddress) {
-              m = m + parseFloat(doc[i].wantAmount.slice(0,-5))
-              n = n + parseFloat(doc[i].haveAmount.slice(0,-6))
+            if (MNTY==0 && doc[i].to == stableTokenAddress) {
+             MNTY = MNTY+ parseFloat(doc[i].wantAmount.slice(0,-5))
+             NewSD = NewSD+ parseFloat(doc[i].haveAmount.slice(0,-6))
             }
           }
           Candle.create({
             open: doc1.close,
             high: Math.max.apply(Math, array),
             low: Math.min.apply(Math, array),
-            close: doc[0].price,
-            volumeMNTY: m,
-            volumeNewSD: n,
+            close: parseFloat(doc[0].price.toString().replace(',','')),
+            volumeMNTY: MNTY,
+            volumeNewSD: NewSD,
             time: end
           }, function (err) {
             if (err) console.log(err)
-            let t = parseInt(Date.now().toString().slice(0,-3))
-            if (end + 900 < t) createCandle(end)
+            let time_now = parseInt(Date.now().toString().slice(0,-3))
+            if (end + 900 < time_now) createCandle(end)
             else {
-              let wait = (end + 900 - t + 5)*1000
+              let wait = (end + 900 - time_now + 5)*1000
               console.log('waitfirs',wait)
               setTimeout(function() {createCandle(end)}, wait)
             }
@@ -110,17 +110,17 @@ module.exports.candle = function (req, res) {
             open: doc.close,
             high: doc.close,
             low: doc.close,
-            close: doc.close,
+            close: parseFloat(doc.close.toString().replace(',','')),
             volumeMNTY: 0,
             volumeNewSD: 0,
             time: end
           }, function (err) {
             if (err) console.log(err)
-            let t = parseInt(Date.now().toString().slice(0,-3))
-            if (end + 900 < t) {
+            let time_now = parseInt(Date.now().toString().slice(0,-3))
+            if (end + 900 < time_now) {
               createCandle(end)
             } else {
-              let wait = (end + 900 - t + 5)*1000
+              let wait = (end + 900 - time_now + 5)*1000
               console.log('wait2',wait)
               setTimeout(function() {createCandle(end)}, wait)
             }
@@ -240,7 +240,7 @@ module.exports.trade = function (req, res) {
               to: e.to,
               haveAmount: weiToNUSD(decode["1"]) + ' NewSD',
               wantAmount: weiToMNTY(decode["2"]) + ' MNTY',
-              price: thousands(weiToPrice(parseInt(decode["2"]),parseInt(decode["1"]))),
+              price: thousands(weiToPrice(decode["2"],decode["1"])),
               haveAmountNow: weiToNUSD(decode["1"]) + ' NewSD',
               wantAmountNow: weiToMNTY(decode["2"]) + ' MNTY',
               orderID: '0x' + sha256(Buffer.from(packed, 'hex')),
@@ -1000,10 +1000,6 @@ module.exports.getcandle = async function (req, res) {
   const queryObject = url.parse(req.url, true).query
   let type = queryObject.type
   let result = []
-  let num
-  let array = []
-  let m = 0
-  let n = 0
   switch (type) {
     default : {
       let show = await Candle.find({}).sort({time: 1})
@@ -1016,185 +1012,91 @@ module.exports.getcandle = async function (req, res) {
       break;
     }
     case '30m': {
-      let num
-      Candle.countDocuments({}).exec(async function (err, n) {
+      // 3 day
+      Candle.find({}).limit(288).sort({time: -1}).exec(function (err, doc) {
+        let num = doc.length
         if (err) console.log(err)
-        num = n
-      })
-      Candle.find({}).sort({time:1}).exec(function (err, doc) {
-        if (err) console.log(err)
-        if (num%2==0) {
-          for (i = 0; i < num; i+=2) {
-            let array = []
-            let m = 0
-            let n = 0
-            for (j = i; j <= i+1; j++) {
-              array.push(doc[j].high, doc[j].low)
-              m = m + doc[j].volumeMNTY
-              n = n + doc[j].volumeNewSD
-            }
-            let data = {
-              high : Math.max.apply(Math, array),
-              low : Math.min.apply(Math, array),
-              open : doc[j-2].open,
-              close : doc[j-1].close,
-              volumeMNTY: m,
-              volumeNewSD: n,
-              time: doc[j-2].time,
-            }
-            result.push(data)
-            if (i+2 >= num) {
-              let show = result
-              res.json(show)
-            }
+        for (i = num-1; i >=0; i-=2) {
+          let array = []
+          let MNTY = 0
+          let NewSD = 0
+          for (j = i; j > i-2; j--) {
+            array.push(doc[j].high, doc[j].low)
+            MNTY = MNTY + doc[j].volumeMNTY
+            NewSD = NewSD + doc[j].volumeNewSD
           }
-        } else {
-          for (i = 0; i < num-1; i+=2) {
-            let array = []
-            let m = 0
-            let n = 0
-            for (j = i; j <= i+1; j++) {
-              array.push(doc[j].high, doc[j].low)
-              m = m + doc[j].volumeMNTY
-              n = n + doc[j].volumeNewSD
-            }
             let data = {
               high : Math.max.apply(Math, array),
               low : Math.min.apply(Math, array),
-              open : doc[j-2].open,
-              close : doc[j-1].close,
-              volumeMNTY: m,
-              volumeNewSD: n,
-              time: doc[j-2].time,
+              open : doc[j+2].open,
+              close : doc[j+1].close,
+              volumeMNTY: MNTY,
+              volumeNewSD: NewSD,
+              time: doc[j+2].time,
             }
             result.push(data)
-            if (i+3 >= num) {
-              let data = {
-                high : doc[num-1].high,
-                low : doc[num-1].low,
-                open : doc[num-1].open,
-                close : doc[num-1].close,
-                volumeMNTY: doc[num-1].volumeMNTY,
-                volumeNewSD: doc[num-1].volumeNewSD,
-                time: doc[num-1].time,
-              }
-              result.push(data)
-              let show = result
-              res.json(show)
-            }
+          if(j<=-1){
+            let show = result
+            res.json(show)
           }
         }
       })
       break;
     }
     case '1h': {
-      Candle.countDocuments({}).exec(async function (err, n) {
+      // 5 day
+      Candle.find({}).limit(480).sort({time: -1}).exec(function (err, doc) {
+        let num = doc.length
         if (err) console.log(err)
-        num = n
-      })
-      Candle.find({}).sort({time:1}).exec(function (err, doc) {
-        if (err) console.log(err)
-        if (num%4==0) {
-          for (i = 0; i < num; i+=4) {
-            let array = []
-            let m = 0
-            let n = 0
-            for (j = i; j <= i+3; j++) {
-              array.push(doc[j].high, doc[j].low)
-              m = m + doc[j].volumeMNTY
-              n = n + doc[j].volumeNewSD
-            }
-            let data = {
-              high : Math.max.apply(Math, array),
-              low : Math.min.apply(Math, array),
-              open : doc[j-4].open,
-              close : doc[j-1].close,
-              volumeMNTY: m,
-              volumeNewSD: n,
-              time: doc[j-4].time,
-            }
-            result.push(data)
-            if (i+4 >= num) {
-              let show = result
-              res.json(show)
-              result =[]
-            }
+        for (i = num-1; i >=0; i-=4) {
+          let array = []
+          let MNTY = 0
+          let NewSD = 0
+          for (j = i; j > i-4; j--) {
+            array.push(doc[j].high, doc[j].low)
+            MNTY = MNTY + doc[j].volumeMNTY
+            NewSD = NewSD+ doc[j].volumeNewSD
           }
-        } else {
-          if(num>4) {
-            for (i = 0; i < num-4; i+=4) {
-              let array = []
-              let m = 0
-              let n = 0
-              for (j = i; j <= i+3; j++) {
-                array.push(doc[j].high, doc[j].low)
-                m = m + doc[j].volumeMNTY
-                n = n + doc[j].volumeNewSD
-              }
-              let data = {
-                high : Math.max.apply(Math, array),
-                low : Math.min.apply(Math, array),
-                open : doc[j-4].open,
-                close : doc[j-1].close,
-                volumeMNTY: m,
-                volumeNewSD: n,
-                time: doc[j-4].time,
-              }
-              result.push(data)
-              if (num-1-i<=6) {
-                let arr = []
-                for (let k = j; k<num-1; k++) {
-                  arr.push(doc[k].high, doc[k].low)
-                  m = m + doc[k].volumeMNTY
-                  n = n + doc[k].volumeNewSD
-                }
-                let data = {
-                  high : Math.max.apply(Math, arr),
-                  low : Math.min.apply(Math, arr),
-                  open : doc[j].open,
-                  close : doc[num-1].close,
-                  volumeMNTY: m,
-                  volumeNewSD: n,
-                  time: doc[j].time,
-                }
-                result.push(data)
-                let show = result
-                res.json(show)
-                result =[]
-              }
-            }
-          } else {
-            console.log('wait for a few seconds')
-            res.send('wait for a few seconds')
+          console.log(j)
+          let data = {
+            high : Math.max.apply(Math, array),
+            low : Math.min.apply(Math, array),
+            open : doc[j+4].open,
+            close : doc[j+1].close,
+            volumeMNTY: MNTY,
+            volumeNewSD: NewSD,
+            time: doc[j+4].time,
+          }
+          result.push(data)
+          if(j<=-1){
+            let show = result
+            res.json(show)
           }
         }
       })
       break;
     }
     case '1d': {
-      Candle.countDocuments({}).exec(async function (err, n) {
-        if (err) console.log(err)
-        num = n
-      })
       Candle.find({}).sort({time:1}).exec(function (err, doc) {
+        let num = doc.length
         if (err) console.log(err)
         if (num%96==0) {
           for (i = 0; i < num; i+=96) {
             let array = []
-            let m = 0
-            let n = 0
+            let MNTY = 0
+            let NewSD = 0
             for (j = i; j <= i+95; j++) {
               array.push(doc[j].high, doc[j].low)
-              m = m + doc[j].volumeMNTY
-              n = n + doc[j].volumeNewSD
+             MNTY = MNTY + doc[j].volumeMNTY
+             NewSD = NewSD + doc[j].volumeNewSD
             }
             let data = {
               high : Math.max.apply(Math, array),
               low : Math.min.apply(Math, array),
               open : doc[j-96].open,
               close : doc[j-1].close,
-              volumeMNTY: m,
-              volumeNewSD: n,
+              volumeMNTY: MNTY,
+              volumeNewSD: NewSD,
               time: doc[j-96].time,
             }
             result.push(data)
@@ -1207,20 +1109,20 @@ module.exports.getcandle = async function (req, res) {
           if (num > 96) {
             for (i = 0; i < num-96; i+=96) {
               let array = []
-              let m = 0
-              let n = 0
+              let MNTY = 0
+              let NewSD = 0
               for (j = i; j <= i+95; j++) {
                 array.push(doc[j].high, doc[j].low)
-                m = m + doc[j].volumeMNTY
-                n = n + doc[j].volumeNewSD
+               MNTY = MNTY + doc[j].volumeMNTY
+               NewSD = NewSD + doc[j].volumeNewSD
               }
               let data = {
                 high : Math.max.apply(Math, array),
                 low : Math.min.apply(Math, array),
                 open : doc[j-96].open,
                 close : doc[j-1].close,
-                volumeMNTY: m,
-                volumeNewSD: n,
+                volumeMNTY: MNTY,
+                volumeNewSD: NewSD,
                 time: doc[j-96].time,
               }
               result.push(data)
@@ -1228,16 +1130,16 @@ module.exports.getcandle = async function (req, res) {
                 let arr = []
                 for (let k = j; k<num-1; k++) {
                   arr.push(doc[k].high, doc[k].low)
-                  m = m + doc[k].volumeMNTY
-                  n = n + doc[k].volumeNewSD
+                 MNTY = MNTY + doc[k].volumeMNTY
+                 NewSD = NewSD + doc[k].volumeNewSD
                 }
                 let data = {
                   high : Math.max.apply(Math, arr),
                   low : Math.min.apply(Math, arr),
                   open : doc[j].open,
                   close : doc[num-1].close,
-                  volumeMNTY: m,
-                  volumeNewSD: n,
+                  volumeMNTY: MNTY,
+                  volumeNewSD: NewSD,
                   time: doc[j].time,
                 }
                 result.push(data)
@@ -1257,24 +1159,24 @@ module.exports.getcandle = async function (req, res) {
 
 module.exports.getheader = function (req, res) {
   let array = []
-  let m = 0
-  let n = 0
-  let t = parseInt(Date.now().toString().slice(0,-3))
+  let MNTY = 0
+  let NewSD = 0
+  let time_now = parseInt(Date.now().toString().slice(0,-3))
   Trade.findOne({status: 'filled'}).sort({filledTime: -1}).exec(function (err, doc) {
     if (err) console.log(err)
     price = doc.price
-    if(t-86399 < doc.filledTime && doc.filledTime < t+1) {
+    if(time_now-86399 < doc.filledTime && doc.filledTime < time_now+1) {
       Trade.find({status: 'filled', filledTime: {$gte: t-86400, $lte: t}}).sort({filledTime: 1}).exec(function (err, doc1) {
         if (err) console.log(err)
-        Trade.findOne({status: 'filled', filledTime: {$lte: t-86400}}).sort({filledTime: -1}).exec(function (err, doc2) {
+        Trade.findOne({status: 'filled', filledTime: {$lte: time_now-86400}}).sort({filledTime: -1}).exec(function (err, doc2) {
           if (err) console.log(err)
           for (let i = 0; i< doc1.length; i++) {
             if (doc1[i].to == volatileTokenAddress) {
-              m = m + parseFloat(doc1[i].haveAmount.slice(0,-5))
-              n = n + parseFloat(doc1[i].wantAmount.slice(0,-6))
+             MNTY = MNTY + parseFloat(doc1[i].haveAmount.slice(0,-5))
+             NewSD = NewSD + parseFloat(doc1[i].wantAmount.slice(0,-6))
             } else {
-              m = m + parseFloat(doc1[i].wantAmount.slice(0,-5))
-              n = n + parseFloat(doc1[i].haveAmount.slice(0,-6))
+             MNTY = MNTY + parseFloat(doc1[i].wantAmount.slice(0,-5))
+             NewSD = NewSD + parseFloat(doc1[i].haveAmount.slice(0,-6))
             }
             array.push(doc1[i].price)
           }
@@ -1287,8 +1189,8 @@ module.exports.getheader = function (req, res) {
               low : Math.min.apply(Math, array),
               open : doc2.price,
               filled : price,
-              volumeMNTY: m,
-              volumeNewSD: n,
+              volumeMNTY: MNTY,
+              volumeNewSD: NewSD,
               change: price-doc2.price,
               percent: printPersent
             }
@@ -1301,8 +1203,8 @@ module.exports.getheader = function (req, res) {
               low : Math.min.apply(Math, array),
               open : doc2.price,
               filled : price,
-              volumeMNTY: m,
-              volumeNewSD: n,
+              volumeMNTY: MNTY,
+              volumeNewSD: NewSD,
               change: price-doc2.price,
               percent: printPersent
             }
@@ -1313,8 +1215,8 @@ module.exports.getheader = function (req, res) {
       })
     } else {
       let data = {
-        high : 0,
-        low : 0,
+        high : price,
+        low : price,
         open : price,
         filled : price,
         volumeMNTY: 0,
@@ -1344,7 +1246,10 @@ module.exports.filled = async function (req, res) {
 }
 
 module.exports.a = async function (req, res) {
-  Trade.deleteMany({number: {$gte: 28788492}}, function (err, res) {
+  Trade.findOneAndUpdate({number: 28248968}, {$set: {price: '0.00008'}}, {useFindAndModify: false}, function (err, doc) {
+    if (err) console.log(err)
+  })
+  Trade.findOneAndUpdate({number: 28811797}, {$set: {status: 'canceled'}}, {useFindAndModify: false}, function (err, doc) {
     if (err) console.log(err)
   })
   res.send('da xoa DB')

@@ -33,7 +33,7 @@ router.get('/candleclear', controller.candleclear)
 //trade
 router.get('/alltrade', controller.alltrade)
 
-router.get('/gettoptrade', controller.gettoptrade) 
+router.get('/gettoptrade', controller.gettoptrade)
 
 router.get('/get-open-history', controller.getopenhistory)
 

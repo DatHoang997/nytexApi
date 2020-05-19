@@ -5,9 +5,9 @@ const controller = require('../controllers/data.controller')
 // insert data
 router.get('/', controller.block)
 
-router.get('/trade', controller.trade)
+// router.get('/trade', controller.trade)
 
-// get all
+// get all event
 router.get('/show', controller.show)
 
 // get data
@@ -46,7 +46,7 @@ router.get('/get-lastest-fill', controller.getlastestfill)
 router.get('/filled', controller.filled)
 
 //Candle
-router.get('/candle', controller.candle)
+// router.get('/candle', controller.candle)
 
 router.get('/get-candle', controller.getcandle)
 

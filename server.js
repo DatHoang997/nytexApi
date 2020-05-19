@@ -44,7 +44,7 @@ let scanning_old_blocks = 1
 let array = []
 console.log('start!!')
 
-let cursor = 33716027 //28588000   //33068795 //33118783
+let cursor = 33068795 //28588000   //33068795 //33118783
   function scanBlock(i) {
   console.log(i)
   Trade.create({status: 'false', number: i}, function (err) {
@@ -307,70 +307,75 @@ function createFirstCandle(begin) {
 
 function createCandle(begin) {
   end = begin + 900
-  Trade.find({status: 'filled', filledTime: {$gte: begin, $lte: end}}).sort({filledTime: -1}).exec(function (err, doc) {
-    if (err) console.log(err)
-    if (doc[0] != null) {
-      Candle.findOne().sort({time: -1}).exec(function (err, doc1) {
-        if (err) console.log(err)
-        let array = []
-        let MNTY = 0
-        let NewSD = 0
-        for (let i = 0; i < doc.length; i++)
-        {
-          array.push(parseFloat(doc[i].price.replace(',','')))
-          if (doc[i].to == volatileTokenAddress) {
-            MNTY = MNTY + parseFloat(doc[i].haveAmount.slice(0,-5))
-            NewSD = NewSD + parseFloat(doc[i].wantAmount.slice(0,-6))
-          }
-          if (MNTY==0 && doc[i].to == stableTokenAddress) {
-            MNTY = MNTY + parseFloat(doc[i].wantAmount.slice(0,-5))
-            NewSD = NewSD + parseFloat(doc[i].haveAmount.slice(0,-6))
-          }
-        }
-        Candle.create({
-          open: doc1.close,
-          high: Math.max.apply(Math, array),
-          low: Math.min.apply(Math, array),
-          close: parseFloat(doc[0].price.toString().replace(',','')),
-          volumeMNTY: MNTY,
-          volumeNewSD: NewSD,
-          time: end
-        }, function (err) {
+  let time_now = parseInt(Date.now().toString().slice(0,-3))
+  if (time_now >= end) {
+    Trade.find({status: 'filled', filledTime: {$gte: begin, $lte: end}}).sort({filledTime: -1}).exec(function (err, doc) {
+      if (err) console.log(err)
+      if (doc[0] != null) {
+        Candle.findOne().sort({time: -1}).exec(function (err, doc1) {
           if (err) console.log(err)
-          let time_now= parseInt(Date.now().toString().slice(0,-3))
-          if (end + 900 < time_now) createCandle(end)
-          else {
-            let wait = (end + 900 - time_now + 5)*1000
-            console.log('waitfirs',wait)
-            setTimeout(function() {createCandle(end)}, wait)
+          let array = []
+          let MNTY = 0
+          let NewSD = 0
+          for (let i = 0; i < doc.length; i++)
+          {
+            array.push(parseFloat(doc[i].price.replace(',','')))
+            if (doc[i].to == volatileTokenAddress) {
+              MNTY = MNTY + parseFloat(doc[i].haveAmount.slice(0,-5))
+              NewSD = NewSD + parseFloat(doc[i].wantAmount.slice(0,-6))
+            }
+            if (MNTY==0 && doc[i].to == stableTokenAddress) {
+              MNTY = MNTY + parseFloat(doc[i].wantAmount.slice(0,-5))
+              NewSD = NewSD + parseFloat(doc[i].haveAmount.slice(0,-6))
+            }
           }
+          Candle.create({
+            open: doc1.close,
+            high: Math.max.apply(Math, array),
+            low: Math.min.apply(Math, array),
+            close: parseFloat(doc[0].price.toString().replace(',','')),
+            volumeMNTY: MNTY,
+            volumeNewSD: NewSD,
+            time: end
+          }, function (err) {
+            if (err) console.log(err)
+            if (end + 900 < time_now) createCandle(end)
+            else {
+              let wait = (end + 900 - time_now + 5)*1000
+              console.log('waitfirs',wait)
+              setTimeout(function() {createCandle(end)}, wait)
+            }
+          })
         })
-      })
-    } else {
-      Candle.findOne().sort({time: -1}).exec(function (err, doc) {
-        if (err) console.log(err)
-        Candle.create({
-          open: doc.close,
-          high: doc.close,
-          low: doc.close,
-          close: parseFloat(doc.close.toString().replace(',','')),
-          volumeMNTY: 0,
-          volumeNewSD: 0,
-          time: end
-        }, function (err) {
+      } else {
+        Candle.findOne().sort({time: -1}).exec(function (err, doc) {
           if (err) console.log(err)
-          let time_now = parseInt(Date.now().toString().slice(0,-3))
-          if (end + 900 < time_now) {
-            createCandle(end)
-          } else {
-            let wait = (end + 900 - time_now + 5)*1000
-            console.log('wait2',wait)
-            setTimeout(function() {createCandle(end)}, wait)
-          }
+          Candle.create({
+            open: doc.close,
+            high: doc.close,
+            low: doc.close,
+            close: parseFloat(doc.close.toString().replace(',','')),
+            volumeMNTY: 0,
+            volumeNewSD: 0,
+            time: end
+          }, function (err) {
+            if (err) console.log(err)
+            if (end + 900 < time_now) {
+              createCandle(end)
+            } else {
+              let wait = (end + 900 - time_now + 5)*1000
+              console.log('wait2',wait)
+              setTimeout(function() {createCandle(end)}, wait)
+            }
+          })
         })
-      })
-    }
-  })
+      }
+    })
+  } else {
+    let wait = (end + 900 - time_now + 5)*1000
+    console.log('waitout',wait)
+    setTimeout(function() {createCandle(end)}, wait)
+  }
 }
 
 setTimeout(function(){

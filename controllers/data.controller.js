@@ -19,6 +19,146 @@ let Seigniorage = new web3.eth.Contract(SeigniorageABI, seigniorageAddress)
 let VolatileToken = new web3.eth.Contract(VolatileTokenABI, volatileTokenAddress)
 let StableToken = new web3.eth.Contract(StableTokenABI, stableTokenAddress)
 
+
+module.exports.candle = function (req, res) {
+  function createFirstCandle(begin) {
+    end = begin + 900
+    Trade.find({status: 'filled', filledTime: {$gte: begin, $lt: end}}).exec(function (err, doc) {
+      if (err) console.log(err)
+      let array = []
+      let MNTY = 0
+      let NewSD = 0
+      for (let i = 0; i < doc.length; i++)
+      {
+        array.push(parseFloat(doc[i].price.replace(',','')))
+        if (doc[i].to == volatileTokenAddress) {
+          MNTY = MNTY + parseFloat(doc[i].haveAmount.slice(0,-5))
+          NewSD = NewSD + parseFloat(doc[i].wantAmount.slice(0,-6))
+        }
+        if (MNTY==0 && doc[i].to == stableTokenAddress) {
+          MNTY = MNTY + parseFloat(doc[i].wantAmount.slice(0,-5))
+          NewSD = NewSD + parseFloat(doc[i].haveAmount.slice(0,-6))
+        }
+      }
+      Candle.create({
+        open: doc[0].price,
+        high: Math.max.apply(Math, array),
+        low: Math.min.apply(Math, array),
+        close: parseFloat(doc[doc.length-1].price.toString().replace(',','')),
+        volumeMNTY: MNTY,
+        volumeNewSD: NewSD,
+        time: end
+      }, function (err) {
+        if (err) console.log(err)
+        Trade.findOne().sort({time: -1}).exec(function (err, doc) {
+          if (err) console.log(err)
+          if (end + 900 < doc.time) createCandle(end)
+          else {
+            let wait = (end + 900 - doc.time  + 5)*1000
+            setTimeout(function() {createCandle(end)}, wait)
+          }
+        })
+      })
+    })
+  }
+
+  function createCandle(begin) {
+    end = begin + 900
+    let time_now = parseInt(Date.now().toString().slice(0,-3))
+    if (time_now >= end) {
+      Trade.find({status: 'filled', filledTime: {$gte: begin, $lte: end}}).sort({filledTime: -1}).exec(function (err, doc) {
+        if (err) console.log(err)
+        // console.log(doc)
+        if (doc[0] != null) {
+          console.log(doc[0])
+          Candle.findOne().sort({time: -1}).exec(function (err, doc1) {
+            if (err) console.log(err)
+            let array = []
+            let MNTY = 0
+            let NewSD = 0
+            for (let i = 0; i < doc.length; i++)
+            {
+              array.push(parseFloat(doc[i].price.replace(',','')))
+              if (doc[i].to == volatileTokenAddress) {
+                MNTY = MNTY + parseFloat(doc[i].haveAmount.slice(0,-5))
+                NewSD = NewSD + parseFloat(doc[i].wantAmount.slice(0,-6))
+              }
+              if (MNTY==0 && doc[i].to == stableTokenAddress) {
+                MNTY = MNTY + parseFloat(doc[i].wantAmount.slice(0,-5))
+                NewSD = NewSD + parseFloat(doc[i].haveAmount.slice(0,-6))
+              }
+            }
+            Candle.create({
+              open: doc1.close,
+              high: Math.max.apply(Math, array),
+              low: Math.min.apply(Math, array),
+              close: parseFloat(doc[0].price.toString().replace(',','')),
+              volumeMNTY: MNTY,
+              volumeNewSD: NewSD,
+              time: end
+            }, function (err) {
+              if (err) console.log(err)
+              if (end + 900 < time_now) createCandle(end)
+              else {
+                let wait = (end + 900 - time_now + 5)*1000
+                console.log('waitfirs',wait)
+                setTimeout(function() {createCandle(end)}, wait)
+              }
+            })
+          })
+        } else {
+          Candle.findOne().sort({time: -1}).exec(function (err, doc) {
+            if (err) console.log(err)
+            Candle.create({
+              open: doc.close,
+              high: doc.close,
+              low: doc.close,
+              close: parseFloat(doc.close.toString().replace(',','')),
+              volumeMNTY: 0,
+              volumeNewSD: 0,
+              time: end
+            }, function (err) {
+              if (err) console.log(err)
+              if (end + 900 < time_now) {
+                createCandle(end)
+              } else {
+                let wait = (end + 900 - time_now + 5)*1000
+                console.log('wait2',wait)
+                setTimeout(function() {createCandle(end)}, wait)
+              }
+            })
+          })
+        }
+      })
+    } else {
+      let wait = (end + 900 - time_now + 5)*1000
+      console.log('waitout',wait)
+      setTimeout(function() {createCandle(end)}, wait)
+    }
+  }
+
+    console.log('start')
+    Candle.findOne().sort({filledTime: -1}).exec(function (err, doc) {
+      if (err) console.log(err)
+      if(doc == null) {
+        Trade.findOne({status: 'filled'}).sort({filledTime: 1}).exec(function (err, doc1) {
+          if (err) console.log(err)
+          if (doc1 != null ) {
+            createFirstCandle(doc1.filledTime) // first point
+          } else setTimeout(function(){createFirstCandle(doc1.filledTime)},5000)
+        })
+      } else {
+        Candle.findOne({}).sort({time: -1}).exec(function (err, doc) {
+          if (err) console.log(err)
+          createCandle(doc.time)
+        })
+      }
+    })
+}
+
+
+
+
 module.exports.block = async function (req, res) {
   let cursor = 26500000
   scanBlock = async (_from_block, _to_block) => {

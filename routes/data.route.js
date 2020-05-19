@@ -46,7 +46,7 @@ router.get('/get-lastest-fill', controller.getlastestfill)
 router.get('/filled', controller.filled)
 
 //Candle
-// router.get('/candle', controller.candle)
+router.get('/candle', controller.candle)
 
 router.get('/get-candle', controller.getcandle)
 

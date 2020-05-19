@@ -44,7 +44,7 @@ let scanning_old_blocks = 1
 let array = []
 console.log('start!!')
 
-let cursor = 33068795 //28588000   //33068795 //33118783
+let cursor = 26000000 //28588000   //33068795 //33118783
   function scanBlock(i) {
   // console.log(i)
   Trade.create({status: 'false', number: i}, function (err) {
@@ -138,42 +138,39 @@ let cursor = 33068795 //28588000   //33068795 //33118783
           if (doc[j].to == stableTokenAddress) {
             Seigniorage.methods.getOrder(1, doc[j].orderID).call(undefined, i-1, function (error, result1) {
               if (error) console.log(error)
-                              console.log(doc[j])
-              // if (result1!=null && result1.maker  == burn) {
-              //   console.log(doc[j])
-              //   Trade.findOneAndUpdate({orderID: doc[j].orderID}, {$set: {status: 'filled', filledTime: result.timestamp}}, {useFindAndModify: false}, function (err, doc) {
-              //     if (err) console.log(err)
-              //   })
-              // } else if (result1!=null && result1.maker != burn && parseFloat(weiToMNTY(result1.want))<parseFloat(doc[j].wantAmount.slice(0,-5))) {
-              //   Trade.findOneAndUpdate({orderID: doc[j].orderID}, {$set: {status: 'filling', wantAmountNow: weiToMNTY(result1.want)}}, {useFindAndModify: false}, function (err, doc) {
-              //     if (err) console.log(err)
-              //   })
-              // } else if (result1!=null && doc[j].status == 'filling' && parseFloat(weiToMNTY(result1.want))==parseFloat(doc[j].wantAmount.slice(0,-5))) {
-              //   Trade.findOneAndUpdate({orderID: doc[j].orderID}, {$set: {status: 'order', wantAmountNow: doc[j].wantAmount.slice(0,-5)}}, {useFindAndModify: false}, function (err, doc) {
-              //     if (err) console.log(err)
-              //   })
-              // }
+              if (result1!=null && result1.maker  == burn) {
+                console.log(doc[j])
+                Trade.findOneAndUpdate({orderID: doc[j].orderID}, {$set: {status: 'filled', filledTime: result.timestamp}}, {useFindAndModify: false}, function (err, doc) {
+                  if (err) console.log(err)
+                })
+              } else if (result1!=null && result1.maker != burn && parseFloat(weiToMNTY(result1.want))<parseFloat(doc[j].wantAmount.slice(0,-5))) {
+                Trade.findOneAndUpdate({orderID: doc[j].orderID}, {$set: {status: 'filling', wantAmountNow: weiToMNTY(result1.want)}}, {useFindAndModify: false}, function (err, doc) {
+                  if (err) console.log(err)
+                })
+              } else if (result1!=null && doc[j].status == 'filling' && parseFloat(weiToMNTY(result1.want))==parseFloat(doc[j].wantAmount.slice(0,-5))) {
+                Trade.findOneAndUpdate({orderID: doc[j].orderID}, {$set: {status: 'order', wantAmountNow: doc[j].wantAmount.slice(0,-5)}}, {useFindAndModify: false}, function (err, doc) {
+                  if (err) console.log(err)
+                })
+              }
             });
           } else {
             Seigniorage.methods.getOrder(0, doc[j].orderID).call(undefined, i-1, function (error, result1) {
               if (error) console.log(error)
-              console.log(doc[j])
+              if (result1!=null && result1.maker == burn) {
+                console.log(doc[j])
 
-              // if (result1!=null && result1.maker == burn) {
-              //   console.log(doc[j])
-
-              //   Trade.findOneAndUpdate({orderID: doc[j].orderID}, {$set: {status: 'filled', filledTime: result.timestamp}}, {useFindAndModify: false}, function (err, doc) {
-              //     if (err) console.log(err)
-              //   })
-              // } else if (result1!=null && result1.maker != burn && parseFloat(weiToNUSD(result1.want))<parseFloat(doc[j].wantAmount.slice(0,-6))) {
-              //   Trade.findOneAndUpdate({orderID: doc[j].orderID}, {$set: {status: 'filling', wantAmountNow: weiToNUSD(result1.want)}}, {useFindAndModify: false}, function (err, doc) {
-              //     if (err) console.log(err)
-              //   })
-              // } else if (result1!=null && doc[j].status == 'filling' && parseFloat(doc[j].wantAmount.slice(0,-6))==parseFloat(weiToNUSD(result1.want))) {
-              //   Trade.findOneAndUpdate({orderID: doc[j].orderID}, {$set: {status: 'order', wantAmountNow: doc[j].wantAmount.slice(0,-6)}}, {useFindAndModify: false}, function (err, doc) {
-              //     if (err) console.log(err)
-              //   })
-              // }
+                Trade.findOneAndUpdate({orderID: doc[j].orderID}, {$set: {status: 'filled', filledTime: result.timestamp}}, {useFindAndModify: false}, function (err, doc) {
+                  if (err) console.log(err)
+                })
+              } else if (result1!=null && result1.maker != burn && parseFloat(weiToNUSD(result1.want))<parseFloat(doc[j].wantAmount.slice(0,-6))) {
+                Trade.findOneAndUpdate({orderID: doc[j].orderID}, {$set: {status: 'filling', wantAmountNow: weiToNUSD(result1.want)}}, {useFindAndModify: false}, function (err, doc) {
+                  if (err) console.log(err)
+                })
+              } else if (result1!=null && doc[j].status == 'filling' && parseFloat(doc[j].wantAmount.slice(0,-6))==parseFloat(weiToNUSD(result1.want))) {
+                Trade.findOneAndUpdate({orderID: doc[j].orderID}, {$set: {status: 'order', wantAmountNow: doc[j].wantAmount.slice(0,-6)}}, {useFindAndModify: false}, function (err, doc) {
+                  if (err) console.log(err)
+                })
+              }
             })
           }
         }
@@ -182,30 +179,32 @@ let cursor = 33068795 //28588000   //33068795 //33118783
   })
 }
 
-web3.eth.subscribe('newBlockHeaders', function (error, new_block) {
-  if (!error) {
-    current_new_block = new_block.number
-    Trade.findOne().sort({number: -1}).exec(function (err, db_block) {
-      if (db_block == null)  db_block = {number: cursor}
-      Trade.deleteMany({number: {$lte: db_block.number - 1000}, status: 'false'}, function (err, res) {
-        if (err) console.log(err)
+setTimeout(function(){
+  web3.eth.subscribe('newBlockHeaders', function (error, new_block) {
+    if (!error) {
+      current_new_block = new_block.number
+      Trade.findOne().sort({number: -1}).exec(function (err, db_block) {
+        if (db_block == null)  db_block = {number: cursor}
+        Trade.deleteMany({number: {$lte: db_block.number - 1000}, status: 'false'}, function (err, res) {
+          if (err) console.log(err)
+        })
+        if (db_block.number < new_block.number -8 ) {
+          if (scanning_old_blocks == 1) {
+            console.log('beginNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN')
+            Trade.deleteMany({number: {$gte: db_block.number - 200}}, function (err, res) {
+              if (err) console.log(err)
+              scanOldBlock()
+              scanning_old_blocks++
+            })
+          } else scanning_old_blocks++
+        } else {
+          scanning_old_blocks = 1
+          scanBlock(new_block.number - 6)
+        }
       })
-      if (db_block.number < new_block.number -8 ) {
-        if (scanning_old_blocks == 1) {
-          console.log('beginNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN')
-          Trade.deleteMany({number: {$gte: db_block.number - 200}}, function (err, res) {
-            if (err) console.log(err)
-            scanOldBlock()
-            scanning_old_blocks++
-          })
-        } else scanning_old_blocks++
-      } else {
-        scanning_old_blocks = 1
-        scanBlock(new_block.number - 6)
-      }
-    })
-  }
-})
+    }
+  })
+}, 60000)
 
 function scanOldBlock() {
   Trade.findOne().sort({number: -1}).exec(function (err, db_block) {
@@ -223,16 +222,8 @@ async function processArray(array) {
   const promises = array.map(scanBlock)
   // wait until all promises are resolved
   await Promise.all(promises);
-  // setTimeout(function(){scanOldBlock()},5)
+  setTimeout(function(){scanOldBlock()},5)
 }
-// async function processArray(array) {
-//   for (const item of array) {
-//     await scanBlock(item);
-//   }
-//   // console.log('Done!');
-//   scanOldBlock()
-// }
-
 
 function createFirstCandle(begin) {
   end = begin + 900
@@ -369,4 +360,4 @@ function createCandle(begin) {
 //       })
 //     }
 //   })
-// },60000)
+// },120000)

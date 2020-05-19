@@ -1034,5 +1034,8 @@ module.exports.a = async function (req, res) {
   Trade.findOneAndUpdate({number: 28811797}, {$set: {status: 'canceled'}}, {useFindAndModify: false}, function (err, doc) {
     if (err) console.log(err)
   })
+  Data.deleteOne({orderID: '0x978322b154af4f327d6981e19a1d1c42f6a58b7b06c6ca99dc6e4b0e9d789ae3', status: 'filled'}, function (err, res) {
+    if (err) console.log(err)
+  })
   res.send('da xoa DB')
 }

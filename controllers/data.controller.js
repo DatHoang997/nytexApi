@@ -68,9 +68,8 @@ module.exports.candle = function (req, res) {
     if (time_now >= end) {
       Trade.find({status: 'filled', filledTime: {$gte: begin, $lte: end}}).sort({filledTime: -1}).exec(function (err, doc) {
         if (err) console.log(err)
-        // console.log(doc)
-        if (doc[0] != null) {
-          console.log(doc[0])
+        console.log(doc, begin, end)
+        if (doc != null) {
           Candle.findOne().sort({time: -1}).exec(function (err, doc1) {
             if (err) console.log(err)
             let array = []

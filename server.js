@@ -212,30 +212,30 @@ let cursor = 33068795 //28588000   //33068795 //33118783
   })
 }
 
-web3.eth.subscribe('newBlockHeaders', function (error, new_block) {
-  if (!error) {
-    current_new_block = new_block.number
-    Trade.findOne().sort({number: -1}).exec(function (err, db_block) {
-      if (db_block == null)  db_block = {number: cursor}
-      Trade.deleteMany({number: {$lte: db_block.number - 1000}, status: 'false'}, function (err, res) {
-        if (err) console.log(err)
-      })
-      if (db_block.number < new_block.number -8 ) {
-        if (scanning_old_blocks == 1) {
-          console.log('beginNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN')
-          Trade.deleteMany({number: {$gte: db_block.number - 200}}, function (err, res) {
-            if (err) console.log(err)
-            scanOldBlock()
-            scanning_old_blocks++
-          })
-        } else scanning_old_blocks++
-      } else {
-        scanning_old_blocks = 1
-        scanBlock(new_block.number - 6)
-      }
-    })
-  }
-})
+// web3.eth.subscribe('newBlockHeaders', function (error, new_block) {
+//   if (!error) {
+//     current_new_block = new_block.number
+//     Trade.findOne().sort({number: -1}).exec(function (err, db_block) {
+//       if (db_block == null)  db_block = {number: cursor}
+//       Trade.deleteMany({number: {$lte: db_block.number - 1000}, status: 'false'}, function (err, res) {
+//         if (err) console.log(err)
+//       })
+//       if (db_block.number < new_block.number -8 ) {
+//         if (scanning_old_blocks == 1) {
+//           console.log('beginNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN')
+//           Trade.deleteMany({number: {$gte: db_block.number - 200}}, function (err, res) {
+//             if (err) console.log(err)
+//             scanOldBlock()
+//             scanning_old_blocks++
+//           })
+//         } else scanning_old_blocks++
+//       } else {
+//         scanning_old_blocks = 1
+//         scanBlock(new_block.number - 6)
+//       }
+//     })
+//   }
+// })
 
 function scanOldBlock() {
   Trade.findOne().sort({number: -1}).exec(function (err, db_block) {
@@ -309,7 +309,8 @@ function createCandle(begin) {
   end = begin + 900
   let time_now = parseInt(Date.now().toString().slice(0,-3))
   if (time_now >= end) {
-    Trade.find({status: 'filled', filledTime: {$gte: begin, $lte: end}}).sort({filledTime: -1}).exec(function (err, doc) {
+    Trade.find({status: 'filled', filledTime: {$gte: 1589870450, $lte: 1589871350}}).sort({filledTime: -1}).exec(function (err, doc) {
+      console.log(doc)
       if (err) console.log(err)
       if (doc[0] != null) {
         console.log('!null')
@@ -367,7 +368,7 @@ function createCandle(begin) {
             } else {
               let wait = (end + 900 - time_now + 5)*1000
               console.log('wait2',wait)
-              setTimeout(function() {createCandle(end)}, wait)
+              setTimeout(function() {createCandle(end)}, 1000)
             }
           })
         })
@@ -380,22 +381,26 @@ function createCandle(begin) {
   }
 }
 
-setTimeout(function(){
-  console.log('start')
-  Candle.findOne().sort({filledTime: -1}).exec(function (err, doc) {
-    if (err) console.log(err)
-    if(doc == null) {
-      Trade.findOne({status: 'filled'}).sort({filledTime: 1}).exec(function (err, doc1) {
-        if (err) console.log(err)
-        if (doc1 != null ) {
-          createFirstCandle(doc1.filledTime) // first point
-        } else setTimeout(function(){createFirstCandle(doc1.filledTime)},5000)
-      })
-    } else {
-      Candle.findOne({}).sort({time: -1}).exec(function (err, doc) {
-        if (err) console.log(err)
-        createCandle(doc.time)
-      })
-    }
-  })
-},60000)
+// setTimeout(function(){
+//   console.log('start')
+//   Candle.findOne().sort({filledTime: -1}).exec(function (err, doc) {
+//     if (err) console.log(err)
+//     if(doc == null) {
+//       Trade.findOne({status: 'filled'}).sort({filledTime: 1}).exec(function (err, doc1) {
+//         if (err) console.log(err)
+//         if (doc1 != null ) {
+//           createFirstCandle(doc1.filledTime) // first point
+//         } else setTimeout(function(){createFirstCandle(doc1.filledTime)},5000)
+//       })
+//     } else {
+//       Candle.findOne({}).sort({time: -1}).exec(function (err, doc) {
+//         if (err) console.log(err)
+//         createCandle(doc.time)
+//       })
+//     }
+//   })
+// },60000)
+
+Trade.find({status: 'filled', filledTime: {$gte: 1589871350, $lte: 1589872050}}).sort({filledTime: -1}).exec(function (err, doc) {
+  console.log(doc)
+})

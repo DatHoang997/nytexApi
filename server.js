@@ -132,46 +132,46 @@ let cursor = 33068795 //28588000   //33068795 //33118783
         }
       })
 
-      // Trade.find({$or: [{status: 'order'}, {status: 'filling'}]}, function (err, doc) {
-      //   if (err) console.log(err)
-      //   for (let j = 0; j < doc.length; j++) {
-      //     if (doc[j].to == stableTokenAddress) {
-      //       Seigniorage.methods.getOrder(1, doc[j].orderID).call(undefined, i-1, function (error, result1) {
-      //         if (error) console.log(error)
-      //         if (result1!=null && result1.maker  == burn) {
-      //           Trade.findOneAndUpdate({orderID: doc[j].orderID}, {$set: {status: 'filled', filledTime: result.timestamp}}, {useFindAndModify: false}, function (err, doc) {
-      //             if (err) console.log(err)
-      //           })
-      //         } else if (result1!=null && result1.maker != burn && parseFloat(weiToMNTY(result1.want))<parseFloat(doc[j].wantAmount.slice(0,-5))) {
-      //           Trade.findOneAndUpdate({orderID: doc[j].orderID}, {$set: {status: 'filling', wantAmountNow: weiToMNTY(result1.want)}}, {useFindAndModify: false}, function (err, doc) {
-      //             if (err) console.log(err)
-      //           })
-      //         } else if (result1!=null && doc[j].status == 'filling' && parseFloat(weiToMNTY(result1.want))==parseFloat(doc[j].wantAmount.slice(0,-5))) {
-      //           Trade.findOneAndUpdate({orderID: doc[j].orderID}, {$set: {status: 'order', wantAmountNow: doc[j].wantAmount.slice(0,-5)}}, {useFindAndModify: false}, function (err, doc) {
-      //             if (err) console.log(err)
-      //           })
-      //         }
-      //       });
-      //     } else {
-      //       Seigniorage.methods.getOrder(0, doc[j].orderID).call(undefined, i-1, function (error, result1) {
-      //         if (error) console.log(error)
-      //         if (result1!=null && result1.maker == burn) {
-      //           Trade.findOneAndUpdate({orderID: doc[j].orderID}, {$set: {status: 'filled', filledTime: result.timestamp}}, {useFindAndModify: false}, function (err, doc) {
-      //             if (err) console.log(err)
-      //           })
-      //         } else if (result1!=null && result1.maker != burn && parseFloat(weiToNUSD(result1.want))<parseFloat(doc[j].wantAmount.slice(0,-6))) {
-      //           Trade.findOneAndUpdate({orderID: doc[j].orderID}, {$set: {status: 'filling', wantAmountNow: weiToNUSD(result1.want)}}, {useFindAndModify: false}, function (err, doc) {
-      //             if (err) console.log(err)
-      //           })
-      //         } else if (result1!=null && doc[j].status == 'filling' && parseFloat(doc[j].wantAmount.slice(0,-6))==parseFloat(weiToNUSD(result1.want))) {
-      //           Trade.findOneAndUpdate({orderID: doc[j].orderID}, {$set: {status: 'order', wantAmountNow: doc[j].wantAmount.slice(0,-6)}}, {useFindAndModify: false}, function (err, doc) {
-      //             if (err) console.log(err)
-      //           })
-      //         }
-      //       })
-      //     }
-      //   }
-      // })
+      Trade.find({$or: [{status: 'order'}, {status: 'filling'}]}, function (err, doc) {
+        if (err) console.log(err)
+        for (let j = 0; j < doc.length; j++) {
+          if (doc[j].to == stableTokenAddress) {
+            Seigniorage.methods.getOrder(1, doc[j].orderID).call(undefined, i-1, function (error, result1) {
+              if (error) console.log(error)
+              if (result1!=null && result1.maker  == burn) {
+                Trade.findOneAndUpdate({orderID: doc[j].orderID}, {$set: {status: 'filled', filledTime: result.timestamp}}, {useFindAndModify: false}, function (err, doc) {
+                  if (err) console.log(err)
+                })
+              } else if (result1!=null && result1.maker != burn && parseFloat(weiToMNTY(result1.want))<parseFloat(doc[j].wantAmount.slice(0,-5))) {
+                Trade.findOneAndUpdate({orderID: doc[j].orderID}, {$set: {status: 'filling', wantAmountNow: weiToMNTY(result1.want)}}, {useFindAndModify: false}, function (err, doc) {
+                  if (err) console.log(err)
+                })
+              } else if (result1!=null && doc[j].status == 'filling' && parseFloat(weiToMNTY(result1.want))==parseFloat(doc[j].wantAmount.slice(0,-5))) {
+                Trade.findOneAndUpdate({orderID: doc[j].orderID}, {$set: {status: 'order', wantAmountNow: doc[j].wantAmount.slice(0,-5)}}, {useFindAndModify: false}, function (err, doc) {
+                  if (err) console.log(err)
+                })
+              }
+            });
+          } else {
+            Seigniorage.methods.getOrder(0, doc[j].orderID).call(undefined, i-1, function (error, result1) {
+              if (error) console.log(error)
+              if (result1!=null && result1.maker == burn) {
+                Trade.findOneAndUpdate({orderID: doc[j].orderID}, {$set: {status: 'filled', filledTime: result.timestamp}}, {useFindAndModify: false}, function (err, doc) {
+                  if (err) console.log(err)
+                })
+              } else if (result1!=null && result1.maker != burn && parseFloat(weiToNUSD(result1.want))<parseFloat(doc[j].wantAmount.slice(0,-6))) {
+                Trade.findOneAndUpdate({orderID: doc[j].orderID}, {$set: {status: 'filling', wantAmountNow: weiToNUSD(result1.want)}}, {useFindAndModify: false}, function (err, doc) {
+                  if (err) console.log(err)
+                })
+              } else if (result1!=null && doc[j].status == 'filling' && parseFloat(doc[j].wantAmount.slice(0,-6))==parseFloat(weiToNUSD(result1.want))) {
+                Trade.findOneAndUpdate({orderID: doc[j].orderID}, {$set: {status: 'order', wantAmountNow: doc[j].wantAmount.slice(0,-6)}}, {useFindAndModify: false}, function (err, doc) {
+                  if (err) console.log(err)
+                })
+              }
+            })
+          }
+        }
+      })
 
         // for (let n = 0; n < doc.length; n++) {
       //     Seigniorage.methods.getOrder(0, doc[n].orderID).call(undefined, i-6, function (error, result1) {

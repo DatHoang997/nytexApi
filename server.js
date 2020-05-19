@@ -312,6 +312,7 @@ function createCandle(begin) {
     Trade.find({status: 'filled', filledTime: {$gte: begin, $lte: end}}).sort({filledTime: -1}).exec(function (err, doc) {
       if (err) console.log(err)
       if (doc[0] != null) {
+        console.log('!null')
         Candle.findOne().sort({time: -1}).exec(function (err, doc1) {
           if (err) console.log(err)
           let array = []
@@ -348,6 +349,7 @@ function createCandle(begin) {
           })
         })
       } else {
+        console.log('null')
         Candle.findOne().sort({time: -1}).exec(function (err, doc) {
           if (err) console.log(err)
           Candle.create({

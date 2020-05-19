@@ -50,7 +50,7 @@ let cursor = 26500000 //28588000   //33068795 //33118783
   Trade.create({status: 'false', number: i}, function (err) {
     if (err) console.log(err)
   })
-  web3.eth.getBlock(i, true, function (err, result) { //31945638
+  web3.eth.getBlock(i, true, function (err, result) {
     if (err) console.log(err)
     if (result.transactions != null) {
       result.transactions.forEach(function (e) {
@@ -222,7 +222,7 @@ async function processArray(array) {
   const promises = array.map(scanBlock)
   // wait until all promises are resolved
   await Promise.all(promises);
-  setTimeout(function(){scanOldBlock()},5)
+  setTimeout(function(){scanOldBlock()},1)
 }
 
 function createFirstCandle(begin) {

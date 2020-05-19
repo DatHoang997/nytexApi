@@ -131,6 +131,7 @@ module.exports.candle = function (req, res) {
       })
     } else {
       let wait = (end + 900 - time_now + 5)*1000
+      console.log('time', time_now, end)
       console.log('waitout',wait)
       setTimeout(function() {createCandle(end)}, wait)
     }

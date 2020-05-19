@@ -212,30 +212,30 @@ let cursor = 33068795 //28588000   //33068795 //33118783
   })
 }
 
-// web3.eth.subscribe('newBlockHeaders', function (error, new_block) {
-//   if (!error) {
-//     current_new_block = new_block.number
-//     Trade.findOne().sort({number: -1}).exec(function (err, db_block) {
-//       if (db_block == null)  db_block = {number: cursor}
-//       Trade.deleteMany({number: {$lte: db_block.number - 1000}, status: 'false'}, function (err, res) {
-//         if (err) console.log(err)
-//       })
-//       if (db_block.number < new_block.number -8 ) {
-//         if (scanning_old_blocks == 1) {
-//           console.log('beginNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN')
-//           Trade.deleteMany({number: {$gte: db_block.number - 200}}, function (err, res) {
-//             if (err) console.log(err)
-//             scanOldBlock()
-//             scanning_old_blocks++
-//           })
-//         } else scanning_old_blocks++
-//       } else {
-//         scanning_old_blocks = 1
-//         scanBlock(new_block.number - 6)
-//       }
-//     })
-//   }
-// })
+web3.eth.subscribe('newBlockHeaders', function (error, new_block) {
+  if (!error) {
+    current_new_block = new_block.number
+    Trade.findOne().sort({number: -1}).exec(function (err, db_block) {
+      if (db_block == null)  db_block = {number: cursor}
+      Trade.deleteMany({number: {$lte: db_block.number - 1000}, status: 'false'}, function (err, res) {
+        if (err) console.log(err)
+      })
+      if (db_block.number < new_block.number -8 ) {
+        if (scanning_old_blocks == 1) {
+          console.log('beginNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN')
+          Trade.deleteMany({number: {$gte: db_block.number - 200}}, function (err, res) {
+            if (err) console.log(err)
+            scanOldBlock()
+            scanning_old_blocks++
+          })
+        } else scanning_old_blocks++
+      } else {
+        scanning_old_blocks = 1
+        scanBlock(new_block.number - 6)
+      }
+    })
+  }
+})
 
 function scanOldBlock() {
   Trade.findOne().sort({number: -1}).exec(function (err, db_block) {

@@ -46,7 +46,7 @@ console.log('start!!')
 
 let cursor = 26000000 //28588000   //33068795 //33118783
   function scanBlock(i) {
-  // console.log(i)
+  console.log(i)
   Trade.create({status: 'false', number: i}, function (err) {
     if (err) console.log(err)
   })

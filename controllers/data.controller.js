@@ -65,12 +65,13 @@ module.exports.candle = function (req, res) {
   function createCandle(begin) {
     end = begin + 900
     let time_now = parseInt(Date.now().toString().slice(0,-3))
-    if (time_now >= end) {
+    if (end <= time_now) {
       Trade.find({status: 'filled', filledTime: {$gte: begin, $lte: end}}).sort({filledTime: -1}).exec(function (err, doc) {
         if (err) console.log(err)
-        console.log(doc, begin, end)
-        if (doc != null) {
+        console.log('alalal',doc,doc[0], begin, end)
+        if (doc[0] != null || doc[0] != undefined){
           Candle.findOne().sort({time: -1}).exec(function (err, doc1) {
+            console.log('!nullll')
             if (err) console.log(err)
             let array = []
             let MNTY = 0
@@ -130,10 +131,10 @@ module.exports.candle = function (req, res) {
         }
       })
     } else {
-      let wait = (end + 900 - time_now + 5)*1000
-      console.log('time', time_now, end)
+      let wait = (end - time_now + 5)*1000
+      console.log('time',  (end - time_now + 5)*1000)
       console.log('waitout',wait)
-      setTimeout(function() {createCandle(end)}, wait)
+      setTimeout(function() {createCandle(end-900)}, wait)
     }
   }
 

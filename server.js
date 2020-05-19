@@ -46,7 +46,7 @@ console.log('start!!')
 
 let cursor = 33068795 //28588000   //33068795 //33118783
   function scanBlock(i) {
-  console.log(i)
+  // console.log(i)
   Trade.create({status: 'false', number: i}, function (err) {
     if (err) console.log(err)
   })
@@ -308,7 +308,7 @@ function createFirstCandle(begin) {
 function createCandle(begin) {
   end = begin + 900
   let time_now = parseInt(Date.now().toString().slice(0,-3))
-  if (time_now >= end) {
+  if (end <= time_now) {
     Trade.find({status: 'filled', filledTime: {$gte: 1589870450, $lte: 1589871350}}).sort({filledTime: -1}).exec(function (err, doc) {
       console.log(doc)
       if (err) console.log(err)

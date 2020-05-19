@@ -44,7 +44,7 @@ let scanning_old_blocks = 1
 let array = []
 console.log('start!!')
 
-let cursor = 26500000 //28588000   //33068795 //33118783
+let cursor = 33716027 //28588000   //33068795 //33118783
   function scanBlock(i) {
   console.log(i)
   Trade.create({status: 'false', number: i}, function (err) {
@@ -220,7 +220,7 @@ web3.eth.subscribe('newBlockHeaders', function (error, new_block) {
       Trade.deleteMany({number: {$lte: db_block.number - 1000}, status: 'false'}, function (err, res) {
         if (err) console.log(err)
       })
-      if (db_block.number < new_block.number - 7) {
+      if (db_block.number < new_block.number -8 ) {
         if (scanning_old_blocks == 1) {
           console.log('beginNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN')
           Trade.deleteMany({number: {$gte: db_block.number - 200}}, function (err, res) {
@@ -241,11 +241,9 @@ function scanOldBlock() {
   Trade.findOne().sort({number: -1}).exec(function (err, db_block) {
     if (db_block == null) db_block = {number: cursor}
     array.splice(0, 100)
-    if (db_block.number < current_new_block - 7) {
-      let _from_block = Math.max(db_block.number, cursor)
-      // let _to_block = Math.min(current_new_block - 6, db_block.number + 5)
-      // for (let i = _from_block + 1; i <= _to_block; i++)
-      array.push(_from_block + 1)
+    if (db_block.number < current_new_block - 6) {
+      let _from_block = Math.max(db_block.number + 1, cursor)
+      array.push(_from_block)
       processArray(array)
     }
   })

@@ -373,7 +373,6 @@ function createCandle(begin) {
   })
 }
 
-  start
 setTimeout(function(){
   console.log('start')
   Candle.findOne().sort({filledTime: -1}).exec(function (err, doc) {

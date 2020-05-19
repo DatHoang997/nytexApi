@@ -44,9 +44,9 @@ let scanning_old_blocks = 1
 let array = []
 console.log('start!!')
 
-let cursor = 28000000 //28588000   //33068795 //33118783
+let cursor = 26500000 //28588000   //33068795 //33118783
   function scanBlock(i) {
-  // console.log(i)
+  console.log(i)
   Trade.create({status: 'false', number: i}, function (err) {
     if (err) console.log(err)
   })
@@ -72,7 +72,7 @@ let cursor = 28000000 //28588000   //33068795 //33118783
             haveAmount: weiToMNTY(decode["1"]) + ' MNTY',
             wantAmount: weiToNUSD(decode["2"]) + ' NewSD',
             price: thousands(weiToPrice(decode["1"],decode["2"])),
-            wantAmountNow: weiToNUSD(decode["2"]) + ' NewSD',
+            wantAmountNow: weiToNUSD(decode["2"]),
             orderID: '0x' + sha256(Buffer.from(packed, 'hex')),
             number: result.number,
             time: result.timestamp,
@@ -89,8 +89,7 @@ let cursor = 28000000 //28588000   //33068795 //33118783
             haveAmount: weiToNUSD(decode["1"]) + ' NewSD',
             wantAmount: weiToMNTY(decode["2"]) + ' MNTY',
             price: thousands(weiToPrice(decode["2"],decode["1"])),
-            haveAmountNow: weiToNUSD(decode["1"]) + ' NewSD',
-            wantAmountNow: weiToMNTY(decode["2"]) + ' MNTY',
+            wantAmountNow: weiToMNTY(decode["2"]),
             orderID: '0x' + sha256(Buffer.from(packed, 'hex')),
             number: result.number,
             time: result.timestamp,
@@ -107,8 +106,7 @@ let cursor = 28000000 //28588000   //33068795 //33118783
             haveAmount: weiToMNTY(decode["1"]) + ' MNTY',
             wantAmount: weiToNUSD(decode["2"]) + ' NewSD',
             price: thousands(weiToPrice(decode["1"],decode["2"])),
-            haveAmountNow: weiToMNTY(decode["1"]) + ' MNTY',
-            wantAmountNow: weiToNUSD(decode["2"]) + ' NewSD',
+            wantAmountNow: weiToNUSD(decode["2"]),
             orderID: '0x' + sha256(Buffer.from(packed, 'hex')),
             number: result.number,
             time: result.timestamp,
@@ -125,8 +123,7 @@ let cursor = 28000000 //28588000   //33068795 //33118783
             haveAmount: weiToNUSD(decode["1"]) + ' NewSD',
             wantAmount: weiToMNTY(decode["2"]) + ' MNTY',
             price: thousands(weiToPrice(decode["2"],decode["1"])),
-            haveAmountNow: weiToNUSD(decode["1"]) + ' NewSD',
-            wantAmountNow: weiToMNTY(decode["2"]) + ' MNTY',
+            wantAmountNow: weiToMNTY(decode["2"]),
             orderID: '0x' + sha256(Buffer.from(packed, 'hex')),
             number: result.number,
             time: result.timestamp,
@@ -140,26 +137,34 @@ let cursor = 28000000 //28588000   //33068795 //33118783
         for (let j = 0; j < doc.length; j++) {
           if (doc[j].to == stableTokenAddress) {
             Seigniorage.methods.getOrder(1, doc[j].orderID).call(undefined, i-1, function (error, result1) {
-              if (err) console.log(err)
+              if (error) console.log(error)
               if (result1!=null && result1.maker  == burn) {
                 Trade.findOneAndUpdate({orderID: doc[j].orderID}, {$set: {status: 'filled', filledTime: result.timestamp}}, {useFindAndModify: false}, function (err, doc) {
                   if (err) console.log(err)
                 })
-              } else if (result1!=null && result1.maker != burn && parseFloat(weiToNUSD(result1.want))<parseFloat(doc[0].wantAmount.slice(0,-5))) {
-                Trade.findOneAndUpdate({orderID: doc[j].orderID}, {$set: {status: 'filling', wantAmountNow: weiToNUSD(result1.want)}}, {useFindAndModify: false}, function (err, doc) {
+              } else if (result1!=null && result1.maker != burn && parseFloat(weiToMNTY(result1.want))<parseFloat(doc[j].wantAmount.slice(0,-5))) {
+                Trade.findOneAndUpdate({orderID: doc[j].orderID}, {$set: {status: 'filling', wantAmountNow: weiToMNTY(result1.want)}}, {useFindAndModify: false}, function (err, doc) {
+                  if (err) console.log(err)
+                })
+              } else if (result1!=null && doc[j].status == 'filling' && parseFloat(weiToMNTY(result1.want))==parseFloat(doc[j].wantAmount.slice(0,-5))) {
+                Trade.findOneAndUpdate({orderID: doc[j].orderID}, {$set: {status: 'order', wantAmountNow: doc[j].wantAmount.slice(0,-5)}}, {useFindAndModify: false}, function (err, doc) {
                   if (err) console.log(err)
                 })
               }
             });
           } else {
             Seigniorage.methods.getOrder(0, doc[j].orderID).call(undefined, i-1, function (error, result1) {
-              if (err) console.log(err)
+              if (error) console.log(error)
               if (result1!=null && result1.maker == burn) {
-                Trade.findOneAndUpdate({orderID: doc[j].orderID}, {$set: {status: 'filled', filledTime: result.timestamp, wantAmountNow: weiToMNTY(result1.want)}}, {useFindAndModify: false}, function (err, doc) {
+                Trade.findOneAndUpdate({orderID: doc[j].orderID}, {$set: {status: 'filled', filledTime: result.timestamp}}, {useFindAndModify: false}, function (err, doc) {
                   if (err) console.log(err)
                 })
-              } else if (result1!=null && result1.maker != burn && parseFloat(weiToMNTY(result1.want))<parseFloat(doc[0].wantAmount.slice(0,-6))) {
-                Trade.findOneAndUpdate({orderID: doc[j].orderID}, {$set: {status: 'filling', wantAmountNow: weiToMNTY(result1.want)}}, {useFindAndModify: false}, function (err, doc) {
+              } else if (result1!=null && result1.maker != burn && parseFloat(weiToNUSD(result1.want))<parseFloat(doc[j].wantAmount.slice(0,-6))) {
+                Trade.findOneAndUpdate({orderID: doc[j].orderID}, {$set: {status: 'filling', wantAmountNow: weiToNUSD(result1.want)}}, {useFindAndModify: false}, function (err, doc) {
+                  if (err) console.log(err)
+                })
+              } else if (result1!=null && doc[j].status == 'filling' && parseFloat(doc[j].wantAmount.slice(0,-6))==parseFloat(weiToNUSD(result1.want))) {
+                Trade.findOneAndUpdate({orderID: doc[j].orderID}, {$set: {status: 'order', wantAmountNow: doc[j].wantAmount.slice(0,-6)}}, {useFindAndModify: false}, function (err, doc) {
                   if (err) console.log(err)
                 })
               }
@@ -167,7 +172,8 @@ let cursor = 28000000 //28588000   //33068795 //33118783
           }
         }
       })
-      //   for (let n = 0; n < doc.length; n++) {
+
+        // for (let n = 0; n < doc.length; n++) {
       //     Seigniorage.methods.getOrder(0, doc[n].orderID).call(undefined, i-6, function (error, result1) {
       //       if (err) console.log(err)
       //       if (result1!=null && result1.maker == burn) {

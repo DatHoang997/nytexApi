@@ -948,7 +948,7 @@ module.exports.getheader = function (req, res) {
     if (err) console.log(err)
     price = doc.price
     if(time_now-86399 < doc.filledTime && doc.filledTime < time_now+1) {
-      Trade.find({status: 'filled', filledTime: {$gte: t-86400, $lte: t}}).sort({filledTime: 1}).exec(function (err, doc1) {
+      Trade.find({status: 'filled', filledTime: {$gte: time_now-86400, $lte: time_now}}).sort({filledTime: 1}).exec(function (err, doc1) {
         if (err) console.log(err)
         Trade.findOne({status: 'filled', filledTime: {$lte: time_now-86400}}).sort({filledTime: -1}).exec(function (err, doc2) {
           if (err) console.log(err)

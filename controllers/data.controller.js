@@ -944,21 +944,6 @@ module.exports.getheader = function (req, res) {
   let MNTY = 0
   let NewSD = 0
   let time_now = parseInt(Date.now().toString().slice(0,-3))
-  let sell = 0
-  let buy = 0
-  let market = 0
-  Trade.find({status: 'filled'}).exec(function (err, doc) {
-    if (err) console.log(err)
-    for (let i = 0; i < doc.length; i++) {
-      if(doc[i].to == "0x0000000000000000000000000000000000045678") {
-        buy = buy + parseFloat(doc[i].haveAmount.replace(',','').slice(0,-6))
-      }
-      if(doc[i].to == "0x0000000000000000000000000000000000034567") {
-        sell = sell + parseFloat(doc[i].wantAmount.replace(',','').slice(0,-6))
-      }
-    }
-    market = buy + sell
-  })
   Trade.findOne({status: 'filled'}).sort({filledTime: -1}).exec(function (err, doc) {
     if (err) console.log(err)
     price = doc.price
@@ -990,7 +975,6 @@ module.exports.getheader = function (req, res) {
               volumeNewSD: NewSD,
               change: price-doc2.price,
               percent: printPersent,
-              marketcap: market*price
             }
             let show = data
             res.json(show)
@@ -1005,7 +989,6 @@ module.exports.getheader = function (req, res) {
               volumeNewSD: NewSD,
               change: price-doc2.price,
               percent: printPersent,
-              marketcap: market*price
             }
             let show = data
             res.json(show)
@@ -1022,7 +1005,6 @@ module.exports.getheader = function (req, res) {
         volumeNewSD: 0,
         change: 0,
         percent: 0 + '%',
-        marketcap: market*price
       }
       let show = data
       res.json(show)

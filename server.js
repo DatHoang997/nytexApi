@@ -269,7 +269,6 @@ function createCandle(begin) {
   if (end <= time_now) {
     Trade.find({status: 'filled', filledTime: {$gte: begin, $lte: end}}).sort({filledTime: -1}).exec(function (err, doc) {
       if (err) console.log(err)
-      console.log(doc)
       if (doc[0] != null || doc[0] != undefined) {
         Candle.findOne().sort({time: -1}).exec(function (err, doc1) {
           if (err) console.log(err)

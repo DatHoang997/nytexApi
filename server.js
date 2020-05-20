@@ -201,7 +201,7 @@ setTimeout(function(){
       })
     }
   })
-}, 60000)
+}, 30000)
 
 function scanOldBlock() {
   Trade.findOne().sort({number: -1}).exec(function (err, db_block) {
@@ -357,4 +357,4 @@ function createCandle(begin) {
 //       })
 //     }
 //   })
-// },120000)
+// },55000)

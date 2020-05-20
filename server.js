@@ -139,7 +139,6 @@ let cursor = 26500000 //28588000   //33068795 //33118783
             Seigniorage.methods.getOrder(1, doc[j].orderID).call(undefined, i-1, function (error, result1) {
               if (error) console.log(error)
               if (result1!=null && result1.maker  == burn) {
-                console.log(doc[j])
                 Trade.findOneAndUpdate({orderID: doc[j].orderID}, {$set: {status: 'filled', filledTime: result.timestamp}}, {useFindAndModify: false}, function (err, doc) {
                   if (err) console.log(err)
                 })
@@ -157,8 +156,6 @@ let cursor = 26500000 //28588000   //33068795 //33118783
             Seigniorage.methods.getOrder(0, doc[j].orderID).call(undefined, i-1, function (error, result1) {
               if (error) console.log(error)
               if (result1!=null && result1.maker == burn) {
-                console.log(doc[j])
-
                 Trade.findOneAndUpdate({orderID: doc[j].orderID}, {$set: {status: 'filled', filledTime: result.timestamp}}, {useFindAndModify: false}, function (err, doc) {
                   if (err) console.log(err)
                 })

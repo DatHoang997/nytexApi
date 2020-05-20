@@ -268,10 +268,8 @@ function createCandle(begin) {
   let time_now = parseInt(Date.now().toString().slice(0,-3))
   if (end <= time_now) {
     Trade.find({status: 'filled', filledTime: {$gte: 1589870450, $lte: 1589871350}}).sort({filledTime: -1}).exec(function (err, doc) {
-      console.log(doc)
       if (err) console.log(err)
       if (doc[0] != null) {
-        console.log('!null')
         Candle.findOne().sort({time: -1}).exec(function (err, doc1) {
           if (err) console.log(err)
           let array = []
@@ -308,7 +306,6 @@ function createCandle(begin) {
           })
         })
       } else {
-        console.log('null')
         Candle.findOne().sort({time: -1}).exec(function (err, doc) {
           if (err) console.log(err)
           Candle.create({

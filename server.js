@@ -322,7 +322,7 @@ function createCandle(begin) {
           } else {
             let wait = (end + 900 - time_now + 5)*1000
             console.log('wait2',wait)
-            setTimeout(function() {createCandle(end)}, 1000)
+            setTimeout(function() {createCandle(end)}, wait)
           }
         })
       })

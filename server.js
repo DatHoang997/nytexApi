@@ -52,126 +52,128 @@ let cursor = 28200000 //28588000   //33068795 //33118783
   })
   web3.eth.getBlock(i, true, function (err, result) {
     if (err) console.log(err)
-    if (result.transactions != null) {
-      result.transactions.forEach(function (e) {
-        let id = e.input.slice(2, 10)
-        let para = '0x' + e.input.slice(10)
-        if (id == "43271d79") { //cancel(bool, ID bytes32)
-          let decode = web3.eth.abi.decodeParameters(['bool', 'bytes32'], para)
-          setTimeout(function(){
-            Trade.findOneAndUpdate({orderID: decode["1"]}, {$set: {status: 'canceled'}}, {useFindAndModify: false}, function (err, doc) {})
-          },1000)
-        } else if (id === "7ca3c7c7" && e.to == volatileTokenAddress) { //SELL depositAndTrade(bytes32,uint256,uint256,bytes32) trade(bytes32,uint256,uint256,bytes32) id === "37a7113d" ||
-          let decode = web3.eth.abi.decodeParameters(['bytes32', 'uint256', 'uint256', 'bytes32'], para)
-          const packed = e.from.substring(2) + decode["0"].substring(2)
-          console.log('SELLLLLLLLLLLLLLLLLLL')
-          Trade.create({
-            status: 'order',
-            address: e.from,
-            to: e.to,
-            haveAmount: weiToMNTY(decode["1"]) + ' MNTY',
-            wantAmount: weiToNUSD(decode["2"]) + ' NewSD',
-            price: thousands(weiToPrice(decode["1"],decode["2"])),
-            wantAmountNow: weiToNUSD(decode["2"]),
-            orderID: '0x' + sha256(Buffer.from(packed, 'hex')),
-            number: result.number,
-            time: result.timestamp,
-            filledTime: 0
-          })
-        } else if (id === "7ca3c7c7" && e.to == stableTokenAddress) { // BUY
-          let decode = web3.eth.abi.decodeParameters(['bytes32', 'uint256', 'uint256', 'bytes32'], para)
-          const packed = e.from.substring(2) + decode["0"].substring(2)
-          console.log('BUYYYYYYYYYYYYYYYYYYYY')
-          Trade.create({
-            status: 'order',
-            address: e.from,
-            to: e.to,
-            haveAmount: weiToNUSD(decode["1"]) + ' NewSD',
-            wantAmount: weiToMNTY(decode["2"]) + ' MNTY',
-            price: thousands(weiToPrice(decode["2"],decode["1"])),
-            wantAmountNow: weiToMNTY(decode["2"]),
-            orderID: '0x' + sha256(Buffer.from(packed, 'hex')),
-            number: result.number,
-            time: result.timestamp,
-            filledTime: 0
-          })
-        } else if (id === "37a7113d" && e.to == volatileTokenAddress) { //depositAndTrade(bytes32,uint256,uint256,bytes32) trade(bytes32,uint256,uint256,bytes32) id === "37a7113d" ||
-          let decode = web3.eth.abi.decodeParameters(['bytes32', 'uint256', 'uint256', 'bytes32'], para)
-          const packed = e.from.substring(2) + decode["0"].substring(2)
-          console.log('DEPOSIT&SELLLLLLLLLLLLL')
-          Trade.create({
-            status: 'order',
-            address: e.from,
-            to: e.to,
-            haveAmount: weiToMNTY(decode["1"]) + ' MNTY',
-            wantAmount: weiToNUSD(decode["2"]) + ' NewSD',
-            price: thousands(weiToPrice(decode["1"],decode["2"])),
-            wantAmountNow: weiToNUSD(decode["2"]),
-            orderID: '0x' + sha256(Buffer.from(packed, 'hex')),
-            number: result.number,
-            time: result.timestamp,
-            filledTime: 0
-          })
-        } else if (id === "37a7113d" && e.to == stableTokenAddress) {
-          let decode = web3.eth.abi.decodeParameters(['bytes32', 'uint256', 'uint256', 'bytes32'], para)
-          const packed = e.from.substring(2) + decode["0"].substring(2)
-          console.log('DEPOSIT&BUYYYYYYYYYYYYY')
-          Trade.create({
-            status: 'order',
-            address: e.from,
-            to: e.to,
-            haveAmount: weiToNUSD(decode["1"]) + ' NewSD',
-            wantAmount: weiToMNTY(decode["2"]) + ' MNTY',
-            price: thousands(weiToPrice(decode["2"],decode["1"])),
-            wantAmountNow: weiToMNTY(decode["2"]),
-            orderID: '0x' + sha256(Buffer.from(packed, 'hex')),
-            number: result.number,
-            time: result.timestamp,
-            filledTime: 0
-          })
-        }
-      })
-
-      Trade.find({$or: [{status: 'order'}, {status: 'filling'}]}, function (err, doc) {
-        if (err) console.log(err)
-        for (let j = 0; j < doc.length; j++) {
-          if (doc[j].to == stableTokenAddress) {
-            Seigniorage.methods.getOrder(1, doc[j].orderID).call(undefined, i-1, function (error, result1) {
-              if (error) console.log(error)
-              if (result1!=null && result1.maker  == burn) {
-                Trade.findOneAndUpdate({orderID: doc[j].orderID}, {$set: {status: 'filled', filledTime: result.timestamp}}, {useFindAndModify: false}, function (err, doc) {
-                  if (err) console.log(err)
-                })
-              } else if (result1!=null && result1.maker != burn && parseFloat(weiToMNTY(result1.want))<parseFloat(doc[j].wantAmount.slice(0,-5))) {
-                Trade.findOneAndUpdate({orderID: doc[j].orderID}, {$set: {status: 'filling', wantAmountNow: weiToMNTY(result1.want)}}, {useFindAndModify: false}, function (err, doc) {
-                  if (err) console.log(err)
-                })
-              } else if (result1!=null && doc[j].status == 'filling' && parseFloat(weiToMNTY(result1.want))==parseFloat(doc[j].wantAmount.slice(0,-5))) {
-                Trade.findOneAndUpdate({orderID: doc[j].orderID}, {$set: {status: 'order', wantAmountNow: doc[j].wantAmount.slice(0,-5)}}, {useFindAndModify: false}, function (err, doc) {
-                  if (err) console.log(err)
-                })
-              }
-            });
-          } else {
-            Seigniorage.methods.getOrder(0, doc[j].orderID).call(undefined, i-1, function (error, result1) {
-              if (error) console.log(error)
-              if (result1!=null && result1.maker == burn) {
-                Trade.findOneAndUpdate({orderID: doc[j].orderID}, {$set: {status: 'filled', filledTime: result.timestamp}}, {useFindAndModify: false}, function (err, doc) {
-                  if (err) console.log(err)
-                })
-              } else if (result1!=null && result1.maker != burn && parseFloat(weiToNUSD(result1.want))<parseFloat(doc[j].wantAmount.slice(0,-6))) {
-                Trade.findOneAndUpdate({orderID: doc[j].orderID}, {$set: {status: 'filling', wantAmountNow: weiToNUSD(result1.want)}}, {useFindAndModify: false}, function (err, doc) {
-                  if (err) console.log(err)
-                })
-              } else if (result1!=null && doc[j].status == 'filling' && parseFloat(doc[j].wantAmount.slice(0,-6))==parseFloat(weiToNUSD(result1.want))) {
-                Trade.findOneAndUpdate({orderID: doc[j].orderID}, {$set: {status: 'order', wantAmountNow: doc[j].wantAmount.slice(0,-6)}}, {useFindAndModify: false}, function (err, doc) {
-                  if (err) console.log(err)
-                })
-              }
+    if (result != null) {
+      if (result.transactions[0] != undefined) {
+        result.transactions.forEach(function (e) {
+          let id = e.input.slice(2, 10)
+          let para = '0x' + e.input.slice(10)
+          if (id == "43271d79") { //cancel(bool, ID bytes32)
+            let decode = web3.eth.abi.decodeParameters(['bool', 'bytes32'], para)
+            setTimeout(function(){
+              Trade.findOneAndUpdate({orderID: decode["1"]}, {$set: {status: 'canceled'}}, {useFindAndModify: false}, function (err, doc) {})
+            },1000)
+          } else if (id === "7ca3c7c7" && e.to == volatileTokenAddress) { //SELL depositAndTrade(bytes32,uint256,uint256,bytes32) trade(bytes32,uint256,uint256,bytes32) id === "37a7113d" ||
+            let decode = web3.eth.abi.decodeParameters(['bytes32', 'uint256', 'uint256', 'bytes32'], para)
+            const packed = e.from.substring(2) + decode["0"].substring(2)
+            console.log('SELLLLLLLLLLLLLLLLLLL')
+            Trade.create({
+              status: 'order',
+              address: e.from,
+              to: e.to,
+              haveAmount: weiToMNTY(decode["1"]) + ' MNTY',
+              wantAmount: weiToNUSD(decode["2"]) + ' NewSD',
+              price: thousands(weiToPrice(decode["1"],decode["2"])),
+              wantAmountNow: weiToNUSD(decode["2"]),
+              orderID: '0x' + sha256(Buffer.from(packed, 'hex')),
+              number: result.number,
+              time: result.timestamp,
+              filledTime: 0
+            })
+          } else if (id === "7ca3c7c7" && e.to == stableTokenAddress) { // BUY
+            let decode = web3.eth.abi.decodeParameters(['bytes32', 'uint256', 'uint256', 'bytes32'], para)
+            const packed = e.from.substring(2) + decode["0"].substring(2)
+            console.log('BUYYYYYYYYYYYYYYYYYYYY')
+            Trade.create({
+              status: 'order',
+              address: e.from,
+              to: e.to,
+              haveAmount: weiToNUSD(decode["1"]) + ' NewSD',
+              wantAmount: weiToMNTY(decode["2"]) + ' MNTY',
+              price: thousands(weiToPrice(decode["2"],decode["1"])),
+              wantAmountNow: weiToMNTY(decode["2"]),
+              orderID: '0x' + sha256(Buffer.from(packed, 'hex')),
+              number: result.number,
+              time: result.timestamp,
+              filledTime: 0
+            })
+          } else if (id === "37a7113d" && e.to == volatileTokenAddress) { //depositAndTrade(bytes32,uint256,uint256,bytes32) trade(bytes32,uint256,uint256,bytes32) id === "37a7113d" ||
+            let decode = web3.eth.abi.decodeParameters(['bytes32', 'uint256', 'uint256', 'bytes32'], para)
+            const packed = e.from.substring(2) + decode["0"].substring(2)
+            console.log('DEPOSIT&SELLLLLLLLLLLLL')
+            Trade.create({
+              status: 'order',
+              address: e.from,
+              to: e.to,
+              haveAmount: weiToMNTY(decode["1"]) + ' MNTY',
+              wantAmount: weiToNUSD(decode["2"]) + ' NewSD',
+              price: thousands(weiToPrice(decode["1"],decode["2"])),
+              wantAmountNow: weiToNUSD(decode["2"]),
+              orderID: '0x' + sha256(Buffer.from(packed, 'hex')),
+              number: result.number,
+              time: result.timestamp,
+              filledTime: 0
+            })
+          } else if (id === "37a7113d" && e.to == stableTokenAddress) {
+            let decode = web3.eth.abi.decodeParameters(['bytes32', 'uint256', 'uint256', 'bytes32'], para)
+            const packed = e.from.substring(2) + decode["0"].substring(2)
+            console.log('DEPOSIT&BUYYYYYYYYYYYYY')
+            Trade.create({
+              status: 'order',
+              address: e.from,
+              to: e.to,
+              haveAmount: weiToNUSD(decode["1"]) + ' NewSD',
+              wantAmount: weiToMNTY(decode["2"]) + ' MNTY',
+              price: thousands(weiToPrice(decode["2"],decode["1"])),
+              wantAmountNow: weiToMNTY(decode["2"]),
+              orderID: '0x' + sha256(Buffer.from(packed, 'hex')),
+              number: result.number,
+              time: result.timestamp,
+              filledTime: 0
             })
           }
-        }
-      })
+        })
+
+        Trade.find({$or: [{status: 'order'}, {status: 'filling'}]}, function (err, doc) {
+          if (err) console.log(err)
+          for (let j = 0; j < doc.length; j++) {
+            if (doc[j].to == stableTokenAddress) {
+              Seigniorage.methods.getOrder(1, doc[j].orderID).call(undefined, i-1, function (error, result1) {
+                if (error) console.log(error)
+                if (result1!=null && result1.maker  == burn) {
+                  Trade.findOneAndUpdate({orderID: doc[j].orderID}, {$set: {status: 'filled', filledTime: result.timestamp}}, {useFindAndModify: false}, function (err, doc) {
+                    if (err) console.log(err)
+                  })
+                } else if (result1!=null && result1.maker != burn && parseFloat(weiToMNTY(result1.want))<parseFloat(doc[j].wantAmount.slice(0,-5))) {
+                  Trade.findOneAndUpdate({orderID: doc[j].orderID}, {$set: {status: 'filling', wantAmountNow: weiToMNTY(result1.want)}}, {useFindAndModify: false}, function (err, doc) {
+                    if (err) console.log(err)
+                  })
+                } else if (result1!=null && doc[j].status == 'filling' && parseFloat(weiToMNTY(result1.want))==parseFloat(doc[j].wantAmount.slice(0,-5))) {
+                  Trade.findOneAndUpdate({orderID: doc[j].orderID}, {$set: {status: 'order', wantAmountNow: doc[j].wantAmount.slice(0,-5)}}, {useFindAndModify: false}, function (err, doc) {
+                    if (err) console.log(err)
+                  })
+                }
+              });
+            } else {
+              Seigniorage.methods.getOrder(0, doc[j].orderID).call(undefined, i-1, function (error, result1) {
+                if (error) console.log(error)
+                if (result1!=null && result1.maker == burn) {
+                  Trade.findOneAndUpdate({orderID: doc[j].orderID}, {$set: {status: 'filled', filledTime: result.timestamp}}, {useFindAndModify: false}, function (err, doc) {
+                    if (err) console.log(err)
+                  })
+                } else if (result1!=null && result1.maker != burn && parseFloat(weiToNUSD(result1.want))<parseFloat(doc[j].wantAmount.slice(0,-6))) {
+                  Trade.findOneAndUpdate({orderID: doc[j].orderID}, {$set: {status: 'filling', wantAmountNow: weiToNUSD(result1.want)}}, {useFindAndModify: false}, function (err, doc) {
+                    if (err) console.log(err)
+                  })
+                } else if (result1!=null && doc[j].status == 'filling' && parseFloat(doc[j].wantAmount.slice(0,-6))==parseFloat(weiToNUSD(result1.want))) {
+                  Trade.findOneAndUpdate({orderID: doc[j].orderID}, {$set: {status: 'order', wantAmountNow: doc[j].wantAmount.slice(0,-6)}}, {useFindAndModify: false}, function (err, doc) {
+                    if (err) console.log(err)
+                  })
+                }
+              })
+            }
+          }
+        })
+      }
     }
   })
 }

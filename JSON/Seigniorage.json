@@ -1,0 +1,558 @@
+[{
+    "constant": true,
+    "inputs": [{
+        "name": "_orderType",
+        "type": "bool"
+      },
+      {
+        "name": "_id",
+        "type": "bytes32"
+      }
+    ],
+    "name": "getOrder",
+    "outputs": [{
+        "name": "maker",
+        "type": "address"
+      },
+      {
+        "name": "have",
+        "type": "uint256"
+      },
+      {
+        "name": "want",
+        "type": "uint256"
+      },
+      {
+        "name": "prevID",
+        "type": "bytes32"
+      },
+      {
+        "name": "nextID",
+        "type": "bytes32"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [{
+        "name": "orderType",
+        "type": "bool"
+      },
+      {
+        "name": "id",
+        "type": "bytes32"
+      }
+    ],
+    "name": "prev",
+    "outputs": [{
+      "name": "",
+      "type": "bytes32"
+    }],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "getLockdown",
+    "outputs": [{
+        "name": "maker",
+        "type": "address"
+      },
+      {
+        "name": "stake",
+        "type": "uint256"
+      },
+      {
+        "name": "amount",
+        "type": "int256"
+      },
+      {
+        "name": "slashingFactor",
+        "type": "uint256"
+      },
+      {
+        "name": "unlockNumber",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [{
+        "name": "orderType",
+        "type": "bool"
+      },
+      {
+        "name": "id",
+        "type": "bytes32"
+      }
+    ],
+    "name": "cancel",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [{
+      "name": "maker",
+      "type": "address"
+    }],
+    "name": "totalVote",
+    "outputs": [{
+      "name": "",
+      "type": "int256"
+    }],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [{
+        "name": "orderType",
+        "type": "bool"
+      },
+      {
+        "name": "id",
+        "type": "bytes32"
+      }
+    ],
+    "name": "next",
+    "outputs": [{
+      "name": "",
+      "type": "bytes32"
+    }],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "Ask",
+    "outputs": [{
+      "name": "",
+      "type": "bool"
+    }],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "getGlobalParams",
+    "outputs": [{
+        "name": "stake",
+        "type": "uint256"
+      },
+      {
+        "name": "slashingRate",
+        "type": "uint256"
+      },
+      {
+        "name": "lockdownExpiration",
+        "type": "uint256"
+      },
+      {
+        "name": "rank",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "Bid",
+    "outputs": [{
+      "name": "",
+      "type": "bool"
+    }],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [{
+      "name": "maker",
+      "type": "address"
+    }],
+    "name": "revoke",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [{
+      "name": "orderType",
+      "type": "bool"
+    }],
+    "name": "top",
+    "outputs": [{
+      "name": "",
+      "type": "bytes32"
+    }],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [{
+        "name": "volatileToken",
+        "type": "address"
+      },
+      {
+        "name": "stablizeToken",
+        "type": "address"
+      }
+    ],
+    "name": "registerTokens",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [{
+        "name": "maker",
+        "type": "address"
+      },
+      {
+        "name": "up",
+        "type": "bool"
+      }
+    ],
+    "name": "vote",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [{
+      "name": "target",
+      "type": "uint256"
+    }],
+    "name": "onBlockInitialized",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "getProposalCount",
+    "outputs": [{
+      "name": "",
+      "type": "uint256"
+    }],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [{
+        "name": "maker",
+        "type": "address"
+      },
+      {
+        "name": "value",
+        "type": "uint256"
+      },
+      {
+        "name": "data",
+        "type": "bytes"
+      }
+    ],
+    "name": "tokenFallback",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [{
+        "name": "absorption",
+        "type": "int256"
+      },
+      {
+        "name": "initiator",
+        "type": "address"
+      }
+    ],
+    "name": "testAbsorb",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [{
+      "name": "idx",
+      "type": "uint256"
+    }],
+    "name": "getProposal",
+    "outputs": [{
+        "name": "maker",
+        "type": "address"
+      },
+      {
+        "name": "stake",
+        "type": "uint256"
+      },
+      {
+        "name": "amount",
+        "type": "int256"
+      },
+      {
+        "name": "slashingRate",
+        "type": "uint256"
+      },
+      {
+        "name": "lockdownExpiration",
+        "type": "uint256"
+      },
+      {
+        "name": "number",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [{
+        "name": "orderType",
+        "type": "bool"
+      },
+      {
+        "name": "maker",
+        "type": "address"
+      },
+      {
+        "name": "haveAmount",
+        "type": "uint256"
+      },
+      {
+        "name": "wantAmount",
+        "type": "uint256"
+      },
+      {
+        "name": "assistingID",
+        "type": "bytes32"
+      }
+    ],
+    "name": "findAssistingID",
+    "outputs": [{
+      "name": "",
+      "type": "bytes32"
+    }],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "getRemainToAbsorb",
+    "outputs": [{
+        "name": "",
+        "type": "bool"
+      },
+      {
+        "name": "",
+        "type": "int256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [{
+        "name": "maker",
+        "type": "address"
+      },
+      {
+        "name": "index",
+        "type": "bytes32"
+      }
+    ],
+    "name": "calcOrderID",
+    "outputs": [{
+      "name": "",
+      "type": "bytes32"
+    }],
+    "payable": false,
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "inputs": [{
+        "name": "absorptionDuration",
+        "type": "uint256"
+      },
+      {
+        "name": "absorptionExpiration",
+        "type": "uint256"
+      },
+      {
+        "name": "initialSlashingPace",
+        "type": "uint256"
+      },
+      {
+        "name": "initialLockdownExpiration",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "anonymous": false,
+    "inputs": [{
+      "indexed": true,
+      "name": "maker",
+      "type": "address"
+    }],
+    "name": "Revoke",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [{
+        "indexed": true,
+        "name": "maker",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "name": "amount",
+        "type": "int256"
+      },
+      {
+        "indexed": false,
+        "name": "stake",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "name": "lockdownExpiration",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "name": "slashingRate",
+        "type": "uint256"
+      }
+    ],
+    "name": "Propose",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [{
+        "indexed": true,
+        "name": "maker",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "name": "stake",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "name": "lockdownExpiration",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "name": "unlockNumber",
+        "type": "uint256"
+      }
+    ],
+    "name": "Preemptive",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [{
+        "indexed": true,
+        "name": "maker",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "Slash",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [{
+      "indexed": true,
+      "name": "maker",
+      "type": "address"
+    }],
+    "name": "Unlock",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [{
+        "indexed": false,
+        "name": "amount",
+        "type": "int256"
+      },
+      {
+        "indexed": false,
+        "name": "supply",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "name": "emptive",
+        "type": "bool"
+      }
+    ],
+    "name": "Absorption",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [],
+    "name": "Stop",
+    "type": "event"
+  }
+]

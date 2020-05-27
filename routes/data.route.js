@@ -2,24 +2,34 @@ const express = require('express')
 const router = express.Router()
 const controller = require('../controllers/data.controller')
 
-router.get('/', controller.data)
+// delete DB data
+router.get('/tradeclear', controller.tradeclear)
 
-// router.get('/insert', controller.insert)
+router.get('/candleclear', controller.candleclear)
 
-router.get('/get', controller.get)
+//trade
+router.get('/alltrade', controller.alltrade)
 
-router.post('/get', controller.post)
+router.get('/gettoptrade', controller.gettoptrade)
 
-router.get('/show', controller.show)
+router.get('/get-open-history', controller.getopenhistory)
 
-router.get('/block', controller.block)
+router.get('/get-trade-history', controller.gettradehistory)
 
-router.post('/block', controller.blockpost)
+router.get('/get-open-order', controller.getopenorder)
 
-// /insert?block=13
-// {ghfhgjmh}
+router.get('/get-lastest-fill', controller.getlastestfill)
 
-// /get/block=13
-// {}
+router.get('/filled', controller.filled)
+
+//Candle
+// router.get('/candle', controller.candle)
+
+router.get('/get-candle', controller.getcandle)
+
+router.get('/get-header', controller.getheader)
+
+router.get('/a', controller.a)
+
 
 module.exports = router

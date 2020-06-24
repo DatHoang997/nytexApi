@@ -59,7 +59,7 @@ let cursor = 28248068 //28588000   //33068795 //33118783
             if (id == "43271d79") { //cancel(bool, ID bytes32)
               let decode = web3.eth.abi.decodeParameters(['bool', 'bytes32'], para)
               setTimeout(function(){
-                Trade.findOneAndUpdate({orderID: decode["1"]}, {$set: {status: 'canceled'}}, {useFindAndModify: false}, function (err, doc) {})
+                Trade.findOneAndUpdate({orderID: decode["1"]}, {$set: {status: 'canceled', filledTime: 0}}, {useFindAndModify: false}, function (err, doc) {})
               },1000)
             } else if (id === "7ca3c7c7" && e.to == volatileTokenAddress) { //SELL depositAndTrade(bytes32,uint256,uint256,bytes32) trade(bytes32,uint256,uint256,bytes32) id === "37a7113d" ||
               let decode = web3.eth.abi.decodeParameters(['bytes32', 'uint256', 'uint256', 'bytes32'], para)

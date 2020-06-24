@@ -310,23 +310,7 @@ module.exports.filled = async function (req, res) {
 }
 
 module.exports.a = async function (req, res) {
-  Trade.findOneAndUpdate({number: 28248968}, {$set: {price: '0.00008'}}, {useFindAndModify: false}, function (err, doc) {
-    if (err) console.log(err)
-  })
-  Trade.findOneAndUpdate({number: 28811797}, {$set: {status: 'canceled'}}, {useFindAndModify: false}, function (err, doc) {
-    if (err) console.log(err)
-  })
-  Trade.deleteMany({orderID: '0x70b470a6ccb0f087025f34d660cfe400af2b456fc6dfefabcf8c892a1d950b4c', status: 'filled'}, function (err, res) {
-    if (err) console.log(err)
-  })
-  Trade.deleteMany({orderID: '0x8d95881a779bf50781f46fe7126623d31a5a478afadcd25cf62892bddaa71c14', status: 'filled'}, function (err, res) {
-    if (err) console.log(err)
-  })
-  Trade.findOneAndUpdate({orderID: '0x70b470a6ccb0f087025f34d660cfe400af2b456fc6dfefabcf8c892a1d950b4c', status: 'order'}, {$set: {status: 'canceled'}}, {useFindAndModify: false}, function (err, doc) {
-    if (err) console.log(err)
-  })
-  Trade.findOneAndUpdate({orderID: '0x8d95881a779bf50781f46fe7126623d31a5a478afadcd25cf62892bddaa71c14', status: 'order'}, {$set: {status: 'canceled'}}, {useFindAndModify: false}, function (err, doc) {
-    if (err) console.log(err)
-  })
-  res.send('da xoa DB')
+  Trade.remove({}, function(err) { 
+    console.log('collection removed') 
+ });
 }

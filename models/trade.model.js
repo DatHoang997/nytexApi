@@ -9,7 +9,7 @@ let tradeSchema = new mongoose.Schema({
     price: String,
     wantAmountNow: String,
     number: Number,
-    orderID : {type: String, unique: true},
+    orderID : {type: String, unique: true, sparse: true},
     time: Number,
     filledTime: Number
 });

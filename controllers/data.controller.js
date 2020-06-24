@@ -417,24 +417,22 @@ module.exports.candle = async function (req, res) {
       }
     })
   }
-  
-  setTimeout(function(){
-    console.log('start')
-    Candle.findOne().sort({filledTime: -1}).exec(function (err, doc) {
-      if (err) console.log(err)
-      if(doc == null) {
-        Trade.findOne({status: 'filled'}).sort({filledTime: 1}).exec(function (err, doc1) {
-          if (err) console.log(err)
-          if (doc1 != null ) {
-            createFirstCandle(doc1.filledTime) // first point
-          } else setTimeout(function(){createFirstCandle(doc1.filledTime)},5000)
-        })
-      } else {
-        Candle.findOne({}).sort({time: -1}).exec(function (err, doc) {
-          if (err) console.log(err)
-          createCandle(doc.time)
-        })
-      }
-    })
-  },10000)
+
+  console.log('start')
+  Candle.findOne().sort({filledTime: -1}).exec(function (err, doc) {
+    if (err) console.log(err)
+    if(doc == null) {
+      Trade.findOne({status: 'filled'}).sort({filledTime: 1}).exec(function (err, doc1) {
+        if (err) console.log(err)
+        if (doc1 != null ) {
+          createFirstCandle(doc1.filledTime) // first point
+        } else setTimeout(function(){createFirstCandle(doc1.filledTime)},5000)
+      })
+    } else {
+      Candle.findOne({}).sort({time: -1}).exec(function (err, doc) {
+        if (err) console.log(err)
+        createCandle(doc.time)
+      })
+    }
+  })
 }

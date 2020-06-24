@@ -24,7 +24,7 @@ let Seigniorage = new web3.eth.Contract(SeigniorageABI, seigniorageAddress)
 let VolatileToken = new web3.eth.Contract(VolatileTokenABI, volatileTokenAddress)
 let StableToken = new web3.eth.Contract(StableTokenABI, stableTokenAddress)
 
-mongoose.connect('mongodb://localhost:27017/mydb', {
+mongoose.connect('mongodb://localhost:27017/nytexAPI', {
   useNewUrlParser: true,
   useUnifiedTopology: true
 });
@@ -43,9 +43,9 @@ let scanning_old_blocks = 1
 let array = []
 console.log('start!!')
 
-let cursor = 28200000 //28588000   //33068795 //33118783
+let cursor = 28248068 //28588000   //33068795 //33118783
   function scanBlock(i) {
-    // console.log(i)
+    console.log(i)
     Trade.create({status: 'false', number: i}, function (err) {
       if (err) console.log(err)
     })

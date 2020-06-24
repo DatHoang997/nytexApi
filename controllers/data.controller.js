@@ -309,8 +309,178 @@ module.exports.filled = async function (req, res) {
   res.json(show)
 }
 
-module.exports.a = async function (req, res) {
-  Trade.remove({}, function(err) { 
-    console.log('collection removed') 
- });
+module.exports.candle = async function (req, res) {
+  setTimeout(function(){
+    web3.eth.subscribe('newBlockHeaders', function (error, new_block) {
+      if (!error) {
+        current_new_block = new_block.number
+        Trade.findOne().sort({number: -1}).exec(function (err, db_block) {
+          if (db_block == null)  db_block = {number: cursor}
+          Trade.deleteMany({number: {$lte: db_block.number - 1000}, status: 'false'}, function (err, res) {
+            if (err) console.log(err)
+          })
+          if (db_block.number < new_block.number -8 ) {
+            if (scanning_old_blocks == 1) {
+              console.log('beginNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN')
+              Trade.deleteMany({number: {$gte: db_block.number - 200}}, function (err, res) {
+                if (err) console.log(err)
+                scanOldBlock()
+                scanning_old_blocks++
+              })
+            } else scanning_old_blocks++
+          } else {
+            scanning_old_blocks = 1
+            scanBlock(new_block.number - 6)
+          }
+        })
+      }
+    })
+  }, 30000)
+  
+  function scanOldBlock() {
+    Trade.findOne().sort({number: -1}).exec(function (err, db_block) {
+      if (db_block == null) db_block = {number: cursor}
+      array.splice(0, 100)
+      if (db_block.number < current_new_block - 6) {
+        let _from_block = Math.max(db_block.number + 1, cursor)
+        array.push(_from_block)
+        processArray(array)
+      }
+    })
+  }
+  async function processArray(array) {
+    // map array to promises
+    const promises = array.map(scanBlock)
+    // wait until all promises are resolved
+    await Promise.all(promises);
+    setTimeout(function(){scanOldBlock()},1)
+  }
+  
+  function createFirstCandle(begin) {
+    end = begin + 900
+    Trade.find({status: 'filled', filledTime: {$gte: begin, $lt: end}}).exec(function (err, doc) {
+      if (err) console.log(err)
+      let array = []
+      let MNTY = 0
+      let NewSD = 0
+      for (let i = 0; i < doc.length; i++)
+      {
+        array.push(parseFloat(doc[i].price.replace(',','')))
+        if (doc[i].to == volatileTokenAddress) {
+          MNTY = MNTY + parseFloat(doc[i].haveAmount.slice(0,-5))
+          NewSD = NewSD + parseFloat(doc[i].wantAmount.slice(0,-6))
+        }
+        if (MNTY==0 && doc[i].to == stableTokenAddress) {
+          MNTY = MNTY + parseFloat(doc[i].wantAmount.slice(0,-5))
+          NewSD = NewSD + parseFloat(doc[i].haveAmount.slice(0,-6))
+        }
+      }
+      Candle.create({
+        open: doc[0].price,
+        high: Math.max.apply(Math, array),
+        low: Math.min.apply(Math, array),
+        close: parseFloat(doc[doc.length-1].price.toString().replace(',','')),
+        volumeMNTY: MNTY,
+        volumeNewSD: NewSD,
+        time: end
+      }, function (err) {
+        if (err) console.log(err)
+        Trade.findOne().sort({time: -1}).exec(function (err, doc) {
+          if (err) console.log(err)
+          if (end + 900 < doc.time) createCandle(end)
+          else {
+            let wait = (end + 900 - doc.time  + 5)*1000
+            setTimeout(function() {createCandle(end)}, wait)
+          }
+        })
+      })
+    })
+  }
+  
+  function createCandle(begin) {
+    end = begin + 900
+    let time_now = parseInt(Date.now().toString().slice(0,-3))
+    Trade.find({status: 'filled', filledTime: {$gte: begin, $lte: end}}).sort({filledTime: -1}).exec(function (err, doc) {
+      if (err) console.log(err)
+      if (doc[0] != null || doc[0] != undefined) {
+        Candle.findOne().sort({time: -1}).exec(function (err, doc1) {
+          if (err) console.log(err)
+          let array = []
+          let MNTY = 0
+          let NewSD = 0
+          for (let i = 0; i < doc.length; i++)
+          {
+            array.push(parseFloat(doc[i].price.replace(',','')))
+            if (doc[i].to == volatileTokenAddress) {
+              MNTY = MNTY + parseFloat(doc[i].haveAmount.slice(0,-5))
+              NewSD = NewSD + parseFloat(doc[i].wantAmount.slice(0,-6))
+            }
+            if (MNTY==0 && doc[i].to == stableTokenAddress) {
+              MNTY = MNTY + parseFloat(doc[i].wantAmount.slice(0,-5))
+              NewSD = NewSD + parseFloat(doc[i].haveAmount.slice(0,-6))
+            }
+          }
+          Candle.create({
+            open: doc1.close,
+            high: Math.max.apply(Math, array),
+            low: Math.min.apply(Math, array),
+            close: parseFloat(doc[0].price.toString().replace(',','')),
+            volumeMNTY: MNTY,
+            volumeNewSD: NewSD,
+            time: end
+          }, function (err) {
+            if (err) console.log(err)
+            if (end + 900 < time_now) createCandle(end)
+            else {
+              let wait = (end + 900 - time_now + 5)*1000
+              console.log('waitfirs',wait)
+              setTimeout(function() {createCandle(end)}, wait)
+            }
+          })
+        })
+      } else {
+        Candle.findOne().sort({time: -1}).exec(function (err, doc) {
+          if (err) console.log(err)
+          Candle.create({
+            open: doc.close,
+            high: doc.close,
+            low: doc.close,
+            close: parseFloat(doc.close.toString().replace(',','')),
+            volumeMNTY: 0,
+            volumeNewSD: 0,
+            time: end
+          }, function (err) {
+            if (err) console.log(err)
+            if (end + 900 < time_now) {
+              createCandle(end)
+            } else {
+              let wait = (end + 900 - time_now + 5)*1000
+              console.log('wait2',wait)
+              setTimeout(function() {createCandle(end)}, wait)
+            }
+          })
+        })
+      }
+    })
+  }
+  
+  setTimeout(function(){
+    console.log('start')
+    Candle.findOne().sort({filledTime: -1}).exec(function (err, doc) {
+      if (err) console.log(err)
+      if(doc == null) {
+        Trade.findOne({status: 'filled'}).sort({filledTime: 1}).exec(function (err, doc1) {
+          if (err) console.log(err)
+          if (doc1 != null ) {
+            createFirstCandle(doc1.filledTime) // first point
+          } else setTimeout(function(){createFirstCandle(doc1.filledTime)},5000)
+        })
+      } else {
+        Candle.findOne({}).sort({time: -1}).exec(function (err, doc) {
+          if (err) console.log(err)
+          createCandle(doc.time)
+        })
+      }
+    })
+  },10000)
 }

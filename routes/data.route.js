@@ -29,7 +29,7 @@ router.get('/get-candle', controller.getcandle)
 
 router.get('/get-header', controller.getheader)
 
-router.get('/a', controller.a)
+router.get('/candle', controller.candle)
 
 
 module.exports = router

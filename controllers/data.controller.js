@@ -309,53 +309,7 @@ module.exports.filled = async function (req, res) {
   res.json(show)
 }
 
-module.exports.candle = async function (req, res) {
-  setTimeout(function(){
-    web3.eth.subscribe('newBlockHeaders', function (error, new_block) {
-      if (!error) {
-        current_new_block = new_block.number
-        Trade.findOne().sort({number: -1}).exec(function (err, db_block) {
-          if (db_block == null)  db_block = {number: cursor}
-          Trade.deleteMany({number: {$lte: db_block.number - 1000}, status: 'false'}, function (err, res) {
-            if (err) console.log(err)
-          })
-          if (db_block.number < new_block.number -8 ) {
-            if (scanning_old_blocks == 1) {
-              console.log('beginNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN')
-              Trade.deleteMany({number: {$gte: db_block.number - 200}}, function (err, res) {
-                if (err) console.log(err)
-                scanOldBlock()
-                scanning_old_blocks++
-              })
-            } else scanning_old_blocks++
-          } else {
-            scanning_old_blocks = 1
-            scanBlock(new_block.number - 6)
-          }
-        })
-      }
-    })
-  }, 30000)
-  
-  function scanOldBlock() {
-    Trade.findOne().sort({number: -1}).exec(function (err, db_block) {
-      if (db_block == null) db_block = {number: cursor}
-      array.splice(0, 100)
-      if (db_block.number < current_new_block - 6) {
-        let _from_block = Math.max(db_block.number + 1, cursor)
-        array.push(_from_block)
-        processArray(array)
-      }
-    })
-  }
-  async function processArray(array) {
-    // map array to promises
-    const promises = array.map(scanBlock)
-    // wait until all promises are resolved
-    await Promise.all(promises);
-    setTimeout(function(){scanOldBlock()},1)
-  }
-  
+module.exports.candle = async function (req, res) {  
   function createFirstCandle(begin) {
     end = begin + 900
     Trade.find({status: 'filled', filledTime: {$gte: begin, $lt: end}}).exec(function (err, doc) {

@@ -24,7 +24,7 @@ let Seigniorage = new web3.eth.Contract(SeigniorageABI, seigniorageAddress)
 let VolatileToken = new web3.eth.Contract(VolatileTokenABI, volatileTokenAddress)
 let StableToken = new web3.eth.Contract(StableTokenABI, stableTokenAddress)
 
-mongoose.connect('mongodb://localhost:27017/nytexAPI', {
+mongoose.connect('mongodb://localhost:27017/mydb', {
   useNewUrlParser: true,
   useUnifiedTopology: true
 });
